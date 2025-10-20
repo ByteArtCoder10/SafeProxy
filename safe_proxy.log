@@ -1,0 +1,6 @@
+2025-10-20 21:18:57,126 - ERROR - Unxpected Error: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted
+Traceback (most recent call last):
+  File "d:\SafeProxy\src\proxy\proxy_listener.py", line 22, in start
+    self.__server_socket.bind((self.__ip, self.__port))
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [WinError 10048] Only one usage of each socket address (protocol/network address/port) is normally permitted

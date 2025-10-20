@@ -1,0 +1,20 @@
+title <size:30><color:#red> SafeProxy
+
+participant ProxyListener
+participant HttpHandler
+participant HttpsTcpTunnelHandler
+participant HttpsTlsInterceptionHandler 
+participant TlsHandler
+participant CertificateHandler
+participant GUI
+participant DBHandler
+participant Caching	
+participant UnitTests
+
+
+ProxyListener->HttpHandler: HTTP request
+ProxyListener->HttpsTcpTunnelHandler: HTTPS request for TCP tunnel between server \nand client (CONNECT method)
+HttpsTlsInterceptionHandler->TlsHandler:Handling TLS handshake
+HttpsTlsInterceptionHandler->CertificateHandler:handling Certificate handler for client reequsted URL
+ProxyListener->HttpsTlsInterceptionHandler:HTTPS request for intercepting \nEncrypted communication (TLS\SSL)
+
