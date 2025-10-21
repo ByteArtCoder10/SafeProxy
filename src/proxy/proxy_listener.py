@@ -2,9 +2,9 @@ import socket
 import threading
 import logging
 
-logging.basicConfig(level=logging.INFO, filename='D:/SafeProxy/src/logs/safe_proxy.log', filemode='w',
-                     format="%(asctime)s - %(levelname)s - %(message)s")
 
+BUFFER_SIZE =  4096
+HTTP_SUPPORTED_METHODS = ['GET', 'POST', 'PUT', 'DELETE', 'HEAD', 'OPTIONS', 'PATCH']
 class ProxyListener:
     '''
     listens for incoming connections, and handels them based on type of request.
@@ -13,9 +13,10 @@ class ProxyListener:
     def __init__(self, ip: str, port: int):
         self.__ip = ip
         self.__port = port
-        self.__serversocket = None
+        self.__server_socket = None
         self.__clients = []
     
+    '''starts the server and routes http/s requests.'''
     def start(self, clients_capacity: int, ) -> None:
         try:    
             self.__server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -38,8 +39,27 @@ class ProxyListener:
             logging.error(f"Unxpected Error: {e}", exc_info=True)
     
     def handle_client_request(self, client_socket: socket, client_address: tuple):
-        pass
+        try:
+            request = client_socket.recv(BUFFER_SIZE)
+            if not request:
+                raise Exception("client request failed.")
+            logging.info(request)
+            first_line = request.split('\r\n')[0]
 
-pl1 = ProxyListener('127.0.0.1', 215)
+            method = first_line.split(' ')[0]
+            if not method:
+                raise Exception("Could not get request method.")
+            
+            if method == 'CONNECT':
+                #Route to HttpsTlsInterceptionHandler/HttpsTcpTunnelhandler - 
+                #depend on client's Prefrence.
+                pass
+            if method in HTTP_SUPPORTED_METHODS:
+                # Route to HttpHandler - property of this class? or that can be here?
+                pass 
+        except Exception as e:
+            logging.warning(e)
+
+pl1 = ProxyListener('127.0.0.1', 2153)
 pl1.start(1000)    
     

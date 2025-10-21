@@ -1,3 +1,7 @@
-2025-10-20 21:31:23,044 - INFO - server is up at ('127.0.0.1', 215).
-2025-10-20 21:32:03,582 - INFO - client connected - ('127.0.0.1', 7859).
-2025-10-20 21:32:03,584 - INFO - Thread started for client - ('127.0.0.1', 7859).
+2025-10-21 03:35:47,721 - INFO - server is up at ('127.0.0.1', 2153).
+2025-10-21 03:36:35,847 - INFO - client connected - ('127.0.0.1', 25968).
+2025-10-21 03:36:35,849 - INFO - Thread started for client - ('127.0.0.1', 25968).
+2025-10-21 03:36:35,849 - INFO - b'GET http://youtube.com/ HTTP/1.1\r\nHost: youtube.com\r\nUser-Agent: curl/8.14.1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n'
+2025-10-21 03:39:37,968 - INFO - client connected - ('127.0.0.1', 43119).
+2025-10-21 03:39:37,969 - INFO - Thread started for client - ('127.0.0.1', 43119).
+2025-10-21 03:39:37,978 - INFO - b'CONNECT youtube.com:443 HTTP/1.1\r\nHost: youtube.com:443\r\nUser-Agent: curl/8.14.1\r\nProxy-Connection: Keep-Alive\r\n\r\n'
