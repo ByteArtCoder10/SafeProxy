@@ -1,7 +1,72 @@
-2025-10-21 03:35:47,721 - INFO - server is up at ('127.0.0.1', 2153).
-2025-10-21 03:36:35,847 - INFO - client connected - ('127.0.0.1', 25968).
-2025-10-21 03:36:35,849 - INFO - Thread started for client - ('127.0.0.1', 25968).
-2025-10-21 03:36:35,849 - INFO - b'GET http://youtube.com/ HTTP/1.1\r\nHost: youtube.com\r\nUser-Agent: curl/8.14.1\r\nAccept: */*\r\nProxy-Connection: Keep-Alive\r\n\r\n'
-2025-10-21 03:39:37,968 - INFO - client connected - ('127.0.0.1', 43119).
-2025-10-21 03:39:37,969 - INFO - Thread started for client - ('127.0.0.1', 43119).
-2025-10-21 03:39:37,978 - INFO - b'CONNECT youtube.com:443 HTTP/1.1\r\nHost: youtube.com:443\r\nUser-Agent: curl/8.14.1\r\nProxy-Connection: Keep-Alive\r\n\r\n'
+2025-10-27 21:34:16,690 - WARNING - [proxy_listener.py:44] - Unexpected error:
+[WinError 10048] On
+
+2025-10-27 21:34:27,494 - INFO - [proxy_listener.py:34] - client connected - ('127.0.0.1', 43021). 
+
+2025-10-27 21:34:27,499 - INFO - [http_handler.py:84] - Parsed request -> 
+Method: CONNECT, 
+Host: www.httpforever.com, 
+Port: 443,
+Path: /, 
+Version: HTTP/1.1, 
+request-uri-form:origin-form.
+ 
+
+2025-10-27 21:34:27,499 - INFO - [proxy_listener.py:41] - Thread started for client - ('127.0.0.1', 43021) 
+
+2025-10-27 21:35:03,798 - INFO - [proxy_listener.py:34] - client connected - ('127.0.0.1', 1249). 
+
+2025-10-27 21:35:03,799 - INFO - [proxy_listener.py:41] - Thread started for client - ('127.0.0.1', 1249) 
+
+2025-10-27 21:35:03,799 - INFO - [http_handler.py:84] - Parsed request -> 
+Method: CONNECT, 
+Host: www.example.com, 
+Port: 443,
+Path: /, 
+Version: HTTP/1.1, 
+request-uri-form:origin-form.
+ 
+
+2025-10-27 21:35:15,386 - INFO - [proxy_listener.py:34] - client connected - ('127.0.0.1', 25503). 
+
+2025-10-27 21:35:15,388 - INFO - [proxy_listener.py:41] - Thread started for client - ('127.0.0.1', 25503) 
+
+2025-10-27 21:35:15,388 - INFO - [http_handler.py:84] - Parsed request -> 
+Method: GET, 
+Host: www.example.com, 
+Port: 80,
+Path: /, 
+Version: HTTP/1.1, 
+request-uri-form:absolute-form.
+ 
+
+2025-10-27 21:35:15,542 - INFO - [proxy_listener.py:75] - Sent response to client at: ('127.0.0.1', 25503) 
+
+2025-10-27 21:35:15,606 - INFO - [proxy_listener.py:34] - client connected - ('127.0.0.1', 22719). 
+
+2025-10-27 21:35:15,608 - INFO - [proxy_listener.py:41] - Thread started for client - ('127.0.0.1', 22719) 
+
+2025-10-27 21:35:15,608 - INFO - [http_handler.py:84] - Parsed request -> 
+Method: GET, 
+Host: www.example.com, 
+Port: 80,
+Path: /favicon.ico, 
+Version: HTTP/1.1, 
+request-uri-form:absolute-form.
+ 
+
+2025-10-27 21:35:16,565 - INFO - [proxy_listener.py:75] - Sent response to client at: ('127.0.0.1', 22719) 
+
+2025-10-27 21:40:19,029 - INFO - [proxy_listener.py:34] - client connected - ('127.0.0.1', 62532). 
+
+2025-10-27 21:40:19,034 - INFO - [proxy_listener.py:41] - Thread started for client - ('127.0.0.1', 62532) 
+
+2025-10-27 21:40:19,034 - INFO - [http_handler.py:84] - Parsed request -> 
+Method: CONNECT, 
+Host: www.httpforever.com, 
+Port: 443,
+Path: /, 
+Version: HTTP/1.1, 
+request-uri-form:origin-form.
+ 
+

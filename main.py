@@ -1,8 +1,10 @@
-import logging
+from src.logs.logging_config import setup_logging
+setup_logging()
+from src.proxy.proxy_listener import ProxyListener
 
-logging.basicConfig(
-    level=logging.INFO,
-    filename="D:/SafeProxy/src/logs/safe_proxy.log",
-    filemode="w",
-    format="%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s"
-)
+def main():
+    pl1 = ProxyListener('127.0.0.1', 2153)
+    pl1.start(1000)  
+
+if __name__ == "__main__":
+    main()

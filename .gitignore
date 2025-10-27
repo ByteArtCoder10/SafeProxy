@@ -1,3 +1,6 @@
 # .gitignore
 src/logs/
 *.log
+
+__pycache__/
+*.pyc
