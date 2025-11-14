@@ -1,72 +1,29 @@
-2025-10-27 21:34:16,690 - WARNING - [proxy_listener.py:44] - Unexpected error:
-[WinError 10048] On
+2025-10-29 17:55:03,211 - INFO - [proxy_listener.py:28] - server is up at ('127.0.0.1', 2153). 
 
-2025-10-27 21:34:27,494 - INFO - [proxy_listener.py:34] - client connected - ('127.0.0.1', 43021). 
+2025-10-29 17:55:40,424 - INFO - [proxy_listener.py:34] - client connected - ('127.0.0.1', 44377). 
 
-2025-10-27 21:34:27,499 - INFO - [http_handler.py:84] - Parsed request -> 
-Method: CONNECT, 
-Host: www.httpforever.com, 
-Port: 443,
-Path: /, 
-Version: HTTP/1.1, 
-request-uri-form:origin-form.
- 
+2025-10-29 17:55:40,429 - INFO - [proxy_listener.py:41] - Thread started for client - ('127.0.0.1', 44377) 
 
-2025-10-27 21:34:27,499 - INFO - [proxy_listener.py:41] - Thread started for client - ('127.0.0.1', 43021) 
-
-2025-10-27 21:35:03,798 - INFO - [proxy_listener.py:34] - client connected - ('127.0.0.1', 1249). 
-
-2025-10-27 21:35:03,799 - INFO - [proxy_listener.py:41] - Thread started for client - ('127.0.0.1', 1249) 
-
-2025-10-27 21:35:03,799 - INFO - [http_handler.py:84] - Parsed request -> 
-Method: CONNECT, 
-Host: www.example.com, 
-Port: 443,
-Path: /, 
-Version: HTTP/1.1, 
-request-uri-form:origin-form.
- 
-
-2025-10-27 21:35:15,386 - INFO - [proxy_listener.py:34] - client connected - ('127.0.0.1', 25503). 
-
-2025-10-27 21:35:15,388 - INFO - [proxy_listener.py:41] - Thread started for client - ('127.0.0.1', 25503) 
-
-2025-10-27 21:35:15,388 - INFO - [http_handler.py:84] - Parsed request -> 
+2025-10-29 17:55:40,432 - INFO - [http_handler.py:84] - Parsed request -> 
 Method: GET, 
-Host: www.example.com, 
+Host: month, 
 Port: 80,
 Path: /, 
 Version: HTTP/1.1, 
 request-uri-form:absolute-form.
  
 
-2025-10-27 21:35:15,542 - INFO - [proxy_listener.py:75] - Sent response to client at: ('127.0.0.1', 25503) 
-
-2025-10-27 21:35:15,606 - INFO - [proxy_listener.py:34] - client connected - ('127.0.0.1', 22719). 
-
-2025-10-27 21:35:15,608 - INFO - [proxy_listener.py:41] - Thread started for client - ('127.0.0.1', 22719) 
-
-2025-10-27 21:35:15,608 - INFO - [http_handler.py:84] - Parsed request -> 
-Method: GET, 
-Host: www.example.com, 
-Port: 80,
-Path: /favicon.ico, 
-Version: HTTP/1.1, 
-request-uri-form:absolute-form.
- 
-
-2025-10-27 21:35:16,565 - INFO - [proxy_listener.py:75] - Sent response to client at: ('127.0.0.1', 22719) 
-
-2025-10-27 21:40:19,029 - INFO - [proxy_listener.py:34] - client connected - ('127.0.0.1', 62532). 
-
-2025-10-27 21:40:19,034 - INFO - [proxy_listener.py:41] - Thread started for client - ('127.0.0.1', 62532) 
-
-2025-10-27 21:40:19,034 - INFO - [http_handler.py:84] - Parsed request -> 
-Method: CONNECT, 
-Host: www.httpforever.com, 
-Port: 443,
-Path: /, 
-Version: HTTP/1.1, 
-request-uri-form:origin-form.
- 
-
+2025-10-29 17:55:43,142 - WARNING - [proxy_listener.py:92] - Unexpected Error:
+[Errno 11001] getaddrinfo failed 
+Traceback (most recent call last):
+  File "D:\SafeProxy\src\proxy\proxy_listener.py", line 83, in forward_request_and_get_response
+    proxy_socket.connect((host, port))
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+socket.gaierror: [Errno 11001] getaddrinfo failed
+2025-10-29 17:55:43,164 - WARNING - [proxy_listener.py:77] - Unexpected Error:
+a bytes-like object is required, not 'NoneType' 
+Traceback (most recent call last):
+  File "D:\SafeProxy\src\proxy\proxy_listener.py", line 74, in respond_to_client
+    client_socket.sendall(response)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
+TypeError: a bytes-like object is required, not 'NoneType'

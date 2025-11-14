@@ -1,7 +1,8 @@
 import socket
 import threading
 import logging
-from .http_handler import HttpHandler
+from .parser import Parser
+from .router import Router
 
 BUFFER_SIZE = 8192
 HTTP_SUPPORTED_METHODS = ['GET', 'POST', 'PUT',
@@ -13,27 +14,28 @@ class ProxyListener:
     '''
 
     def __init__(self, ip: str, port: int):
-        self.__ip = ip
-        self.__port = port
-        self.__server_socket = None
-        self.__clients = []
-        self.__http_handler = HttpHandler()
+        self._ip = ip
+        self._port = port
+        self._server_socket = None
+        self._clients = []
+        self._parser = Parser
+        self._router = Router()
 
     '''starts the server and routes http/s requests.'''
     def start(self, clients_capacity: int, ) -> None:
         try:
-            self.__server_socket = socket.socket(
+            self._server_socket = socket.socket(
                 socket.AF_INET, socket.SOCK_STREAM)
-            self.__server_socket.bind((self.__ip, self.__port))
-            logging.info(f"server is up at {self.__ip, self.__port}.")
+            self._server_socket.bind((self._ip, self._port))
+            logging.info(f"server is up at {self._ip, self._port}.")
 
-            self.__server_socket.listen(clients_capacity)
+            self._server_socket.listen(clients_capacity)
             while True:
 
-                client_socket, client_address = self.__server_socket.accept()
+                client_socket, client_address = self._server_socket.accept()
                 logging.info(f"client connected - {client_address}.")
 
-                self.__clients.append((client_socket, client_address))
+                self._clients.append((client_socket, client_address))
                 client_thread = threading.Thread(
                     target=self.handle_client_request, args=(client_socket, client_address))
                 client_thread.daemon = True
@@ -43,25 +45,17 @@ class ProxyListener:
         except Exception as e:
             logging.warning(f"Unexpected error:\n{e}", exc_info=True)
 
-
+    '''Handles client requst'''
     def handle_client_request(self, client_socket: socket, client_address: tuple) -> None: 
         try:
             client_request = client_socket.recv(BUFFER_SIZE).decode('utf-8')
             logging.debug(f"A request from {client_address}:\n{client_request}")
-            method, host, port, path, http_version = self.__http_handler.parse_request(client_request)
-            # ---
+            
+            # Returns a Request obj 
+            parsed_request = self._parser.parse_request(client_request)
 
-            if method == 'CONNECT':
-                # Route to HttpsTlsInterceptionHandler/HttpsTcpTunnelhandler -
-                # depend on client's Prefrence.
-
-                pass
-            elif method in HTTP_SUPPORTED_METHODS:
-                if host.lower() == "www.neverssl.com" or host.lower() == "neverssl.com":
-                    response = self.__http_handler.generate_custom_response(http_version, 403)         
-                else:
-                    response = self.forward_request_and_get_response(host, port, client_request)
-                self.respond_to_client(client_socket, client_address, response)
+            # Route based on request
+            self._router.RouteRequest(parsed_request, client_socket)
 
         except Exception as e:
             logging.warning(f"Unexpected Error:\n{e}", exc_info=True)
