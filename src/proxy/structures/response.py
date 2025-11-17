@@ -20,10 +20,11 @@ class Response:
     is to forward webserver response or to make it's own reponse to forward (e.g due to black-listed URL)'''
 
     http_version: str
-    status_code: str
+    status_code: int
     reason: Optional[str] = None
     headers: Optional[dict[str, object]] = field(default_factory=dict)
-    body: str = field(init=False)
+    body: str = field(default='', init=False)
+    raw_connect: Optional[bool] = False
 
     '''handles newaunces after initialization of all fields'''
     def __post_init__(self):
@@ -33,12 +34,11 @@ class Response:
                 self.reason = HTTPStatus(self.status_code).phrase
             except ValueError:
                 self.reason = ""
-    
-        # adding html body
-        self._add_dynamic_body()
+        elif self.reason != 'Connection Established':
+            self._add_proxy_fixed_headers()
+
         
         # adding fixed headers
-        self._add_proxy_fixed_headers()
     
     #adds dynamic HTML bodt based on status_code, reason.
     def _add_dynamic_body(self):
@@ -96,7 +96,7 @@ class Response:
         required_preffered_headers = {
             "Content-Type": "text/html; charset=utf-8",
             "Content-length": f"{len(self.body.encode('utf-8'))}",
-            "Server": "SafeProxy",
+            "Proxy-Agent": "SafeProxy",
             "Date": f"{datetime.now(timezone.utc).strftime('%a, %d %b %Y %H:%M:%S GMT')}",
             "Connection": "Closed"            
         }
@@ -106,6 +106,10 @@ class Response:
     
     '''returns a sendable string request (origin-form)'''
     def to_raw(self):
+        if self.raw_connect:
+        # Only the minimal 200 CONNECT Connection Etablished response
+            return f"{self.http_version} {self.status_code} {self.reason}\r\nProxy-Agent: SafeProxy\r\n\r\n"
+        
         first_line = f"{self.http_version} {self.status_code} {self.reason}\r\n"
         headers = "".join(f"{h}: {v}\r\n" for h, v in self.headers.items())
         body = f"\r\n\r\n{self.body or ""}"
@@ -115,13 +119,13 @@ class Response:
     '''returns a pretty request (debugging)'''
     def prettify(self) -> str:
         return (
-            "------RESPONSE------"
+            "\n------RESPONSE------"
             f"\n--Http version: {self.http_version}, \n--Status code: {self.status_code}, \n--Reason: {self.reason},"
             f"\n--Headers: \t{"".join(f"\n{h}: {v}" for h, v in self.headers.items())},"
             f"\n--Body: \n{self.body}\n"
-            "--------------------" )
+            "----------------------" )
 
-
-pr = Response("HTTP/1.1", 404, "Not Found")
-print(pr.prettify())
-print(pr.to_raw())
+if __name__ == "__main__":
+    pr = Response("HTTP/1.1", 404, "Not Found")
+    print(pr.prettify())
+    print(pr.to_raw())

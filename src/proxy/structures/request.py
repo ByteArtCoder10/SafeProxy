@@ -18,8 +18,8 @@ class Request():
     '''handles newaunces after initialization of all fields'''
     def __post_init__(self):
         '''adds host to headers if not already in there'''
-        self.add_header("host", self.host)
-
+        self.add_header("Host", self.host)
+    
     '''add a path to the request'''
     def add_path(self, path: str) -> None:
         if self.path is None:
@@ -28,11 +28,11 @@ class Request():
             logging.info("path field already exsits in the requests")
 
     '''add a header to the request'''
-    def add_header(self, header, value) -> None:            
+    def add_header(self, header: str, value: str) -> None:            
         if header not in self.headers:
             self.headers[header] = value
         else:
-            logging.info(f"Header '{header}' already exists in headers field of the request")
+            logging.debug(f"Header '{header}' already exists in headers field of the request")
 
     '''adds a body ot the request'''
     def add_body(self, body: str) -> None:
@@ -47,16 +47,15 @@ class Request():
         headers = "".join(f"{h}: {v}\r\n" for h, v in self.headers.items())
         body = f"\r\n\r\n{self.body or ""}"
 
-        self.raw_request = first_line + headers + body
-        return self.raw_request
+        return first_line + headers + body
     
     '''returns a pretty request (debugging)'''
     def prettify(self) -> str:
         return (
-            "------REQUEST------"
+            "\n------REQUEST------"
             f"\n--Method: {self.method}, \n--Host: {self.host}, \n--Port: {self.port},"
             f"\n--Path: {self.path}, \n--Http version: {self.http_version},"
-            f"\n--Headers: \t{"".join(f"\n{h}: {v}" for h, v in self.headers.items())},"
+            f"\n--Headers: \t{"".join(f"\n{h}: {v}" for h, v in self.headers.items())}"
             f"\n--Body: \n{self.body}\n"
             "-------------------"
         )

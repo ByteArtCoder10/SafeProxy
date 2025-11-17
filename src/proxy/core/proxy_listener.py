@@ -3,8 +3,7 @@ import threading
 import logging
 from .parser import Parser
 from .router import Router
-
-BUFFER_SIZE = 8192
+from ...constants import BUFFER_SIZE
 HTTP_SUPPORTED_METHODS = ['GET', 'POST', 'PUT',
                           'DELETE', 'HEAD', 'OPTIONS', 'PATCH']
 
@@ -22,7 +21,7 @@ class ProxyListener:
         self._router = Router()
 
     '''starts the server and routes http/s requests.'''
-    def start(self, clients_capacity: int, ) -> None:
+    def start(self, clients_capacity: int) -> None:
         try:
             self._server_socket = socket.socket(
                 socket.AF_INET, socket.SOCK_STREAM)
@@ -55,7 +54,7 @@ class ProxyListener:
             parsed_request = self._parser.parse_request(client_request)
 
             # Route based on request
-            self._router.RouteRequest(parsed_request, client_socket)
+            self._router.route_request(parsed_request, client_socket)
 
         except Exception as e:
             logging.warning(f"Unexpected Error:\n{e}", exc_info=True)

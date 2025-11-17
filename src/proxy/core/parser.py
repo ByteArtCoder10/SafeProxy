@@ -1,5 +1,5 @@
 import logging 
-from ..request.request import Request
+from ..structures.request import Request
 class Parser():
     '''Handles HTTP(S) raw requests + responses, and parses them accordingly. 
     '''
@@ -13,9 +13,13 @@ class Parser():
         -Body
     '''
     @staticmethod
-    def parse_request(self, request: str) -> Request:
+    def parse_request(request: str) -> Request:
             try:
                 lines = request.split('\r\n')
+
+                # remove emptyspace list elements because of /r/n/r/n
+                lines = [line for line in lines if line]
+                
                 first_line = lines[0]
 
                 # parse request line
@@ -63,7 +67,7 @@ class Parser():
                 header_value = None
                 body_line_num = None
                 for i, line in enumerate(lines[1:]):
-                    if line == "\r\n":
+                    if line == "\r\n\r\n":
                         body_line_num = i+1 #Next line is the start of the body
                         break
                     header_name_pos = line.find(":")
@@ -74,7 +78,7 @@ class Parser():
                 # parse body
                 body = None
                 if body_line_num:
-                    body = lines[body_line_num+1:]
+                    body = lines[body_line_num:]
                 
                 # Check host header match first-line host (if header exists)
                 host_header_value = headers.get("Host", None)

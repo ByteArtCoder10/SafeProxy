@@ -1,29 +1,156 @@
-2025-10-29 17:55:03,211 - INFO - [proxy_listener.py:28] - server is up at ('127.0.0.1', 2153). 
+2025-11-16 18:41:39,924 - INFO - [proxy_listener.py:29] - server is up at ('127.0.0.1', 2153). 
 
-2025-10-29 17:55:40,424 - INFO - [proxy_listener.py:34] - client connected - ('127.0.0.1', 44377). 
+2025-11-16 18:41:43,672 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 20171). 
 
-2025-10-29 17:55:40,429 - INFO - [proxy_listener.py:41] - Thread started for client - ('127.0.0.1', 44377) 
+2025-11-16 18:41:43,678 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 20171) 
 
-2025-10-29 17:55:40,432 - INFO - [http_handler.py:84] - Parsed request -> 
-Method: GET, 
-Host: month, 
-Port: 80,
-Path: /, 
-Version: HTTP/1.1, 
-request-uri-form:absolute-form.
- 
+2025-11-16 18:41:43,678 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: www.httpforever.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.httpforever.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
 
-2025-10-29 17:55:43,142 - WARNING - [proxy_listener.py:92] - Unexpected Error:
-[Errno 11001] getaddrinfo failed 
-Traceback (most recent call last):
-  File "D:\SafeProxy\src\proxy\proxy_listener.py", line 83, in forward_request_and_get_response
-    proxy_socket.connect((host, port))
-    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
-socket.gaierror: [Errno 11001] getaddrinfo failed
-2025-10-29 17:55:43,164 - WARNING - [proxy_listener.py:77] - Unexpected Error:
-a bytes-like object is required, not 'NoneType' 
-Traceback (most recent call last):
-  File "D:\SafeProxy\src\proxy\proxy_listener.py", line 74, in respond_to_client
-    client_socket.sendall(response)
-    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^
-TypeError: a bytes-like object is required, not 'NoneType'
+2025-11-16 18:41:44,097 - INFO - [https_tcp_tunnel_handler.py:27] - Successfully established a TCP tunnel:             
+web server: www.httpforever.com, 443 
+client: 127.0.0.1, 20171 
+
+2025-11-16 18:41:44,516 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 47180). 
+
+2025-11-16 18:41:44,518 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 47180) 
+
+2025-11-16 18:41:44,519 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: GET, 
+--Host: apps.identrust.com, 
+--Port: 80,
+--Path: /roots/dstrootcax3.p7c, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: apps.identrust.com
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+Accept-Encoding: gzip, deflate
+Accept-Language: en-GB,en;q=0.9
+--Body: 
+None
+------------------- 
+
+2025-11-16 18:41:54,519 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 26693). 
+
+2025-11-16 18:41:54,521 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 26693) 
+
+2025-11-16 18:41:54,521 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: GET, 
+--Host: x1.i.lencr.org, 
+--Port: 80,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: x1.i.lencr.org
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+Accept-Encoding: gzip, deflate
+Accept-Language: en-GB,en;q=0.9
+--Body: 
+None
+------------------- 
+
+2025-11-16 18:42:03,091 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 21328). 
+
+2025-11-16 18:42:03,093 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 21328) 
+
+2025-11-16 18:42:03,093 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: httpforever.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: httpforever.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-16 18:42:03,376 - INFO - [https_tcp_tunnel_handler.py:27] - Successfully established a TCP tunnel:             
+web server: httpforever.com, 443 
+client: 127.0.0.1, 21328 
+
+2025-11-16 18:42:03,695 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 41331). 
+
+2025-11-16 18:42:03,696 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 41331) 
+
+2025-11-16 18:42:03,696 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: GET, 
+--Host: apps.identrust.com, 
+--Port: 80,
+--Path: /roots/dstrootcax3.p7c, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: apps.identrust.com
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+Accept-Encoding: gzip, deflate
+Accept-Language: en-GB,en;q=0.9
+--Body: 
+None
+------------------- 
+
+2025-11-16 18:42:04,534 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 64535). 
+
+2025-11-16 18:42:04,539 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 64535) 
+
+2025-11-16 18:42:04,540 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: GET, 
+--Host: r3.i.lencr.org, 
+--Port: 80,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: r3.i.lencr.org
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+Accept-Encoding: gzip, deflate
+Accept-Language: en-GB,en;q=0.9
+--Body: 
+None
+------------------- 
+
+2025-11-16 18:42:07,841 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 45102). 
+
+2025-11-16 18:42:07,842 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 45102) 
+
+2025-11-16 18:42:07,842 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: GET, 
+--Host: httpforever.com, 
+--Port: 80,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: httpforever.com
+Proxy-Connection: keep-alive
+Cache-Control: max-age=0
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Accept-Encoding: gzip, deflate
+Accept-Language: en-GB,en;q=0.9
+--Body: 
+None
+------------------- 
+
