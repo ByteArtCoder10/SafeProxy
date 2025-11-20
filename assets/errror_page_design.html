@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeProxy – 404</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #e8efff, #c9d8ff);
+            font-family: 'Poppins', sans-serif;
+            color: #0066ff;
+            overflow: hidden;
+        }
+
+        .card {
+            width: 50vw;
+            height: 70vh;
+            max-width: 800px;
+            max-height: 600px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 20px;
+            position: relative;
+            text-align: center;
+            box-shadow:
+                0 20px 40px rgba(0, 0, 0, 0.1),
+                0 8px 20px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: url(/assets/security_lock_bg.png);
+            background-size: cover;
+            background-position: center;
+            opacity: 0.18;
+            filter: blur(6px);
+        }
+
+        .content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .brand {
+            font-size: 1.3rem;
+            font-weight: 100;
+            letter-spacing: 2px;
+            opacity: 0.9;
+            margin-top: 3vh;
+        }
+
+        h1 {
+            margin-top: 3vh;
+            font-size: 6rem;
+            font-weight: 900;
+            margin-bottom: -20px;
+        }
+
+        h2 {
+            font-size: 1.7rem;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-top: 0;
+        }
+
+        .line {
+            width: 100px;
+            height: 4px;
+            background: #1f51ff;
+            border-radius: 2px;
+            margin: 20px auto;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <div class="content">
+            <div class="brand">-- SafeProxy --</div>
+            <h1>404</h1>
+            <div class="line"></div>
+            <h2>Page Not Found</h2>
+            <p>The requested page is not allowed.</p>
+        </div>
+    </div>
+</body>
+</html>

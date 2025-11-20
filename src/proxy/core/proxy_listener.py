@@ -3,7 +3,7 @@ import threading
 import logging
 from .parser import Parser
 from .router import Router
-from ...constants import BUFFER_SIZE
+from ...constants import SOCKET_BUFFER_SIZE as BUFFER_SIZE
 HTTP_SUPPORTED_METHODS = ['GET', 'POST', 'PUT',
                           'DELETE', 'HEAD', 'OPTIONS', 'PATCH']
 
@@ -32,6 +32,7 @@ class ProxyListener:
             while True:
 
                 client_socket, client_address = self._server_socket.accept()
+                # client_socket.settimeout(10)
                 logging.info(f"client connected - {client_address}.")
 
                 self._clients.append((client_socket, client_address))
@@ -57,31 +58,7 @@ class ProxyListener:
             self._router.route_request(parsed_request, client_socket)
 
         except Exception as e:
-            logging.warning(f"Unexpected Error:\n{e}", exc_info=True)
-
-    '''send response to the client.'''
-    def respond_to_client(self, client_socket: socket, client_address: tuple, response: str | bytes) -> None:
-        try:
-            if isinstance(response, str):
-                response = response.encode('utf-8')
-            client_socket.sendall(response)
-            logging.info(f"Sent response to client at: {client_address}")
-        except Exception as e:
-            logging.warning(f"Unexpected Error:\n{e}", exc_info=True)
-
-    '''transfer client's request to webserver and waits for the webserver's response.'''
-    def forward_request_and_get_response(self, host: str, port: int, request: str) -> bytes:
-        try:
-            proxy_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            proxy_socket.connect((host, port))
-
-            #send request
-            proxy_socket.sendall(request.encode('utf-8'))
-
-            # wait for response
-            response = proxy_socket.recv(BUFFER_SIZE)
-            return response
-        except Exception as e:
-            logging.warning(f"Unexpected Error:\n{e}", exc_info=True)    
+            logging.warning(f"Unexpected Error: {e}", exc_info=True)
+ 
 
 

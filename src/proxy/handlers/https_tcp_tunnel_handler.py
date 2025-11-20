@@ -1,84 +1,114 @@
 import socket
 import threading
 import logging
+
+from .base_handler import BaseHandler
 from ..structures.request import Request
 from ..structures.response import Response
-from ...constants import BUFFER_SIZE
 
-class HttpsTcpTunnelHandler:
-    '''
-    Creates a TCP tunnel between client and server, 
-    allowing bidrectional end-to-end encryption between them.
-    '''
+
+class HttpsTcpTunnelHandler(BaseHandler):
+    """
+    Handles HTTPS CONNECT requests by creating a TCP tunnel
+    and relaying encrypted data in both directions. 
+    """
 
     def __init__(self):
-        self.client_socket : socket = None
+        super().__init__()
+        self.running = False
 
-    '''establish a tcp conenction between the given server, and informing the client (successfull/not).'''
-    def establish_tunnel_server(self, req: Request, client_socket : socket):
+    # parnet method routing and calling methods by order.
+    def handle(self, req: Request, client_socket: socket):
+        self._client_socket = client_socket
+        url  = req.host + req.path
+        if self.url_validator.is_blacklisted(url) or \
+        self.url_validator.is_malicious(url):
+            pass
+            # need to tls terminate the connection - a response that is not 200
+            # Connection Established will result with ERR_TUNNEL_CONNECTION_FAILED
+        self._establish_tunnel_server(req)
+        self._send_connection_established(req)
+        self._run_tunnel_relay()
+    
+    '''establish a TCP conenction between the given server and the proxy.'''
+    def _establish_tunnel_server(self, req: Request):
         try:
-            self.client_socket = client_socket
-            client_address = self.client_socket.getpeername()
-            host_ip, host_port = req.host, req.port
-            
-            # remote connection
-            self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.server_socket.connect((host_ip, host_port))
-            logging.info(f"Successfully established a TCP tunnel: \
-            \nweb server: {host_ip}, {host_port} \nclient: {client_address[0]}, {client_address[1]}")
-        
-            # making 200 ok respnse, and sending it to the client
-            response = Response(req.http_version, 200, reason="Connection Established", raw_connect=True).to_raw()
-            logging.debug(response)
-            client_socket.sendall(response.encode('utf-8'))
+            self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._server_socket.connect((req.host, req.port))
 
-            # starting tunnel loop
-            self.run_tunnel_realy()
+            logging.info(
+                f"Tunnel established: client={self._client_socket.getpeername()} "
+                f"server=({req.host}, {req.port})"
+            )
+
+        except Exception as e:
+            logging.error(f"Failed to connect to server: {e}", exc_info=True)
+            raise # raise error to parent method
+    
+    '''sends to client a 200 Connection Established repsonse after TCP tunnel was successfully established.'''
+    def _send_connection_established(self, req: Request):
+        try:
+            response = Response(
+                req.http_version, 
+                200,
+                reason="Connection Established",
+                raw_connect=True).to_raw()
+
+            self._client_socket.sendall(response.encode("utf-8"))
         except Exception as e:
             logging.warning(f"Unexpected error: {e}", exc_info=True)
 
     '''handles client and server communication in tcp tunneling, allowing both sides to send data simultaneously using threads.'''
-    def run_tunnel_realy(self):
-        client_to_server_thread = threading.Thread(target=self.recieve_and_send_data, args=(self.client_socket, self.server_socket))
-        server_to_client_thread = threading.Thread(target=self.recieve_and_send_data, args=(self.server_socket, self.client_socket))
+    def _run_tunnel_relay(self):
+        self.running = True
 
-        client_to_server_thread.daemon = True
-        server_to_client_thread.daemon = True
+        t1 = threading.Thread(
+            target=self._relay_data,
+            args=(self._client_socket, self._server_socket),
+            daemon=True)
 
-        client_to_server_thread.start()
-        server_to_client_thread.start()
-    
-    '''handles continous sending data over sockets.'''
-    def recieve_and_send_data(self, recv_socket : socket, send_socket):
+        t2 = threading.Thread(
+            target=self._relay_data,
+            args=(self._server_socket, self._client_socket),
+            daemon=True)
+
+        t1.start()
+        t2.start()
+
+        # wait for both threads ot finish before closing sockets
+        t1.join()
+        t2.join()
+
+        self._close_sockets()
+
+    '''handles continous sending and recieving data over sockets.'''
+    def _relay_data(self, recv_socket: socket, send_socket: socket):
+        peer_name = None
+
         try:
-            while True:
-                raw_data = recv_socket.recv(BUFFER_SIZE)
-                if raw_data:
-                    send_socket.sendall(raw_data)
-        except (ConnectionAbortedError, ConnectionResetError):
-            logging.info(f"Connection closed by peer {recv_socket.getpeername()}")
+            peer_name = recv_socket.getpeername()
+
+            while self.running:
+                data = recv_socket.recv(BaseHandler.BUFFER_SIZE)
+
+                if not data:
+                    break #connection was closed
+                send_socket.sendall(data)
+
         except Exception as e:
-            self.end()
-            logging.error(f"Unexpected error: {e}", exc_info=True)
+            logging.debug(f"Relay error ({peer_name}): {e}")
 
+        # stop both threads
+        self.running = False
 
+    '''closes socket objects (origin server and client).'''            
+    def _close_sockets(self):
+        for sock in (self._client_socket, self._server_socket):
+            if sock:
+                try:
+                    sock.close()
+                except:
+                    pass
 
-    '''ends communication between client and server.'''            
-    def end(self):
-        if self.client_socket:
-            try:
-                self.client_socket.close()
-            except Exception:
-                self.client_socket = None
-        if self.server_socket:
-            try:
-                self.server_socket.close()
-            except Exception:
-                self.server_socket = None
-        logging.info("Closed client and server sockets.")
+        logging.info("Tunnel closed.")
 
-    
-    
-    
-
-        

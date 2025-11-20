@@ -1,148 +1,834 @@
-2025-11-16 18:41:39,924 - INFO - [proxy_listener.py:29] - server is up at ('127.0.0.1', 2153). 
+2025-11-20 16:30:08,689 - INFO - [proxy_listener.py:29] - server is up at ('127.0.0.1', 2153). 
 
-2025-11-16 18:41:43,672 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 20171). 
+2025-11-20 16:30:15,787 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 31610). 
 
-2025-11-16 18:41:43,678 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 20171) 
+2025-11-20 16:30:15,795 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 31610) 
 
-2025-11-16 18:41:43,678 - INFO - [parser.py:95] - 
+2025-11-20 16:30:15,795 - INFO - [parser.py:95] - 
 ------REQUEST------
 --Method: CONNECT, 
---Host: www.httpforever.com, 
+--Host: google.com, 
 --Port: 443,
 --Path: /, 
 --Http version: HTTP/1.1,
 --Headers: 	
-Host: www.httpforever.com:443
+Host: google.com:443
 Proxy-Connection: keep-alive
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
 --Body: 
 None
 ------------------- 
 
-2025-11-16 18:41:44,097 - INFO - [https_tcp_tunnel_handler.py:27] - Successfully established a TCP tunnel:             
-web server: www.httpforever.com, 443 
-client: 127.0.0.1, 20171 
+2025-11-20 16:30:16,102 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 31610) server=(google.com, 443) 
 
-2025-11-16 18:41:44,516 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 47180). 
+2025-11-20 16:30:16,975 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 13751). 
 
-2025-11-16 18:41:44,518 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 47180) 
+2025-11-20 16:30:16,977 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 13751) 
 
-2025-11-16 18:41:44,519 - INFO - [parser.py:95] - 
-------REQUEST------
---Method: GET, 
---Host: apps.identrust.com, 
---Port: 80,
---Path: /roots/dstrootcax3.p7c, 
---Http version: HTTP/1.1,
---Headers: 	
-Host: apps.identrust.com
-Proxy-Connection: keep-alive
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-Accept-Encoding: gzip, deflate
-Accept-Language: en-GB,en;q=0.9
---Body: 
-None
-------------------- 
-
-2025-11-16 18:41:54,519 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 26693). 
-
-2025-11-16 18:41:54,521 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 26693) 
-
-2025-11-16 18:41:54,521 - INFO - [parser.py:95] - 
-------REQUEST------
---Method: GET, 
---Host: x1.i.lencr.org, 
---Port: 80,
---Path: /, 
---Http version: HTTP/1.1,
---Headers: 	
-Host: x1.i.lencr.org
-Proxy-Connection: keep-alive
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-Accept-Encoding: gzip, deflate
-Accept-Language: en-GB,en;q=0.9
---Body: 
-None
-------------------- 
-
-2025-11-16 18:42:03,091 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 21328). 
-
-2025-11-16 18:42:03,093 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 21328) 
-
-2025-11-16 18:42:03,093 - INFO - [parser.py:95] - 
+2025-11-20 16:30:16,978 - INFO - [parser.py:95] - 
 ------REQUEST------
 --Method: CONNECT, 
---Host: httpforever.com, 
+--Host: www.google.com, 
 --Port: 443,
 --Path: /, 
 --Http version: HTTP/1.1,
 --Headers: 	
-Host: httpforever.com:443
+Host: www.google.com:443
 Proxy-Connection: keep-alive
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
 --Body: 
 None
 ------------------- 
 
-2025-11-16 18:42:03,376 - INFO - [https_tcp_tunnel_handler.py:27] - Successfully established a TCP tunnel:             
-web server: httpforever.com, 443 
-client: 127.0.0.1, 21328 
+2025-11-20 16:30:17,240 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 13751) server=(www.google.com, 443) 
 
-2025-11-16 18:42:03,695 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 41331). 
+2025-11-20 16:30:18,253 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 8454). 
 
-2025-11-16 18:42:03,696 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 41331) 
+2025-11-20 16:30:18,253 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 8454) 
 
-2025-11-16 18:42:03,696 - INFO - [parser.py:95] - 
+2025-11-20 16:30:18,253 - INFO - [parser.py:95] - 
 ------REQUEST------
---Method: GET, 
---Host: apps.identrust.com, 
---Port: 80,
---Path: /roots/dstrootcax3.p7c, 
+--Method: CONNECT, 
+--Host: fonts.gstatic.com, 
+--Port: 443,
+--Path: /, 
 --Http version: HTTP/1.1,
 --Headers: 	
-Host: apps.identrust.com
+Host: fonts.gstatic.com:443
 Proxy-Connection: keep-alive
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-Accept-Encoding: gzip, deflate
-Accept-Language: en-GB,en;q=0.9
 --Body: 
 None
 ------------------- 
 
-2025-11-16 18:42:04,534 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 64535). 
+2025-11-20 16:30:18,537 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 8454) server=(fonts.gstatic.com, 443) 
 
-2025-11-16 18:42:04,539 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 64535) 
+2025-11-20 16:30:18,574 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 14119). 
 
-2025-11-16 18:42:04,540 - INFO - [parser.py:95] - 
+2025-11-20 16:30:18,575 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 14119) 
+
+2025-11-20 16:30:18,576 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: www.gstatic.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.gstatic.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:19,220 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 14119) server=(www.gstatic.com, 443) 
+
+2025-11-20 16:30:20,536 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 59028). 
+
+2025-11-20 16:30:20,537 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 59028) 
+
+2025-11-20 16:30:20,538 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: ogads-pa.clients6.google.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: ogads-pa.clients6.google.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:21,207 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 59028) server=(ogads-pa.clients6.google.com, 443) 
+
+2025-11-20 16:30:21,622 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 2439). 
+
+2025-11-20 16:30:21,623 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 2439) 
+
+2025-11-20 16:30:21,623 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: play.google.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: play.google.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:21,936 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 36787). 
+
+2025-11-20 16:30:21,937 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: ogads-pa.clients6.google.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: ogads-pa.clients6.google.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:21,937 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 36787) 
+
+2025-11-20 16:30:22,249 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 36787) server=(ogads-pa.clients6.google.com, 443) 
+
+2025-11-20 16:30:22,294 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 2439) server=(play.google.com, 443) 
+
+2025-11-20 16:30:29,897 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 53229). 
+
+2025-11-20 16:30:29,898 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 53229) 
+
+2025-11-20 16:30:29,899 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: youtube.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: youtube.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:30,521 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 53229) server=(youtube.com, 443) 
+
+2025-11-20 16:30:31,297 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 8996). 
+
+2025-11-20 16:30:31,301 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 8996) 
+
+2025-11-20 16:30:31,301 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: www.youtube.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.youtube.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:31,638 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 8996) server=(www.youtube.com, 443) 
+
+2025-11-20 16:30:32,590 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 33813). 
+
+2025-11-20 16:30:32,591 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 33813) 
+
+2025-11-20 16:30:32,591 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: i.ytimg.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: i.ytimg.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:32,822 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 19434). 
+
+2025-11-20 16:30:32,823 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 19434) 
+
+2025-11-20 16:30:32,823 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: fonts.googleapis.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: fonts.googleapis.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:32,885 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 33813) server=(i.ytimg.com, 443) 
+
+2025-11-20 16:30:33,483 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 19434) server=(fonts.googleapis.com, 443) 
+
+2025-11-20 16:30:34,445 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 39283). 
+
+2025-11-20 16:30:34,446 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 39283) 
+
+2025-11-20 16:30:34,446 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: accounts.google.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: accounts.google.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:34,460 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 27832). 
+
+2025-11-20 16:30:34,461 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 27832) 
+
+2025-11-20 16:30:34,461 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: fonts.gstatic.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: fonts.gstatic.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:34,766 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 27832) server=(fonts.gstatic.com, 443) 
+
+2025-11-20 16:30:34,803 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 39283) server=(accounts.google.com, 443) 
+
+2025-11-20 16:30:35,355 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 43775). 
+
+2025-11-20 16:30:35,356 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 43775) 
+
+2025-11-20 16:30:35,356 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: googleads.g.doubleclick.net, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: googleads.g.doubleclick.net:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:35,564 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 55131). 
+
+2025-11-20 16:30:35,566 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 55131) 
+
+2025-11-20 16:30:35,566 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: rr3---sn-q4fl6nsy.googlevideo.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: rr3---sn-q4fl6nsy.googlevideo.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:35,567 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 57360). 
+
+2025-11-20 16:30:35,569 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 57360) 
+
+2025-11-20 16:30:35,570 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: rr3---sn-q4fl6nsy.googlevideo.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: rr3---sn-q4fl6nsy.googlevideo.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:35,600 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 43775) server=(googleads.g.doubleclick.net, 443) 
+
+2025-11-20 16:30:35,884 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 59447). 
+
+2025-11-20 16:30:35,886 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 59447) 
+
+2025-11-20 16:30:35,886 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: www.gstatic.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.gstatic.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:35,891 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 17614). 
+
+2025-11-20 16:30:35,892 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 17614) 
+
+2025-11-20 16:30:35,892 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 64072). 
+
+2025-11-20 16:30:35,894 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 64072) 
+
+2025-11-20 16:30:35,895 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 35262). 
+
+2025-11-20 16:30:35,895 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: www.gstatic.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.gstatic.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:35,896 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 35262) 
+
+2025-11-20 16:30:35,896 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: rr3---sn-q4fl6nsy.googlevideo.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: rr3---sn-q4fl6nsy.googlevideo.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:35,897 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: rr3---sn-q4fl6nsy.googlevideo.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: rr3---sn-q4fl6nsy.googlevideo.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:36,122 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 59447) server=(www.gstatic.com, 443) 
+
+2025-11-20 16:30:36,126 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 17614) server=(www.gstatic.com, 443) 
+
+2025-11-20 16:30:36,230 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 57360) server=(rr3---sn-q4fl6nsy.googlevideo.com, 443) 
+
+2025-11-20 16:30:36,232 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 55131) server=(rr3---sn-q4fl6nsy.googlevideo.com, 443) 
+
+2025-11-20 16:30:36,280 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 64072) server=(rr3---sn-q4fl6nsy.googlevideo.com, 443) 
+
+2025-11-20 16:30:36,290 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 35262) server=(rr3---sn-q4fl6nsy.googlevideo.com, 443) 
+
+2025-11-20 16:30:36,718 - INFO - [https_tcp_tunnel_handler.py:113] - Tunnel closed. 
+
+2025-11-20 16:30:36,725 - INFO - [https_tcp_tunnel_handler.py:113] - Tunnel closed. 
+
+2025-11-20 16:30:37,356 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 27997). 
+
+2025-11-20 16:30:37,357 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 27997) 
+
+2025-11-20 16:30:37,358 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: googleads.g.doubleclick.net, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: googleads.g.doubleclick.net:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:37,608 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 2045). 
+
+2025-11-20 16:30:37,609 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 2045) 
+
+2025-11-20 16:30:37,609 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: www.google.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.google.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:37,636 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 27997) server=(googleads.g.doubleclick.net, 443) 
+
+2025-11-20 16:30:37,639 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 59254). 
+
+2025-11-20 16:30:37,642 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 59254) 
+
+2025-11-20 16:30:37,642 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: rr3---sn-q4fzenee.googlevideo.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: rr3---sn-q4fzenee.googlevideo.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:37,643 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 2431). 
+
+2025-11-20 16:30:37,644 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 2431) 
+
+2025-11-20 16:30:37,645 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: rr3---sn-q4fzenee.googlevideo.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: rr3---sn-q4fzenee.googlevideo.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:37,862 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 36474). 
+
+2025-11-20 16:30:37,863 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 36474) 
+
+2025-11-20 16:30:37,863 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: fonts.gstatic.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: fonts.gstatic.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:37,863 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 2045) server=(www.google.com, 443) 
+
+2025-11-20 16:30:37,898 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 46864). 
+
+2025-11-20 16:30:37,937 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 46864) 
+
+2025-11-20 16:30:37,938 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: fonts.googleapis.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: fonts.googleapis.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:37,939 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 1167). 
+
+2025-11-20 16:30:37,941 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 1167) 
+
+2025-11-20 16:30:37,942 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: youtube.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: youtube.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:38,114 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 36474) server=(fonts.gstatic.com, 443) 
+
+2025-11-20 16:30:38,177 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 46864) server=(fonts.googleapis.com, 443) 
+
+2025-11-20 16:30:38,181 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 1167) server=(youtube.com, 443) 
+
+2025-11-20 16:30:38,207 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 62540). 
+
+2025-11-20 16:30:38,208 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 62540) 
+
+2025-11-20 16:30:38,208 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: fonts.googleapis.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: fonts.googleapis.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:38,332 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 59254) server=(rr3---sn-q4fzenee.googlevideo.com, 443) 
+
+2025-11-20 16:30:38,332 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 2431) server=(rr3---sn-q4fzenee.googlevideo.com, 443) 
+
+2025-11-20 16:30:38,451 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 62540) server=(fonts.googleapis.com, 443) 
+
+2025-11-20 16:30:38,827 - INFO - [https_tcp_tunnel_handler.py:113] - Tunnel closed. 
+
+2025-11-20 16:30:39,095 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 11261). 
+
+2025-11-20 16:30:39,096 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 11261) 
+
+2025-11-20 16:30:39,097 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: www.google.co.il, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.google.co.il:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:39,199 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 33645). 
+
+2025-11-20 16:30:39,200 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 33645) 
+
+2025-11-20 16:30:39,201 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: rr3---sn-q4fzenee.googlevideo.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: rr3---sn-q4fzenee.googlevideo.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:39,207 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 41083). 
+
+2025-11-20 16:30:39,208 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 41083) 
+
+2025-11-20 16:30:39,208 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: rr3---sn-q4fzenee.googlevideo.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: rr3---sn-q4fzenee.googlevideo.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:39,351 - INFO - [https_tcp_tunnel_handler.py:113] - Tunnel closed. 
+
+2025-11-20 16:30:39,351 - INFO - [https_tcp_tunnel_handler.py:113] - Tunnel closed. 
+
+2025-11-20 16:30:39,586 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 33645) server=(rr3---sn-q4fzenee.googlevideo.com, 443) 
+
+2025-11-20 16:30:39,593 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 41083) server=(rr3---sn-q4fzenee.googlevideo.com, 443) 
+
+2025-11-20 16:30:39,721 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 2599). 
+
+2025-11-20 16:30:39,722 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 2599) 
+
+2025-11-20 16:30:39,723 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: www.gstatic.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.gstatic.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:39,887 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 11261) server=(www.google.co.il, 443) 
+
+2025-11-20 16:30:39,942 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 2599) server=(www.gstatic.com, 443) 
+
+2025-11-20 16:30:40,338 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 8838). 
+
+2025-11-20 16:30:40,340 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 8838) 
+
+2025-11-20 16:30:40,341 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: www.gstatic.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.gstatic.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:40,348 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 26261). 
+
+2025-11-20 16:30:40,352 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 26261) 
+
+2025-11-20 16:30:40,353 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: rr3---sn-q4fzenee.googlevideo.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: rr3---sn-q4fzenee.googlevideo.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:40,468 - INFO - [https_tcp_tunnel_handler.py:113] - Tunnel closed. 
+
+2025-11-20 16:30:40,534 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 8838) server=(www.gstatic.com, 443) 
+
+2025-11-20 16:30:41,381 - INFO - [https_tcp_tunnel_handler.py:113] - Tunnel closed. 
+
+2025-11-20 16:30:41,642 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 26261) server=(rr3---sn-q4fzenee.googlevideo.com, 443) 
+
+2025-11-20 16:30:41,689 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 31877). 
+
+2025-11-20 16:30:41,690 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 31877) 
+
+2025-11-20 16:30:41,690 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: rr3---sn-q4fzenee.googlevideo.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: rr3---sn-q4fzenee.googlevideo.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:41,888 - INFO - [https_tcp_tunnel_handler.py:113] - Tunnel closed. 
+
+2025-11-20 16:30:41,986 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 31877) server=(rr3---sn-q4fzenee.googlevideo.com, 443) 
+
+2025-11-20 16:30:42,351 - INFO - [https_tcp_tunnel_handler.py:113] - Tunnel closed. 
+
+2025-11-20 16:30:42,728 - INFO - [https_tcp_tunnel_handler.py:113] - Tunnel closed. 
+
+2025-11-20 16:30:43,416 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 46508). 
+
+2025-11-20 16:30:43,417 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 46508) 
+
+2025-11-20 16:30:43,419 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: static.doubleclick.net, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: static.doubleclick.net:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:43,439 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 14912). 
+
+2025-11-20 16:30:43,440 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: www.gstatic.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.gstatic.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:43,440 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 14912) 
+
+2025-11-20 16:30:43,624 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 14912) server=(www.gstatic.com, 443) 
+
+2025-11-20 16:30:43,989 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 46508) server=(static.doubleclick.net, 443) 
+
+2025-11-20 16:30:46,100 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 25647). 
+
+2025-11-20 16:30:46,101 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: neverssl.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: neverssl.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:46,101 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 25647) 
+
+2025-11-20 16:30:50,144 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 3174). 
+
+2025-11-20 16:30:50,145 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 3174) 
+
+2025-11-20 16:30:50,145 - INFO - [parser.py:95] - 
 ------REQUEST------
 --Method: GET, 
---Host: r3.i.lencr.org, 
+--Host: neverssl.com, 
 --Port: 80,
 --Path: /, 
 --Http version: HTTP/1.1,
 --Headers: 	
-Host: r3.i.lencr.org
-Proxy-Connection: keep-alive
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-Accept-Encoding: gzip, deflate
-Accept-Language: en-GB,en;q=0.9
---Body: 
-None
-------------------- 
-
-2025-11-16 18:42:07,841 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 45102). 
-
-2025-11-16 18:42:07,842 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 45102) 
-
-2025-11-16 18:42:07,842 - INFO - [parser.py:95] - 
-------REQUEST------
---Method: GET, 
---Host: httpforever.com, 
---Port: 80,
---Path: /, 
---Http version: HTTP/1.1,
---Headers: 	
-Host: httpforever.com
+Host: neverssl.com
 Proxy-Connection: keep-alive
 Cache-Control: max-age=0
 Upgrade-Insecure-Requests: 1
@@ -153,4 +839,75 @@ Accept-Language: en-GB,en;q=0.9
 --Body: 
 None
 ------------------- 
+
+2025-11-20 16:30:50,239 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 33204). 
+
+2025-11-20 16:30:50,240 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 33204) 
+
+2025-11-20 16:30:50,240 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: GET, 
+--Host: neverssl.com, 
+--Port: 80,
+--Path: /assets/security_lock_bg.png, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: neverssl.com
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Referer: http://neverssl.com/
+Accept-Encoding: gzip, deflate
+Accept-Language: en-GB,en;q=0.9
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:50,609 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 25647) server=(neverssl.com, 443) 
+
+2025-11-20 16:30:53,849 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 43374). 
+
+2025-11-20 16:30:53,850 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 43374) 
+
+2025-11-20 16:30:53,850 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: www.youtube.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.youtube.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:53,890 - INFO - [proxy_listener.py:36] - client connected - ('127.0.0.1', 40291). 
+
+2025-11-20 16:30:53,891 - INFO - [proxy_listener.py:43] - Thread started for client - ('127.0.0.1', 40291) 
+
+2025-11-20 16:30:53,891 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: www.google.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.google.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-20 16:30:54,112 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 43374) server=(www.youtube.com, 443) 
+
+2025-11-20 16:30:54,148 - INFO - [https_tcp_tunnel_handler.py:39] - Tunnel established: client=('127.0.0.1', 40291) server=(www.google.com, 443) 
+
+2025-11-20 16:30:54,768 - INFO - [https_tcp_tunnel_handler.py:113] - Tunnel closed. 
+
+2025-11-20 16:30:56,407 - INFO - [https_tcp_tunnel_handler.py:113] - Tunnel closed. 
 
