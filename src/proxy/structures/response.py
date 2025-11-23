@@ -25,6 +25,7 @@ class Response:
     headers: Optional[dict[str, object]] = field(default_factory=dict)
     body: str = field(default='', init=False)
     raw_connect: Optional[bool] = False
+    redirect_url: Optional[str] = None
 
     '''handles newaunces after initialization of all fields'''
     def __post_init__(self):
@@ -34,15 +35,143 @@ class Response:
                 self.reason = HTTPStatus(self.status_code).phrase
             except ValueError:
                 self.reason = ""
-        elif self.reason != 'Connection Established':
+        
+        # in case of 200 ok response with url redirection in html body 
+        if self.redirect_url and self.status_code == 200:
+            self._add_redirect_html_body()
+        
+        # Connection Established isn't usually sent with additional headers
+        if self.reason != 'Connection Established':
             self._add_proxy_fixed_headers()
+        
 
         
         # adding fixed headers
     
+    '''adds redirect html body to instance's redirect url.'''
+    def _add_redirect_html_body(self):
+        html_body = f"""
+            <html>
+            <head>
+                <meta http-equiv="refresh" content="0;url={self.redirect_url}">
+            </head>
+            <body>
+                <script>window.location.href = "{self.redirect_url}";</script>
+                Redirecting to search...
+            </body>
+            </html> """
+        
+        self.body = html_body
+        self.headers['Content-length'] = len(self.body.encode('utf-8'))
+        
     #adds dynamic HTML bodt based on status_code, reason.
-    def _add_dynamic_body(self):
-        html_body = f"""<!DOCTYPE html>
+    def _add_dynamic_body(self, addMaliciousLabel=False):
+        if addMaliciousLabel:
+            html_body = f"""<!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>SafeProxy – {self.status_code} {self.reason}</title>
+
+                <style>
+                    body {{
+                        margin: 0;
+                        padding: 0;
+                        height: 100vh;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        background: linear-gradient(135deg, #e8efff, #c9d8ff);
+                        font-family: 'Poppins', sans-serif;
+                        color: #0066ff;
+                        overflow: hidden;
+                    }}
+
+                    .card {{
+                        width: 50vw;
+                        height: 70vh;
+                        max-width: 800px;
+                        max-height: 600px;
+                        background: rgba(255, 255, 255, 0.7);
+                        border-radius: 20px;
+                        position: relative;
+                        text-align: center;
+                        box-shadow:
+                            0 20px 40px rgba(0, 0, 0, 0.1),
+                            0 8px 20px rgba(0, 0, 0, 0.05);
+                        overflow: hidden;
+                        border: 1px solid rgba(255, 255, 255, 0.5);
+                    }}
+
+                    .card::before {{
+                        content: "";
+                        position: absolute;
+                        inset: 0;
+                        background-image: url(./././assets/security_lock_bg.png);
+                        background-size: cover;
+                        background-position: center;
+                        opacity: 0.18;
+                        filter: blur(6px);
+                    }}
+
+                    .content {{
+                        position: relative;
+                        z-index: 2;
+                    }}
+
+                    .brand {{
+                        font-size: 1.3rem;
+                        font-weight: 100;
+                        letter-spacing: 2px;
+                        opacity: 0.9;
+                        margin-top: 3vh;
+                    }}
+
+                    h1 {{
+                        margin-top: 3vh;
+                        font-size: 6rem;
+                        font-weight: 900;
+                        margin-bottom: -20px;
+                    }}
+
+                    h2 {{
+                        font-size: 1.7rem;
+                        margin-bottom: 10px;
+                    }}
+
+                    p {{
+                        font-size: 1rem;
+                        opacity: 0.8;
+                        margin-top: 0;
+                    }}
+
+                    .line {{
+                        width: 100px;
+                        height: 4px;
+                        background: #1f51ff;
+                        border-radius: 2px;
+                        margin: 20px auto;
+                        opacity: 0.8;
+                    }}
+                </style>
+            </head>
+
+            <body>
+                <div class="card">
+                    <div class="content">
+                        <div class="brand">-- SafeProxy --</div>
+                        <h1>{self.status_code}</h1>
+                        <div class="line"></div>
+                        <h2>{self.reason}</h2>
+                        <p>{HTTPStatus(self.status_code).description}</p>
+                        <h3 style="color: red;">Warning: The requested URL is infected!</h3>
+                    </div>
+                </div>
+            </body>
+            </html>"""
+        else:
+            html_body = f"""<!DOCTYPE html>
         <html lang="en">
         <head>
             <meta charset="UTF-8">
@@ -83,7 +212,7 @@ class Response:
                     content: "";
                     position: absolute;
                     inset: 0;
-                    background-image: url(/assets/security_lock_bg.png);
+                    background-image: url(./././assets/security_lock_bg.png);
                     background-size: cover;
                     background-position: center;
                     opacity: 0.18;
@@ -146,6 +275,7 @@ class Response:
         </html>"""
 
         self.body = html_body
+        self.headers['Content-length'] = len(self.body.encode('utf-8'))
 
     '''adds proxy required and preffered headers.
     Like said, The proxy's job is to forward webserver response, or to make it's own 

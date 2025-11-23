@@ -1,5 +1,7 @@
-black_list = ['www.neverssl.com', 'www.hello.com', 'www.youtube.com']
-class UrlValidator:
+import urllib.parse
+
+black_list = ['www.hello.com', 'www.youtube.com']
+class UrlManager:
     pass
     
     def __init__(self):
@@ -25,3 +27,12 @@ class UrlValidator:
     '''checks if a given url is malicious.'''
     def is_malicious(self, url: str) -> bool:
         return False
+    
+    '''returns a valid google search url from a given string'''
+    def get_google_url(self, search_str: str) -> str:
+        try:
+            search_query = urllib.parse.quote_plus(search_str)
+            return f"https://www.google.com/search?q={search_query}"
+
+        except Exception as e:
+            raise Exception(f"Failed generating google search url for {search_str} - {e}") from e

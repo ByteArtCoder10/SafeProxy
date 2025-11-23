@@ -17,46 +17,32 @@ class HttpsTcpTunnelHandler(BaseHandler):
         super().__init__()
         self.running = False
 
-    # parnet method routing and calling methods by order.
-    def handle(self, req: Request, client_socket: socket):
+    # handles the process by routing and calling methods by order.
+    def process(self, req, client_socket):
         self._client_socket = client_socket
-        url  = req.host + req.path
-        if self.url_validator.is_blacklisted(url) or \
-        self.url_validator.is_malicious(url):
-            pass
-            # need to tls terminate the connection - a response that is not 200
-            # Connection Established will result with ERR_TUNNEL_CONNECTION_FAILED
+
+        url = req.host + req.path
+
+        if self.url_manager.is_blacklisted(url) or \
+           self.url_manager.is_malicious(url):
+            # cannot send a 403 inside CONNECT
+            # must fake TLS termination or close connection.
+            raise PermissionError("Blocked CONNECT request - In need of TLS termination")
+
         self._establish_tunnel_server(req)
-        self._send_connection_established(req)
+        self._respond_to_client(req, 200, isConnectionEstablished=True)
         self._run_tunnel_relay()
     
     '''establish a TCP conenction between the given server and the proxy.'''
-    def _establish_tunnel_server(self, req: Request):
+    def _establish_tunnel_server(self, req):
         try:
             self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._server_socket.settimeout(5)
             self._server_socket.connect((req.host, req.port))
-
-            logging.info(
-                f"Tunnel established: client={self._client_socket.getpeername()} "
-                f"server=({req.host}, {req.port})"
-            )
-
+            logging.info(f"TCP tunnel connection established: ({req.host}, {req.port})")
         except Exception as e:
-            logging.error(f"Failed to connect to server: {e}", exc_info=True)
-            raise # raise error to parent method
-    
-    '''sends to client a 200 Connection Established repsonse after TCP tunnel was successfully established.'''
-    def _send_connection_established(self, req: Request):
-        try:
-            response = Response(
-                req.http_version, 
-                200,
-                reason="Connection Established",
-                raw_connect=True).to_raw()
-
-            self._client_socket.sendall(response.encode("utf-8"))
-        except Exception as e:
-            logging.warning(f"Unexpected error: {e}", exc_info=True)
+            raise ConnectionError(
+            f"Tunnel connection failed for origin server {req.host}:{req.port}") from e
 
     '''handles client and server communication in tcp tunneling, allowing both sides to send data simultaneously using threads.'''
     def _run_tunnel_relay(self):
@@ -83,8 +69,12 @@ class HttpsTcpTunnelHandler(BaseHandler):
 
     '''handles continous sending and recieving data over sockets.'''
     def _relay_data(self, recv_socket: socket, send_socket: socket):
+        
         peer_name = None
 
+        # setting timeout back to defult in case of keep-alive connection
+        recv_socket.settimeout(None)
+        send_socket.settimeout(None)
         try:
             peer_name = recv_socket.getpeername()
 
@@ -111,4 +101,6 @@ class HttpsTcpTunnelHandler(BaseHandler):
                     pass
 
         logging.info("Tunnel closed.")
+
+
 

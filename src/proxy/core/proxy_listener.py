@@ -32,7 +32,6 @@ class ProxyListener:
             while True:
 
                 client_socket, client_address = self._server_socket.accept()
-                # client_socket.settimeout(10)
                 logging.info(f"client connected - {client_address}.")
 
                 self._clients.append((client_socket, client_address))
