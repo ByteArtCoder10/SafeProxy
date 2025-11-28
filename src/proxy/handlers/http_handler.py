@@ -35,7 +35,7 @@ class HttpHandler(BaseHandler):
             except Exception as e:
                 logging.info(f"Failed to connect to {req.host}:{req.port}")
                 # send a 502 "Bad Request" response
-                self._respond_to_client(req, 503)
+                self._respond_to_client(req, 502)
                 return
             
             self._forward_request(req)

@@ -24,14 +24,15 @@ class Router():
                     # self.httpsTlsTerminationHandler
                 # elif user only cares about hiding his IP
                 if True:
-                    self.handler = HttpsTcpTunnelHandler()
+                    # self.handler = HttpsTcpTunnelHandler()
+                    self.handler = HttpsTlsTerminationHandler()
 
             elif self.is_valid_http_method(method):
                 self.handler = HttpHandler()
 
             self.handler.handle(req, client_socket)
         except Exception as e:
-            logging.error(f"Unexpected error: {e}")
+            logging.error(f"Unexpected error: {e}", exc_info=True)
                 
 
     def is_valid_http_method(self, method: str) -> bool:

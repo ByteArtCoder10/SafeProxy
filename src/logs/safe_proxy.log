@@ -1,70 +1,371 @@
-2025-11-23 17:24:32,107 - INFO - [proxy_listener.py:29] - server is up at ('127.0.0.1', 2153). 
+2025-11-28 12:23:36,686 - INFO - [proxy_listener.py:29] - server is up at ('127.0.0.1', 2153). 
 
-2025-11-23 17:24:33,750 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 1512). 
+2025-11-28 12:23:41,375 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 16966). 
 
-2025-11-23 17:24:33,755 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 1512) 
+2025-11-28 12:23:41,381 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 16966) 
 
-2025-11-23 17:24:33,755 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 1512):
-CONNECT hello.com:443 HTTP/1.1
-Host: hello.com:443
-Proxy-Connection: keep-alive
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-
+2025-11-28 12:23:41,382 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 16966):
+CONNECT www.hello.com:443 HTTP/1.1
+
+Host: www.hello.com:443
+
+Proxy-Connection: keep-alive
+
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+
+
+
  
 
-2025-11-23 17:24:33,756 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
+2025-11-28 12:23:41,383 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
 
-2025-11-23 17:24:33,756 - INFO - [parser.py:95] - 
+2025-11-28 12:23:41,383 - INFO - [parser.py:95] - 
 ------REQUEST------
 --Method: CONNECT, 
---Host: hello.com, 
+--Host: www.hello.com, 
 --Port: 443,
 --Path: /, 
 --Http version: HTTP/1.1,
 --Headers: 	
-Host: hello.com:443
+Host: www.hello.com:443
 Proxy-Connection: keep-alive
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
 --Body: 
 None
 ------------------- 
 
-2025-11-23 17:24:33,756 - ERROR - [base_handler.py:25] - Handler crashed: Blocked CONNECT request - In need of TLS termination 
-Traceback (most recent call last):
-  File "D:\SafeProxy\src\proxy\handlers\base_handler.py", line 23, in handle
-    return self.process(req, client_socket)
-           ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^
-  File "D:\SafeProxy\src\proxy\handlers\https_tcp_tunnel_handler.py", line 30, in process
-    raise PermissionError("Blocked CONNECT request - In need of TLS termination")
-PermissionError: Blocked CONNECT request - In need of TLS termination
-2025-11-23 17:24:38,956 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 16365). 
+2025-11-28 12:23:41,385 - DEBUG - [https_tls_termination_handler.py:16] - True 
 
-2025-11-23 17:24:38,966 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 16365) 
+2025-11-28 12:23:41,385 - DEBUG - [base_handler.py:76] - 
+------RESPONSE------
+--Http version: HTTP/1.1, 
+--Status code: 200, 
+--Reason: Connection Established,
+--Headers: 	,
+--Body: 
 
-2025-11-23 17:24:38,967 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 16365):
-GET http://hello.com/ HTTP/1.1
-Host: hello.com
-Proxy-Connection: keep-alive
-Cache-Control: max-age=0
-Upgrade-Insecure-Requests: 1
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
-Accept-Encoding: gzip, deflate
-Accept-Language: en-GB,en;q=0.9
-
+---------------------- 
+
+2025-11-28 12:23:41,387 - DEBUG - [https_tls_termination_handler.py:116] - SNI RAW:b'www.hello.com', SNI UTF-8:www.hello.com 
+
+2025-11-28 12:23:41,388 - DEBUG - [base_handler.py:76] - 
+------RESPONSE------
+--Http version: HTTP/1.1, 
+--Status code: 403, 
+--Reason: Forbidden,
+--Headers: 	
+Content-Type: text/html; charset=utf-8
+Content-length: 3249
+Proxy-Agent: SafeProxy
+Date: Fri, 28 Nov 2025 10:23:41 GMT
+Connection: Closed,
+--Body: 
+<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>SafeProxy ï¿½ 403 Forbidden</title>
+
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: linear-gradient(135deg, #e8efff, #c9d8ff);
+                    font-family: 'Poppins', sans-serif;
+                    color: #0066ff;
+                    overflow: hidden;
+                }
+
+                .card {
+                    width: 50vw;
+                    height: 70vh;
+                    max-width: 800px;
+                    max-height: 600px;
+                    background: rgba(255, 255, 255, 0.7);
+                    border-radius: 20px;
+                    position: relative;
+                    text-align: center;
+                    box-shadow:
+                        0 20px 40px rgba(0, 0, 0, 0.1),
+                        0 8px 20px rgba(0, 0, 0, 0.05);
+                    overflow: hidden;
+                    border: 1px solid rgba(255, 255, 255, 0.5);
+                }
+
+                .card::before {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    background-image: url(./././assets/security_lock_bg.png);
+                    background-size: cover;
+                    background-position: center;
+                    opacity: 0.18;
+                    filter: blur(6px);
+                }
+
+                .content {
+                    position: relative;
+                    z-index: 2;
+                }
+
+                .brand {
+                    font-size: 1.3rem;
+                    font-weight: 100;
+                    letter-spacing: 2px;
+                    opacity: 0.9;
+                    margin-top: 3vh;
+                }
+
+                h1 {
+                    margin-top: 3vh;
+                    font-size: 6rem;
+                    font-weight: 900;
+                    margin-bottom: -20px;
+                }
+
+                h2 {
+                    font-size: 1.7rem;
+                    margin-bottom: 10px;
+                }
+
+                p {
+                    font-size: 1rem;
+                    opacity: 0.8;
+                    margin-top: 0;
+                }
+
+                .line {
+                    width: 100px;
+                    height: 4px;
+                    background: #1f51ff;
+                    border-radius: 2px;
+                    margin: 20px auto;
+                    opacity: 0.8;
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="card">
+                <div class="content">
+                    <div class="brand">-- SafeProxy --</div>
+                    <h1>403</h1>
+                    <div class="line"></div>
+                    <h2>Forbidden</h2>
+                    <p>Request forbidden -- authorization will not help</p>
+                </div>
+            </div>
+        </body>
+        </html>
+---------------------- 
+
+2025-11-28 12:23:41,393 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 63038). 
+
+2025-11-28 12:23:41,394 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 63038) 
+
+2025-11-28 12:23:41,394 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 63038):
+CONNECT www.hello.com:443 HTTP/1.1
+
+Host: www.hello.com:443
+
+Proxy-Connection: keep-alive
+
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+
+
+
  
 
-2025-11-23 17:24:38,970 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
+2025-11-28 12:23:41,394 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
 
-2025-11-23 17:24:38,973 - INFO - [parser.py:95] - 
+2025-11-28 12:23:41,395 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: www.hello.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.hello.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-28 12:23:41,395 - DEBUG - [https_tls_termination_handler.py:16] - True 
+
+2025-11-28 12:23:41,395 - DEBUG - [base_handler.py:76] - 
+------RESPONSE------
+--Http version: HTTP/1.1, 
+--Status code: 200, 
+--Reason: Connection Established,
+--Headers: 	,
+--Body: 
+
+---------------------- 
+
+2025-11-28 12:23:41,396 - DEBUG - [https_tls_termination_handler.py:116] - SNI RAW:b'www.hello.com', SNI UTF-8:www.hello.com 
+
+2025-11-28 12:23:41,397 - DEBUG - [base_handler.py:76] - 
+------RESPONSE------
+--Http version: HTTP/1.1, 
+--Status code: 403, 
+--Reason: Forbidden,
+--Headers: 	
+Content-Type: text/html; charset=utf-8
+Content-length: 3249
+Proxy-Agent: SafeProxy
+Date: Fri, 28 Nov 2025 10:23:41 GMT
+Connection: Closed,
+--Body: 
+<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>SafeProxy ï¿½ 403 Forbidden</title>
+
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: linear-gradient(135deg, #e8efff, #c9d8ff);
+                    font-family: 'Poppins', sans-serif;
+                    color: #0066ff;
+                    overflow: hidden;
+                }
+
+                .card {
+                    width: 50vw;
+                    height: 70vh;
+                    max-width: 800px;
+                    max-height: 600px;
+                    background: rgba(255, 255, 255, 0.7);
+                    border-radius: 20px;
+                    position: relative;
+                    text-align: center;
+                    box-shadow:
+                        0 20px 40px rgba(0, 0, 0, 0.1),
+                        0 8px 20px rgba(0, 0, 0, 0.05);
+                    overflow: hidden;
+                    border: 1px solid rgba(255, 255, 255, 0.5);
+                }
+
+                .card::before {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    background-image: url(./././assets/security_lock_bg.png);
+                    background-size: cover;
+                    background-position: center;
+                    opacity: 0.18;
+                    filter: blur(6px);
+                }
+
+                .content {
+                    position: relative;
+                    z-index: 2;
+                }
+
+                .brand {
+                    font-size: 1.3rem;
+                    font-weight: 100;
+                    letter-spacing: 2px;
+                    opacity: 0.9;
+                    margin-top: 3vh;
+                }
+
+                h1 {
+                    margin-top: 3vh;
+                    font-size: 6rem;
+                    font-weight: 900;
+                    margin-bottom: -20px;
+                }
+
+                h2 {
+                    font-size: 1.7rem;
+                    margin-bottom: 10px;
+                }
+
+                p {
+                    font-size: 1rem;
+                    opacity: 0.8;
+                    margin-top: 0;
+                }
+
+                .line {
+                    width: 100px;
+                    height: 4px;
+                    background: #1f51ff;
+                    border-radius: 2px;
+                    margin: 20px auto;
+                    opacity: 0.8;
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="card">
+                <div class="content">
+                    <div class="brand">-- SafeProxy --</div>
+                    <h1>403</h1>
+                    <div class="line"></div>
+                    <h2>Forbidden</h2>
+                    <p>Request forbidden -- authorization will not help</p>
+                </div>
+            </div>
+        </body>
+        </html>
+---------------------- 
+
+2025-11-28 12:23:43,482 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 20853). 
+
+2025-11-28 12:23:43,483 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 20853) 
+
+2025-11-28 12:23:43,483 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 20853):
+GET http://www.hello.com/ HTTP/1.1
+
+Host: www.hello.com
+
+Proxy-Connection: keep-alive
+
+Cache-Control: max-age=0
+
+Upgrade-Insecure-Requests: 1
+
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+Accept-Encoding: gzip, deflate
+
+Accept-Language: en-GB,en;q=0.9
+
+
+
+ 
+
+2025-11-28 12:23:43,484 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
+
+2025-11-28 12:23:43,485 - INFO - [parser.py:95] - 
 ------REQUEST------
 --Method: GET, 
---Host: hello.com, 
+--Host: www.hello.com, 
 --Port: 80,
 --Path: /, 
 --Http version: HTTP/1.1,
 --Headers: 	
-Host: hello.com
+Host: www.hello.com
 Proxy-Connection: keep-alive
 Cache-Control: max-age=0
 Upgrade-Insecure-Requests: 1
@@ -76,7 +377,7 @@ Accept-Language: en-GB,en;q=0.9
 None
 ------------------- 
 
-2025-11-23 17:24:38,974 - DEBUG - [base_handler.py:76] - 
+2025-11-28 12:23:43,485 - DEBUG - [base_handler.py:76] - 
 ------RESPONSE------
 --Http version: HTTP/1.1, 
 --Status code: 403, 
@@ -85,7 +386,7 @@ None
 Content-Type: text/html; charset=utf-8
 Content-length: 3249
 Proxy-Agent: SafeProxy
-Date: Sun, 23 Nov 2025 15:24:38 GMT
+Date: Fri, 28 Nov 2025 10:23:43 GMT
 Connection: Closed,
 --Body: 
 <!DOCTYPE html>
@@ -93,7 +394,7 @@ Connection: Closed,
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>SafeProxy – 403 Forbidden</title>
+            <title>SafeProxy ï¿½ 403 Forbidden</title>
 
             <style>
                 body {
@@ -192,44 +493,53 @@ Connection: Closed,
         </html>
 ---------------------- 
 
-2025-11-23 17:24:39,004 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 27990). 
+2025-11-28 12:23:43,578 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 37830). 
 
-2025-11-23 17:24:39,007 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 27990) 
+2025-11-28 12:23:43,579 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 37830) 
 
-2025-11-23 17:24:39,007 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 27990):
-GET http://hello.com/assets/security_lock_bg.png HTTP/1.1
-Host: hello.com
-Proxy-Connection: keep-alive
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
-Referer: http://hello.com/
-Accept-Encoding: gzip, deflate
-Accept-Language: en-GB,en;q=0.9
-
+2025-11-28 12:23:43,580 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 37830):
+GET http://www.hello.com/assets/security_lock_bg.png HTTP/1.1
+
+Host: www.hello.com
+
+Proxy-Connection: keep-alive
+
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+
+Referer: http://www.hello.com/
+
+Accept-Encoding: gzip, deflate
+
+Accept-Language: en-GB,en;q=0.9
+
+
+
  
 
-2025-11-23 17:24:39,013 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
+2025-11-28 12:23:43,581 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
 
-2025-11-23 17:24:39,014 - INFO - [parser.py:95] - 
+2025-11-28 12:23:43,582 - INFO - [parser.py:95] - 
 ------REQUEST------
 --Method: GET, 
---Host: hello.com, 
+--Host: www.hello.com, 
 --Port: 80,
 --Path: /assets/security_lock_bg.png, 
 --Http version: HTTP/1.1,
 --Headers: 	
-Host: hello.com
+Host: www.hello.com
 Proxy-Connection: keep-alive
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
 Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
-Referer: http://hello.com/
+Referer: http://www.hello.com/
 Accept-Encoding: gzip, deflate
 Accept-Language: en-GB,en;q=0.9
 --Body: 
 None
 ------------------- 
 
-2025-11-23 17:24:39,014 - DEBUG - [base_handler.py:76] - 
+2025-11-28 12:23:43,584 - DEBUG - [base_handler.py:76] - 
 ------RESPONSE------
 --Http version: HTTP/1.1, 
 --Status code: 403, 
@@ -238,7 +548,7 @@ None
 Content-Type: text/html; charset=utf-8
 Content-length: 3249
 Proxy-Agent: SafeProxy
-Date: Sun, 23 Nov 2025 15:24:39 GMT
+Date: Fri, 28 Nov 2025 10:23:43 GMT
 Connection: Closed,
 --Body: 
 <!DOCTYPE html>
@@ -246,7 +556,7 @@ Connection: Closed,
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>SafeProxy – 403 Forbidden</title>
+            <title>SafeProxy ï¿½ 403 Forbidden</title>
 
             <style>
                 body {
@@ -345,44 +655,53 @@ Connection: Closed,
         </html>
 ---------------------- 
 
-2025-11-23 17:24:39,062 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 57008). 
+2025-11-28 12:23:43,599 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 38832). 
 
-2025-11-23 17:24:39,065 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 57008) 
+2025-11-28 12:23:43,600 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 38832) 
 
-2025-11-23 17:24:39,066 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 57008):
-GET http://hello.com/favicon.ico HTTP/1.1
-Host: hello.com
-Proxy-Connection: keep-alive
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
-Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
-Referer: http://hello.com/
-Accept-Encoding: gzip, deflate
-Accept-Language: en-GB,en;q=0.9
-
+2025-11-28 12:23:43,600 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 38832):
+GET http://www.hello.com/favicon.ico HTTP/1.1
+
+Host: www.hello.com
+
+Proxy-Connection: keep-alive
+
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+
+Referer: http://www.hello.com/
+
+Accept-Encoding: gzip, deflate
+
+Accept-Language: en-GB,en;q=0.9
+
+
+
  
 
-2025-11-23 17:24:39,067 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
+2025-11-28 12:23:43,600 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
 
-2025-11-23 17:24:39,069 - INFO - [parser.py:95] - 
+2025-11-28 12:23:43,601 - INFO - [parser.py:95] - 
 ------REQUEST------
 --Method: GET, 
---Host: hello.com, 
+--Host: www.hello.com, 
 --Port: 80,
 --Path: /favicon.ico, 
 --Http version: HTTP/1.1,
 --Headers: 	
-Host: hello.com
+Host: www.hello.com
 Proxy-Connection: keep-alive
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
 Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
-Referer: http://hello.com/
+Referer: http://www.hello.com/
 Accept-Encoding: gzip, deflate
 Accept-Language: en-GB,en;q=0.9
 --Body: 
 None
 ------------------- 
 
-2025-11-23 17:24:39,070 - DEBUG - [base_handler.py:76] - 
+2025-11-28 12:23:43,601 - DEBUG - [base_handler.py:76] - 
 ------RESPONSE------
 --Http version: HTTP/1.1, 
 --Status code: 403, 
@@ -391,7 +710,7 @@ None
 Content-Type: text/html; charset=utf-8
 Content-length: 3249
 Proxy-Agent: SafeProxy
-Date: Sun, 23 Nov 2025 15:24:39 GMT
+Date: Fri, 28 Nov 2025 10:23:43 GMT
 Connection: Closed,
 --Body: 
 <!DOCTYPE html>
@@ -399,7 +718,1793 @@ Connection: Closed,
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>SafeProxy – 403 Forbidden</title>
+            <title>SafeProxy ï¿½ 403 Forbidden</title>
+
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: linear-gradient(135deg, #e8efff, #c9d8ff);
+                    font-family: 'Poppins', sans-serif;
+                    color: #0066ff;
+                    overflow: hidden;
+                }
+
+                .card {
+                    width: 50vw;
+                    height: 70vh;
+                    max-width: 800px;
+                    max-height: 600px;
+                    background: rgba(255, 255, 255, 0.7);
+                    border-radius: 20px;
+                    position: relative;
+                    text-align: center;
+                    box-shadow:
+                        0 20px 40px rgba(0, 0, 0, 0.1),
+                        0 8px 20px rgba(0, 0, 0, 0.05);
+                    overflow: hidden;
+                    border: 1px solid rgba(255, 255, 255, 0.5);
+                }
+
+                .card::before {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    background-image: url(./././assets/security_lock_bg.png);
+                    background-size: cover;
+                    background-position: center;
+                    opacity: 0.18;
+                    filter: blur(6px);
+                }
+
+                .content {
+                    position: relative;
+                    z-index: 2;
+                }
+
+                .brand {
+                    font-size: 1.3rem;
+                    font-weight: 100;
+                    letter-spacing: 2px;
+                    opacity: 0.9;
+                    margin-top: 3vh;
+                }
+
+                h1 {
+                    margin-top: 3vh;
+                    font-size: 6rem;
+                    font-weight: 900;
+                    margin-bottom: -20px;
+                }
+
+                h2 {
+                    font-size: 1.7rem;
+                    margin-bottom: 10px;
+                }
+
+                p {
+                    font-size: 1rem;
+                    opacity: 0.8;
+                    margin-top: 0;
+                }
+
+                .line {
+                    width: 100px;
+                    height: 4px;
+                    background: #1f51ff;
+                    border-radius: 2px;
+                    margin: 20px auto;
+                    opacity: 0.8;
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="card">
+                <div class="content">
+                    <div class="brand">-- SafeProxy --</div>
+                    <h1>403</h1>
+                    <div class="line"></div>
+                    <h2>Forbidden</h2>
+                    <p>Request forbidden -- authorization will not help</p>
+                </div>
+            </div>
+        </body>
+        </html>
+---------------------- 
+
+2025-11-28 12:24:04,471 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 4627). 
+
+2025-11-28 12:24:04,472 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 4627) 
+
+2025-11-28 12:24:04,473 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 4627):
+GET http://www.hello.com/ HTTP/1.1
+
+Host: www.hello.com
+
+Proxy-Connection: keep-alive
+
+Upgrade-Insecure-Requests: 1
+
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+Accept-Encoding: gzip, deflate
+
+Accept-Language: en-GB,en;q=0.9
+
+
+
+ 
+
+2025-11-28 12:24:04,474 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
+
+2025-11-28 12:24:04,475 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: GET, 
+--Host: www.hello.com, 
+--Port: 80,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.hello.com
+Proxy-Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Accept-Encoding: gzip, deflate
+Accept-Language: en-GB,en;q=0.9
+--Body: 
+None
+------------------- 
+
+2025-11-28 12:24:04,476 - DEBUG - [base_handler.py:76] - 
+------RESPONSE------
+--Http version: HTTP/1.1, 
+--Status code: 403, 
+--Reason: Forbidden,
+--Headers: 	
+Content-Type: text/html; charset=utf-8
+Content-length: 3249
+Proxy-Agent: SafeProxy
+Date: Fri, 28 Nov 2025 10:24:04 GMT
+Connection: Closed,
+--Body: 
+<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>SafeProxy ï¿½ 403 Forbidden</title>
+
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: linear-gradient(135deg, #e8efff, #c9d8ff);
+                    font-family: 'Poppins', sans-serif;
+                    color: #0066ff;
+                    overflow: hidden;
+                }
+
+                .card {
+                    width: 50vw;
+                    height: 70vh;
+                    max-width: 800px;
+                    max-height: 600px;
+                    background: rgba(255, 255, 255, 0.7);
+                    border-radius: 20px;
+                    position: relative;
+                    text-align: center;
+                    box-shadow:
+                        0 20px 40px rgba(0, 0, 0, 0.1),
+                        0 8px 20px rgba(0, 0, 0, 0.05);
+                    overflow: hidden;
+                    border: 1px solid rgba(255, 255, 255, 0.5);
+                }
+
+                .card::before {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    background-image: url(./././assets/security_lock_bg.png);
+                    background-size: cover;
+                    background-position: center;
+                    opacity: 0.18;
+                    filter: blur(6px);
+                }
+
+                .content {
+                    position: relative;
+                    z-index: 2;
+                }
+
+                .brand {
+                    font-size: 1.3rem;
+                    font-weight: 100;
+                    letter-spacing: 2px;
+                    opacity: 0.9;
+                    margin-top: 3vh;
+                }
+
+                h1 {
+                    margin-top: 3vh;
+                    font-size: 6rem;
+                    font-weight: 900;
+                    margin-bottom: -20px;
+                }
+
+                h2 {
+                    font-size: 1.7rem;
+                    margin-bottom: 10px;
+                }
+
+                p {
+                    font-size: 1rem;
+                    opacity: 0.8;
+                    margin-top: 0;
+                }
+
+                .line {
+                    width: 100px;
+                    height: 4px;
+                    background: #1f51ff;
+                    border-radius: 2px;
+                    margin: 20px auto;
+                    opacity: 0.8;
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="card">
+                <div class="content">
+                    <div class="brand">-- SafeProxy --</div>
+                    <h1>403</h1>
+                    <div class="line"></div>
+                    <h2>Forbidden</h2>
+                    <p>Request forbidden -- authorization will not help</p>
+                </div>
+            </div>
+        </body>
+        </html>
+---------------------- 
+
+2025-11-28 12:24:04,492 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 9871). 
+
+2025-11-28 12:24:04,493 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 9871) 
+
+2025-11-28 12:24:04,493 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 9871):
+GET http://www.hello.com/assets/security_lock_bg.png HTTP/1.1
+
+Host: www.hello.com
+
+Proxy-Connection: keep-alive
+
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+
+Referer: http://www.hello.com/
+
+Accept-Encoding: gzip, deflate
+
+Accept-Language: en-GB,en;q=0.9
+
+
+
+ 
+
+2025-11-28 12:24:04,494 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
+
+2025-11-28 12:24:04,496 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: GET, 
+--Host: www.hello.com, 
+--Port: 80,
+--Path: /assets/security_lock_bg.png, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.hello.com
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Referer: http://www.hello.com/
+Accept-Encoding: gzip, deflate
+Accept-Language: en-GB,en;q=0.9
+--Body: 
+None
+------------------- 
+
+2025-11-28 12:24:04,499 - DEBUG - [base_handler.py:76] - 
+------RESPONSE------
+--Http version: HTTP/1.1, 
+--Status code: 403, 
+--Reason: Forbidden,
+--Headers: 	
+Content-Type: text/html; charset=utf-8
+Content-length: 3249
+Proxy-Agent: SafeProxy
+Date: Fri, 28 Nov 2025 10:24:04 GMT
+Connection: Closed,
+--Body: 
+<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>SafeProxy ï¿½ 403 Forbidden</title>
+
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: linear-gradient(135deg, #e8efff, #c9d8ff);
+                    font-family: 'Poppins', sans-serif;
+                    color: #0066ff;
+                    overflow: hidden;
+                }
+
+                .card {
+                    width: 50vw;
+                    height: 70vh;
+                    max-width: 800px;
+                    max-height: 600px;
+                    background: rgba(255, 255, 255, 0.7);
+                    border-radius: 20px;
+                    position: relative;
+                    text-align: center;
+                    box-shadow:
+                        0 20px 40px rgba(0, 0, 0, 0.1),
+                        0 8px 20px rgba(0, 0, 0, 0.05);
+                    overflow: hidden;
+                    border: 1px solid rgba(255, 255, 255, 0.5);
+                }
+
+                .card::before {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    background-image: url(./././assets/security_lock_bg.png);
+                    background-size: cover;
+                    background-position: center;
+                    opacity: 0.18;
+                    filter: blur(6px);
+                }
+
+                .content {
+                    position: relative;
+                    z-index: 2;
+                }
+
+                .brand {
+                    font-size: 1.3rem;
+                    font-weight: 100;
+                    letter-spacing: 2px;
+                    opacity: 0.9;
+                    margin-top: 3vh;
+                }
+
+                h1 {
+                    margin-top: 3vh;
+                    font-size: 6rem;
+                    font-weight: 900;
+                    margin-bottom: -20px;
+                }
+
+                h2 {
+                    font-size: 1.7rem;
+                    margin-bottom: 10px;
+                }
+
+                p {
+                    font-size: 1rem;
+                    opacity: 0.8;
+                    margin-top: 0;
+                }
+
+                .line {
+                    width: 100px;
+                    height: 4px;
+                    background: #1f51ff;
+                    border-radius: 2px;
+                    margin: 20px auto;
+                    opacity: 0.8;
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="card">
+                <div class="content">
+                    <div class="brand">-- SafeProxy --</div>
+                    <h1>403</h1>
+                    <div class="line"></div>
+                    <h2>Forbidden</h2>
+                    <p>Request forbidden -- authorization will not help</p>
+                </div>
+            </div>
+        </body>
+        </html>
+---------------------- 
+
+2025-11-28 12:24:04,507 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 64228). 
+
+2025-11-28 12:24:04,508 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 64228) 
+
+2025-11-28 12:24:04,508 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 64228):
+GET http://www.hello.com/favicon.ico HTTP/1.1
+
+Host: www.hello.com
+
+Proxy-Connection: keep-alive
+
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+
+Referer: http://www.hello.com/
+
+Accept-Encoding: gzip, deflate
+
+Accept-Language: en-GB,en;q=0.9
+
+
+
+ 
+
+2025-11-28 12:24:04,509 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
+
+2025-11-28 12:24:04,509 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: GET, 
+--Host: www.hello.com, 
+--Port: 80,
+--Path: /favicon.ico, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.hello.com
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Referer: http://www.hello.com/
+Accept-Encoding: gzip, deflate
+Accept-Language: en-GB,en;q=0.9
+--Body: 
+None
+------------------- 
+
+2025-11-28 12:24:04,510 - DEBUG - [base_handler.py:76] - 
+------RESPONSE------
+--Http version: HTTP/1.1, 
+--Status code: 403, 
+--Reason: Forbidden,
+--Headers: 	
+Content-Type: text/html; charset=utf-8
+Content-length: 3249
+Proxy-Agent: SafeProxy
+Date: Fri, 28 Nov 2025 10:24:04 GMT
+Connection: Closed,
+--Body: 
+<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>SafeProxy ï¿½ 403 Forbidden</title>
+
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: linear-gradient(135deg, #e8efff, #c9d8ff);
+                    font-family: 'Poppins', sans-serif;
+                    color: #0066ff;
+                    overflow: hidden;
+                }
+
+                .card {
+                    width: 50vw;
+                    height: 70vh;
+                    max-width: 800px;
+                    max-height: 600px;
+                    background: rgba(255, 255, 255, 0.7);
+                    border-radius: 20px;
+                    position: relative;
+                    text-align: center;
+                    box-shadow:
+                        0 20px 40px rgba(0, 0, 0, 0.1),
+                        0 8px 20px rgba(0, 0, 0, 0.05);
+                    overflow: hidden;
+                    border: 1px solid rgba(255, 255, 255, 0.5);
+                }
+
+                .card::before {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    background-image: url(./././assets/security_lock_bg.png);
+                    background-size: cover;
+                    background-position: center;
+                    opacity: 0.18;
+                    filter: blur(6px);
+                }
+
+                .content {
+                    position: relative;
+                    z-index: 2;
+                }
+
+                .brand {
+                    font-size: 1.3rem;
+                    font-weight: 100;
+                    letter-spacing: 2px;
+                    opacity: 0.9;
+                    margin-top: 3vh;
+                }
+
+                h1 {
+                    margin-top: 3vh;
+                    font-size: 6rem;
+                    font-weight: 900;
+                    margin-bottom: -20px;
+                }
+
+                h2 {
+                    font-size: 1.7rem;
+                    margin-bottom: 10px;
+                }
+
+                p {
+                    font-size: 1rem;
+                    opacity: 0.8;
+                    margin-top: 0;
+                }
+
+                .line {
+                    width: 100px;
+                    height: 4px;
+                    background: #1f51ff;
+                    border-radius: 2px;
+                    margin: 20px auto;
+                    opacity: 0.8;
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="card">
+                <div class="content">
+                    <div class="brand">-- SafeProxy --</div>
+                    <h1>403</h1>
+                    <div class="line"></div>
+                    <h2>Forbidden</h2>
+                    <p>Request forbidden -- authorization will not help</p>
+                </div>
+            </div>
+        </body>
+        </html>
+---------------------- 
+
+2025-11-28 12:24:05,220 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 13576). 
+
+2025-11-28 12:24:05,221 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 13576) 
+
+2025-11-28 12:24:05,221 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 13576):
+GET http://www.hello.com/ HTTP/1.1
+
+Host: www.hello.com
+
+Proxy-Connection: keep-alive
+
+Upgrade-Insecure-Requests: 1
+
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+Accept-Encoding: gzip, deflate
+
+Accept-Language: en-GB,en;q=0.9
+
+
+
+ 
+
+2025-11-28 12:24:05,221 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
+
+2025-11-28 12:24:05,222 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: GET, 
+--Host: www.hello.com, 
+--Port: 80,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.hello.com
+Proxy-Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Accept-Encoding: gzip, deflate
+Accept-Language: en-GB,en;q=0.9
+--Body: 
+None
+------------------- 
+
+2025-11-28 12:24:05,222 - DEBUG - [base_handler.py:76] - 
+------RESPONSE------
+--Http version: HTTP/1.1, 
+--Status code: 403, 
+--Reason: Forbidden,
+--Headers: 	
+Content-Type: text/html; charset=utf-8
+Content-length: 3249
+Proxy-Agent: SafeProxy
+Date: Fri, 28 Nov 2025 10:24:05 GMT
+Connection: Closed,
+--Body: 
+<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>SafeProxy ï¿½ 403 Forbidden</title>
+
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: linear-gradient(135deg, #e8efff, #c9d8ff);
+                    font-family: 'Poppins', sans-serif;
+                    color: #0066ff;
+                    overflow: hidden;
+                }
+
+                .card {
+                    width: 50vw;
+                    height: 70vh;
+                    max-width: 800px;
+                    max-height: 600px;
+                    background: rgba(255, 255, 255, 0.7);
+                    border-radius: 20px;
+                    position: relative;
+                    text-align: center;
+                    box-shadow:
+                        0 20px 40px rgba(0, 0, 0, 0.1),
+                        0 8px 20px rgba(0, 0, 0, 0.05);
+                    overflow: hidden;
+                    border: 1px solid rgba(255, 255, 255, 0.5);
+                }
+
+                .card::before {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    background-image: url(./././assets/security_lock_bg.png);
+                    background-size: cover;
+                    background-position: center;
+                    opacity: 0.18;
+                    filter: blur(6px);
+                }
+
+                .content {
+                    position: relative;
+                    z-index: 2;
+                }
+
+                .brand {
+                    font-size: 1.3rem;
+                    font-weight: 100;
+                    letter-spacing: 2px;
+                    opacity: 0.9;
+                    margin-top: 3vh;
+                }
+
+                h1 {
+                    margin-top: 3vh;
+                    font-size: 6rem;
+                    font-weight: 900;
+                    margin-bottom: -20px;
+                }
+
+                h2 {
+                    font-size: 1.7rem;
+                    margin-bottom: 10px;
+                }
+
+                p {
+                    font-size: 1rem;
+                    opacity: 0.8;
+                    margin-top: 0;
+                }
+
+                .line {
+                    width: 100px;
+                    height: 4px;
+                    background: #1f51ff;
+                    border-radius: 2px;
+                    margin: 20px auto;
+                    opacity: 0.8;
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="card">
+                <div class="content">
+                    <div class="brand">-- SafeProxy --</div>
+                    <h1>403</h1>
+                    <div class="line"></div>
+                    <h2>Forbidden</h2>
+                    <p>Request forbidden -- authorization will not help</p>
+                </div>
+            </div>
+        </body>
+        </html>
+---------------------- 
+
+2025-11-28 12:24:05,233 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 22549). 
+
+2025-11-28 12:24:05,234 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 22549):
+GET http://www.hello.com/assets/security_lock_bg.png HTTP/1.1
+
+Host: www.hello.com
+
+Proxy-Connection: keep-alive
+
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+
+Referer: http://www.hello.com/
+
+Accept-Encoding: gzip, deflate
+
+Accept-Language: en-GB,en;q=0.9
+
+
+
+ 
+
+2025-11-28 12:24:05,235 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 22549) 
+
+2025-11-28 12:24:05,235 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
+
+2025-11-28 12:24:05,236 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: GET, 
+--Host: www.hello.com, 
+--Port: 80,
+--Path: /assets/security_lock_bg.png, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.hello.com
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Referer: http://www.hello.com/
+Accept-Encoding: gzip, deflate
+Accept-Language: en-GB,en;q=0.9
+--Body: 
+None
+------------------- 
+
+2025-11-28 12:24:05,236 - DEBUG - [base_handler.py:76] - 
+------RESPONSE------
+--Http version: HTTP/1.1, 
+--Status code: 403, 
+--Reason: Forbidden,
+--Headers: 	
+Content-Type: text/html; charset=utf-8
+Content-length: 3249
+Proxy-Agent: SafeProxy
+Date: Fri, 28 Nov 2025 10:24:05 GMT
+Connection: Closed,
+--Body: 
+<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>SafeProxy ï¿½ 403 Forbidden</title>
+
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: linear-gradient(135deg, #e8efff, #c9d8ff);
+                    font-family: 'Poppins', sans-serif;
+                    color: #0066ff;
+                    overflow: hidden;
+                }
+
+                .card {
+                    width: 50vw;
+                    height: 70vh;
+                    max-width: 800px;
+                    max-height: 600px;
+                    background: rgba(255, 255, 255, 0.7);
+                    border-radius: 20px;
+                    position: relative;
+                    text-align: center;
+                    box-shadow:
+                        0 20px 40px rgba(0, 0, 0, 0.1),
+                        0 8px 20px rgba(0, 0, 0, 0.05);
+                    overflow: hidden;
+                    border: 1px solid rgba(255, 255, 255, 0.5);
+                }
+
+                .card::before {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    background-image: url(./././assets/security_lock_bg.png);
+                    background-size: cover;
+                    background-position: center;
+                    opacity: 0.18;
+                    filter: blur(6px);
+                }
+
+                .content {
+                    position: relative;
+                    z-index: 2;
+                }
+
+                .brand {
+                    font-size: 1.3rem;
+                    font-weight: 100;
+                    letter-spacing: 2px;
+                    opacity: 0.9;
+                    margin-top: 3vh;
+                }
+
+                h1 {
+                    margin-top: 3vh;
+                    font-size: 6rem;
+                    font-weight: 900;
+                    margin-bottom: -20px;
+                }
+
+                h2 {
+                    font-size: 1.7rem;
+                    margin-bottom: 10px;
+                }
+
+                p {
+                    font-size: 1rem;
+                    opacity: 0.8;
+                    margin-top: 0;
+                }
+
+                .line {
+                    width: 100px;
+                    height: 4px;
+                    background: #1f51ff;
+                    border-radius: 2px;
+                    margin: 20px auto;
+                    opacity: 0.8;
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="card">
+                <div class="content">
+                    <div class="brand">-- SafeProxy --</div>
+                    <h1>403</h1>
+                    <div class="line"></div>
+                    <h2>Forbidden</h2>
+                    <p>Request forbidden -- authorization will not help</p>
+                </div>
+            </div>
+        </body>
+        </html>
+---------------------- 
+
+2025-11-28 12:24:05,243 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 22079). 
+
+2025-11-28 12:24:05,244 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 22079) 
+
+2025-11-28 12:24:05,244 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 22079):
+GET http://www.hello.com/favicon.ico HTTP/1.1
+
+Host: www.hello.com
+
+Proxy-Connection: keep-alive
+
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+
+Referer: http://www.hello.com/
+
+Accept-Encoding: gzip, deflate
+
+Accept-Language: en-GB,en;q=0.9
+
+
+
+ 
+
+2025-11-28 12:24:05,245 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
+
+2025-11-28 12:24:05,245 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: GET, 
+--Host: www.hello.com, 
+--Port: 80,
+--Path: /favicon.ico, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.hello.com
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Referer: http://www.hello.com/
+Accept-Encoding: gzip, deflate
+Accept-Language: en-GB,en;q=0.9
+--Body: 
+None
+------------------- 
+
+2025-11-28 12:24:05,246 - DEBUG - [base_handler.py:76] - 
+------RESPONSE------
+--Http version: HTTP/1.1, 
+--Status code: 403, 
+--Reason: Forbidden,
+--Headers: 	
+Content-Type: text/html; charset=utf-8
+Content-length: 3249
+Proxy-Agent: SafeProxy
+Date: Fri, 28 Nov 2025 10:24:05 GMT
+Connection: Closed,
+--Body: 
+<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>SafeProxy ï¿½ 403 Forbidden</title>
+
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: linear-gradient(135deg, #e8efff, #c9d8ff);
+                    font-family: 'Poppins', sans-serif;
+                    color: #0066ff;
+                    overflow: hidden;
+                }
+
+                .card {
+                    width: 50vw;
+                    height: 70vh;
+                    max-width: 800px;
+                    max-height: 600px;
+                    background: rgba(255, 255, 255, 0.7);
+                    border-radius: 20px;
+                    position: relative;
+                    text-align: center;
+                    box-shadow:
+                        0 20px 40px rgba(0, 0, 0, 0.1),
+                        0 8px 20px rgba(0, 0, 0, 0.05);
+                    overflow: hidden;
+                    border: 1px solid rgba(255, 255, 255, 0.5);
+                }
+
+                .card::before {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    background-image: url(./././assets/security_lock_bg.png);
+                    background-size: cover;
+                    background-position: center;
+                    opacity: 0.18;
+                    filter: blur(6px);
+                }
+
+                .content {
+                    position: relative;
+                    z-index: 2;
+                }
+
+                .brand {
+                    font-size: 1.3rem;
+                    font-weight: 100;
+                    letter-spacing: 2px;
+                    opacity: 0.9;
+                    margin-top: 3vh;
+                }
+
+                h1 {
+                    margin-top: 3vh;
+                    font-size: 6rem;
+                    font-weight: 900;
+                    margin-bottom: -20px;
+                }
+
+                h2 {
+                    font-size: 1.7rem;
+                    margin-bottom: 10px;
+                }
+
+                p {
+                    font-size: 1rem;
+                    opacity: 0.8;
+                    margin-top: 0;
+                }
+
+                .line {
+                    width: 100px;
+                    height: 4px;
+                    background: #1f51ff;
+                    border-radius: 2px;
+                    margin: 20px auto;
+                    opacity: 0.8;
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="card">
+                <div class="content">
+                    <div class="brand">-- SafeProxy --</div>
+                    <h1>403</h1>
+                    <div class="line"></div>
+                    <h2>Forbidden</h2>
+                    <p>Request forbidden -- authorization will not help</p>
+                </div>
+            </div>
+        </body>
+        </html>
+---------------------- 
+
+2025-11-28 12:24:07,371 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 26159). 
+
+2025-11-28 12:24:07,372 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 26159) 
+
+2025-11-28 12:24:07,373 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 26159):
+GET http://www.hello.com/ HTTP/1.1
+
+Host: www.hello.com
+
+Proxy-Connection: keep-alive
+
+Upgrade-Insecure-Requests: 1
+
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+
+Accept-Encoding: gzip, deflate
+
+Accept-Language: en-GB,en;q=0.9
+
+
+
+ 
+
+2025-11-28 12:24:07,373 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
+
+2025-11-28 12:24:07,374 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: GET, 
+--Host: www.hello.com, 
+--Port: 80,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.hello.com
+Proxy-Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Accept-Encoding: gzip, deflate
+Accept-Language: en-GB,en;q=0.9
+--Body: 
+None
+------------------- 
+
+2025-11-28 12:24:07,375 - DEBUG - [base_handler.py:76] - 
+------RESPONSE------
+--Http version: HTTP/1.1, 
+--Status code: 403, 
+--Reason: Forbidden,
+--Headers: 	
+Content-Type: text/html; charset=utf-8
+Content-length: 3249
+Proxy-Agent: SafeProxy
+Date: Fri, 28 Nov 2025 10:24:07 GMT
+Connection: Closed,
+--Body: 
+<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>SafeProxy ï¿½ 403 Forbidden</title>
+
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: linear-gradient(135deg, #e8efff, #c9d8ff);
+                    font-family: 'Poppins', sans-serif;
+                    color: #0066ff;
+                    overflow: hidden;
+                }
+
+                .card {
+                    width: 50vw;
+                    height: 70vh;
+                    max-width: 800px;
+                    max-height: 600px;
+                    background: rgba(255, 255, 255, 0.7);
+                    border-radius: 20px;
+                    position: relative;
+                    text-align: center;
+                    box-shadow:
+                        0 20px 40px rgba(0, 0, 0, 0.1),
+                        0 8px 20px rgba(0, 0, 0, 0.05);
+                    overflow: hidden;
+                    border: 1px solid rgba(255, 255, 255, 0.5);
+                }
+
+                .card::before {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    background-image: url(./././assets/security_lock_bg.png);
+                    background-size: cover;
+                    background-position: center;
+                    opacity: 0.18;
+                    filter: blur(6px);
+                }
+
+                .content {
+                    position: relative;
+                    z-index: 2;
+                }
+
+                .brand {
+                    font-size: 1.3rem;
+                    font-weight: 100;
+                    letter-spacing: 2px;
+                    opacity: 0.9;
+                    margin-top: 3vh;
+                }
+
+                h1 {
+                    margin-top: 3vh;
+                    font-size: 6rem;
+                    font-weight: 900;
+                    margin-bottom: -20px;
+                }
+
+                h2 {
+                    font-size: 1.7rem;
+                    margin-bottom: 10px;
+                }
+
+                p {
+                    font-size: 1rem;
+                    opacity: 0.8;
+                    margin-top: 0;
+                }
+
+                .line {
+                    width: 100px;
+                    height: 4px;
+                    background: #1f51ff;
+                    border-radius: 2px;
+                    margin: 20px auto;
+                    opacity: 0.8;
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="card">
+                <div class="content">
+                    <div class="brand">-- SafeProxy --</div>
+                    <h1>403</h1>
+                    <div class="line"></div>
+                    <h2>Forbidden</h2>
+                    <p>Request forbidden -- authorization will not help</p>
+                </div>
+            </div>
+        </body>
+        </html>
+---------------------- 
+
+2025-11-28 12:24:07,471 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 51975). 
+
+2025-11-28 12:24:07,472 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 51975):
+GET http://www.hello.com/assets/security_lock_bg.png HTTP/1.1
+
+Host: www.hello.com
+
+Proxy-Connection: keep-alive
+
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+
+Referer: http://www.hello.com/
+
+Accept-Encoding: gzip, deflate
+
+Accept-Language: en-GB,en;q=0.9
+
+
+
+ 
+
+2025-11-28 12:24:07,473 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 51975) 
+
+2025-11-28 12:24:07,473 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
+
+2025-11-28 12:24:07,475 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: GET, 
+--Host: www.hello.com, 
+--Port: 80,
+--Path: /assets/security_lock_bg.png, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.hello.com
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Referer: http://www.hello.com/
+Accept-Encoding: gzip, deflate
+Accept-Language: en-GB,en;q=0.9
+--Body: 
+None
+------------------- 
+
+2025-11-28 12:24:07,475 - DEBUG - [base_handler.py:76] - 
+------RESPONSE------
+--Http version: HTTP/1.1, 
+--Status code: 403, 
+--Reason: Forbidden,
+--Headers: 	
+Content-Type: text/html; charset=utf-8
+Content-length: 3249
+Proxy-Agent: SafeProxy
+Date: Fri, 28 Nov 2025 10:24:07 GMT
+Connection: Closed,
+--Body: 
+<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>SafeProxy ï¿½ 403 Forbidden</title>
+
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: linear-gradient(135deg, #e8efff, #c9d8ff);
+                    font-family: 'Poppins', sans-serif;
+                    color: #0066ff;
+                    overflow: hidden;
+                }
+
+                .card {
+                    width: 50vw;
+                    height: 70vh;
+                    max-width: 800px;
+                    max-height: 600px;
+                    background: rgba(255, 255, 255, 0.7);
+                    border-radius: 20px;
+                    position: relative;
+                    text-align: center;
+                    box-shadow:
+                        0 20px 40px rgba(0, 0, 0, 0.1),
+                        0 8px 20px rgba(0, 0, 0, 0.05);
+                    overflow: hidden;
+                    border: 1px solid rgba(255, 255, 255, 0.5);
+                }
+
+                .card::before {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    background-image: url(./././assets/security_lock_bg.png);
+                    background-size: cover;
+                    background-position: center;
+                    opacity: 0.18;
+                    filter: blur(6px);
+                }
+
+                .content {
+                    position: relative;
+                    z-index: 2;
+                }
+
+                .brand {
+                    font-size: 1.3rem;
+                    font-weight: 100;
+                    letter-spacing: 2px;
+                    opacity: 0.9;
+                    margin-top: 3vh;
+                }
+
+                h1 {
+                    margin-top: 3vh;
+                    font-size: 6rem;
+                    font-weight: 900;
+                    margin-bottom: -20px;
+                }
+
+                h2 {
+                    font-size: 1.7rem;
+                    margin-bottom: 10px;
+                }
+
+                p {
+                    font-size: 1rem;
+                    opacity: 0.8;
+                    margin-top: 0;
+                }
+
+                .line {
+                    width: 100px;
+                    height: 4px;
+                    background: #1f51ff;
+                    border-radius: 2px;
+                    margin: 20px auto;
+                    opacity: 0.8;
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="card">
+                <div class="content">
+                    <div class="brand">-- SafeProxy --</div>
+                    <h1>403</h1>
+                    <div class="line"></div>
+                    <h2>Forbidden</h2>
+                    <p>Request forbidden -- authorization will not help</p>
+                </div>
+            </div>
+        </body>
+        </html>
+---------------------- 
+
+2025-11-28 12:24:07,492 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 24419). 
+
+2025-11-28 12:24:07,493 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 24419) 
+
+2025-11-28 12:24:07,493 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 24419):
+GET http://www.hello.com/favicon.ico HTTP/1.1
+
+Host: www.hello.com
+
+Proxy-Connection: keep-alive
+
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+
+Referer: http://www.hello.com/
+
+Accept-Encoding: gzip, deflate
+
+Accept-Language: en-GB,en;q=0.9
+
+
+
+ 
+
+2025-11-28 12:24:07,494 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
+
+2025-11-28 12:24:07,494 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: GET, 
+--Host: www.hello.com, 
+--Port: 80,
+--Path: /favicon.ico, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.hello.com
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Referer: http://www.hello.com/
+Accept-Encoding: gzip, deflate
+Accept-Language: en-GB,en;q=0.9
+--Body: 
+None
+------------------- 
+
+2025-11-28 12:24:07,494 - DEBUG - [base_handler.py:76] - 
+------RESPONSE------
+--Http version: HTTP/1.1, 
+--Status code: 403, 
+--Reason: Forbidden,
+--Headers: 	
+Content-Type: text/html; charset=utf-8
+Content-length: 3249
+Proxy-Agent: SafeProxy
+Date: Fri, 28 Nov 2025 10:24:07 GMT
+Connection: Closed,
+--Body: 
+<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>SafeProxy ï¿½ 403 Forbidden</title>
+
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: linear-gradient(135deg, #e8efff, #c9d8ff);
+                    font-family: 'Poppins', sans-serif;
+                    color: #0066ff;
+                    overflow: hidden;
+                }
+
+                .card {
+                    width: 50vw;
+                    height: 70vh;
+                    max-width: 800px;
+                    max-height: 600px;
+                    background: rgba(255, 255, 255, 0.7);
+                    border-radius: 20px;
+                    position: relative;
+                    text-align: center;
+                    box-shadow:
+                        0 20px 40px rgba(0, 0, 0, 0.1),
+                        0 8px 20px rgba(0, 0, 0, 0.05);
+                    overflow: hidden;
+                    border: 1px solid rgba(255, 255, 255, 0.5);
+                }
+
+                .card::before {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    background-image: url(./././assets/security_lock_bg.png);
+                    background-size: cover;
+                    background-position: center;
+                    opacity: 0.18;
+                    filter: blur(6px);
+                }
+
+                .content {
+                    position: relative;
+                    z-index: 2;
+                }
+
+                .brand {
+                    font-size: 1.3rem;
+                    font-weight: 100;
+                    letter-spacing: 2px;
+                    opacity: 0.9;
+                    margin-top: 3vh;
+                }
+
+                h1 {
+                    margin-top: 3vh;
+                    font-size: 6rem;
+                    font-weight: 900;
+                    margin-bottom: -20px;
+                }
+
+                h2 {
+                    font-size: 1.7rem;
+                    margin-bottom: 10px;
+                }
+
+                p {
+                    font-size: 1rem;
+                    opacity: 0.8;
+                    margin-top: 0;
+                }
+
+                .line {
+                    width: 100px;
+                    height: 4px;
+                    background: #1f51ff;
+                    border-radius: 2px;
+                    margin: 20px auto;
+                    opacity: 0.8;
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="card">
+                <div class="content">
+                    <div class="brand">-- SafeProxy --</div>
+                    <h1>403</h1>
+                    <div class="line"></div>
+                    <h2>Forbidden</h2>
+                    <p>Request forbidden -- authorization will not help</p>
+                </div>
+            </div>
+        </body>
+        </html>
+---------------------- 
+
+2025-11-28 12:24:33,833 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 40435). 
+
+2025-11-28 12:24:33,835 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 40435) 
+
+2025-11-28 12:24:33,836 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 40435):
+CONNECT www.hello.com:443 HTTP/1.1
+
+Host: www.hello.com:443
+
+Proxy-Connection: keep-alive
+
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+
+
+
+ 
+
+2025-11-28 12:24:33,839 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
+
+2025-11-28 12:24:33,839 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: www.hello.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.hello.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-28 12:24:33,840 - DEBUG - [https_tls_termination_handler.py:16] - True 
+
+2025-11-28 12:24:33,841 - DEBUG - [base_handler.py:76] - 
+------RESPONSE------
+--Http version: HTTP/1.1, 
+--Status code: 200, 
+--Reason: Connection Established,
+--Headers: 	,
+--Body: 
+
+---------------------- 
+
+2025-11-28 12:24:33,846 - DEBUG - [https_tls_termination_handler.py:116] - SNI RAW:b'www.hello.com', SNI UTF-8:www.hello.com 
+
+2025-11-28 12:24:33,848 - DEBUG - [base_handler.py:76] - 
+------RESPONSE------
+--Http version: HTTP/1.1, 
+--Status code: 403, 
+--Reason: Forbidden,
+--Headers: 	
+Content-Type: text/html; charset=utf-8
+Content-length: 3249
+Proxy-Agent: SafeProxy
+Date: Fri, 28 Nov 2025 10:24:33 GMT
+Connection: Closed,
+--Body: 
+<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>SafeProxy ï¿½ 403 Forbidden</title>
+
+            <style>
+                body {
+                    margin: 0;
+                    padding: 0;
+                    height: 100vh;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    background: linear-gradient(135deg, #e8efff, #c9d8ff);
+                    font-family: 'Poppins', sans-serif;
+                    color: #0066ff;
+                    overflow: hidden;
+                }
+
+                .card {
+                    width: 50vw;
+                    height: 70vh;
+                    max-width: 800px;
+                    max-height: 600px;
+                    background: rgba(255, 255, 255, 0.7);
+                    border-radius: 20px;
+                    position: relative;
+                    text-align: center;
+                    box-shadow:
+                        0 20px 40px rgba(0, 0, 0, 0.1),
+                        0 8px 20px rgba(0, 0, 0, 0.05);
+                    overflow: hidden;
+                    border: 1px solid rgba(255, 255, 255, 0.5);
+                }
+
+                .card::before {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    background-image: url(./././assets/security_lock_bg.png);
+                    background-size: cover;
+                    background-position: center;
+                    opacity: 0.18;
+                    filter: blur(6px);
+                }
+
+                .content {
+                    position: relative;
+                    z-index: 2;
+                }
+
+                .brand {
+                    font-size: 1.3rem;
+                    font-weight: 100;
+                    letter-spacing: 2px;
+                    opacity: 0.9;
+                    margin-top: 3vh;
+                }
+
+                h1 {
+                    margin-top: 3vh;
+                    font-size: 6rem;
+                    font-weight: 900;
+                    margin-bottom: -20px;
+                }
+
+                h2 {
+                    font-size: 1.7rem;
+                    margin-bottom: 10px;
+                }
+
+                p {
+                    font-size: 1rem;
+                    opacity: 0.8;
+                    margin-top: 0;
+                }
+
+                .line {
+                    width: 100px;
+                    height: 4px;
+                    background: #1f51ff;
+                    border-radius: 2px;
+                    margin: 20px auto;
+                    opacity: 0.8;
+                }
+            </style>
+        </head>
+
+        <body>
+            <div class="card">
+                <div class="content">
+                    <div class="brand">-- SafeProxy --</div>
+                    <h1>403</h1>
+                    <div class="line"></div>
+                    <h2>Forbidden</h2>
+                    <p>Request forbidden -- authorization will not help</p>
+                </div>
+            </div>
+        </body>
+        </html>
+---------------------- 
+
+2025-11-28 12:24:33,854 - INFO - [proxy_listener.py:35] - client connected - ('127.0.0.1', 59454). 
+
+2025-11-28 12:24:33,856 - INFO - [proxy_listener.py:42] - Thread started for client - ('127.0.0.1', 59454) 
+
+2025-11-28 12:24:33,858 - DEBUG - [proxy_listener.py:51] - A request from ('127.0.0.1', 59454):
+CONNECT www.hello.com:443 HTTP/1.1
+
+Host: www.hello.com:443
+
+Proxy-Connection: keep-alive
+
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+
+
+
+ 
+
+2025-11-28 12:24:33,864 - DEBUG - [request.py:35] - Header 'Host' already exists in headers field of the request 
+
+2025-11-28 12:24:33,865 - INFO - [parser.py:95] - 
+------REQUEST------
+--Method: CONNECT, 
+--Host: www.hello.com, 
+--Port: 443,
+--Path: /, 
+--Http version: HTTP/1.1,
+--Headers: 	
+Host: www.hello.com:443
+Proxy-Connection: keep-alive
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36
+--Body: 
+None
+------------------- 
+
+2025-11-28 12:24:33,866 - DEBUG - [https_tls_termination_handler.py:16] - True 
+
+2025-11-28 12:24:33,869 - DEBUG - [base_handler.py:76] - 
+------RESPONSE------
+--Http version: HTTP/1.1, 
+--Status code: 200, 
+--Reason: Connection Established,
+--Headers: 	,
+--Body: 
+
+---------------------- 
+
+2025-11-28 12:24:33,871 - DEBUG - [https_tls_termination_handler.py:116] - SNI RAW:b'www.hello.com', SNI UTF-8:www.hello.com 
+
+2025-11-28 12:24:33,871 - DEBUG - [base_handler.py:76] - 
+------RESPONSE------
+--Http version: HTTP/1.1, 
+--Status code: 403, 
+--Reason: Forbidden,
+--Headers: 	
+Content-Type: text/html; charset=utf-8
+Content-length: 3249
+Proxy-Agent: SafeProxy
+Date: Fri, 28 Nov 2025 10:24:33 GMT
+Connection: Closed,
+--Body: 
+<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>SafeProxy ï¿½ 403 Forbidden</title>
 
             <style>
                 body {
