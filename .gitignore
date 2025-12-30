@@ -4,3 +4,11 @@ src/logs/
 
 __pycache__/
 *.pyc
+
+.env
+
+.safeproxy/
+*
+
+.certs/
+*

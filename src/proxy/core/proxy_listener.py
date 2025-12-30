@@ -52,7 +52,7 @@ class ProxyListener:
             
             # Returns a Request obj 
             parsed_request = self._parser.parse_request(client_request)
-
+            self._parser
             # Route based on request
             self._router.route_request(parsed_request, client_socket)
 

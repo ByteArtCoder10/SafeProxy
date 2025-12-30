@@ -31,8 +31,6 @@ class Request():
     def add_header(self, header: str, value: str) -> None:            
         if header not in self.headers:
             self.headers[header] = value
-        else:
-            logging.debug(f"Header '{header}' already exists in headers field of the request")
 
     '''adds a body ot the request'''
     def add_body(self, body: str) -> None:
