@@ -1,51 +1,87 @@
 import socket
 import threading
-import logging
 
 from .base_handler import BaseHandler
 from ..structures.request import Request
+from ..structures.connection_status import ConnectionStatus
 from ..structures.response import Response
 
 
 class HttpsTcpTunnelHandler(BaseHandler):
     """
-    Handles HTTPS CONNECT requests by creating a TCP tunnel
-    and relaying encrypted data in both directions. 
+    Handles HTTPS CONNECT requests by establishing a TCP tunnel. 
+    This handler relays raw, encrypted data between a client and a remote 
+    server without performing TLS termination or inspection. 
     """
 
     def __init__(self):
         super().__init__()
         self.running = False
 
-    # handles the process by routing and calling methods by order.
-    def process(self, req, client_socket):
+    def process(self, req, client_socket,*, googleSearchRedirect: bool =True):
+        """
+        Respnsible for tunnel creation and maintnence: checks for blacklited URLS, 
+        establishes the tinnel, confirms the tunnel to the 
+        client (200 'Connection Established'), and begins bidirectional data relay.
+
+        :type req: Request
+        :param req: The parsed CONNECT request containing server's host and port.
+
+        :type client_socket: socket.socket
+        :param client_socket: The active client communication socket.
+
+        :type googleSearchRedirect: bool = True
+        :param googleSearchRedirect: If true, in case of Connection error, the proxy redirects the client to google search 
+        with host as the query.
+        """
         self._client_socket = client_socket
 
         url = req.host + req.path
 
-        if self.url_manager.is_blacklisted(url) or \
-           self.url_manager.is_malicious(url):
-            # cannot send a 403 inside CONNECT
-            # must fake TLS termination or close connection.
-            raise PermissionError("Blocked CONNECT request - In need of TLS termination")
-
-        self._establish_tunnel_server(req)
-        self._respond_to_client(req, 200, isConnectionEstablished=True)
-        self._run_tunnel_relay()
-    
-    '''establish a TCP conenction between the given server and the proxy.'''
-    def _establish_tunnel_server(self, req):
+        if self.url_manager.is_blacklisted(url):
+            self.conn_log.info("URL requested is blacklisted. TLS-Terminating and sending 403 blacklisted.")
+            # TLS termination -> send 403 Blacklisted
+            return
+        if self.url_manager.is_malicious(url):
+            self.conn_log.info("URL requested is malicious. TLS-Terminating and sending 403 malicious.")
+            # TLS termination -> send 403 malicious
+            return
+        
         try:
-            self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self._server_socket.settimeout(5)
-            self._server_socket.connect((req.host, req.port))
-            logging.info(f"TCP tunnel connection established: ({req.host}, {req.port})")
-        except Exception as e:
-            raise ConnectionError(
-            f"Tunnel connection failed for origin server {req.host}:{req.port}") from e
+            conn_status = self._connect_to_server(req, googleSearchRedirect)
+            match conn_status:
+                case ConnectionStatus.SUCCESS:
+                    self._respond_to_client(req, self._client_socket, 200, isConnectionEstablished=True)
+                    self._run_tunnel_relay()
+                    return
+                case ConnectionStatus.REDIRECT_REQUIRED:
+                    self.conn_log.debug(f"Connection failed for {req.host}. Redirecting to Google.")
+                    # TLS Termination -> Send Redirection repsponse
+                    pass
 
-    '''handles client and server communication in tcp tunneling, allowing both sides to send data simultaneously using threads.'''
+                case ConnectionStatus.CONNECT_FAILURE:
+                    self.conn_log.info(f"Connection failed for {req.host}. TLS-Terminating and Sending 502.")
+                    # TLS Termination -> Send 502 Bad Request.
+                    pass
+
+        except Exception as e:
+            self.conn_log.critical(f"Handler Error: {e}", exc_info=True)
+            # Safe fallback - try to send to client 502 "Bad Request"
+            try:
+                # TLS Termination -> send 502
+                pass
+            except:
+                self._close_sockets() # Close connection
+    
+
     def _run_tunnel_relay(self):
+        """
+        Starts two concurrent threads to handle bidirectional data flow:
+        - Thread 1: Client to Server (Upstream)
+        - Thread 2: Server to Client (Downstream)
+        
+        Joins the threads and ensures sockets are cleaned up upon disconnection.
+        """
         self.running = True
 
         t1 = threading.Thread(
@@ -67,14 +103,22 @@ class HttpsTcpTunnelHandler(BaseHandler):
 
         self._close_sockets()
 
-    '''handles continous sending and recieving data over sockets.'''
     def _relay_data(self, recv_socket: socket, send_socket: socket):
-        
-        peer_name = None
+        """
+        The worker method for relay threads. Continuously receives raw bytes 
+        from one socket and transmits them to another.
+
+        :type recv_socket: socket.socket
+        :param recv_socket: The source socket to read from.
+
+        :type send_socket: socket.socket
+        :param send_socket: The destination socket to write to.
+        """
 
         # setting timeout back to defult in case of keep-alive connection
         recv_socket.settimeout(None)
         send_socket.settimeout(None)
+
         try:
             peer_name = recv_socket.getpeername()
 
@@ -82,25 +126,16 @@ class HttpsTcpTunnelHandler(BaseHandler):
                 data = recv_socket.recv(BaseHandler.BUFFER_SIZE)
 
                 if not data:
-                    break #connection was closed
+                    break # connection was closed
                 send_socket.sendall(data)
 
         except Exception as e:
-            logging.debug(f"Relay error ({peer_name}): {e}")
+            self.conn_log.debug(f"Negligible relay error ({peer_name}).")
 
         # stop both threads
         self.running = False
 
-    '''closes socket objects (origin server and client).'''            
-    def _close_sockets(self):
-        for sock in (self._client_socket, self._server_socket):
-            if sock:
-                try:
-                    sock.close()
-                except:
-                    pass
 
-        logging.info("Tunnel closed.")
 
 
 

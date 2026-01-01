@@ -1,8 +1,7 @@
 import socket
-import ssl
-from ssl import SSLContext
 import threading
 import logging
+import datetime
 from tlslite.api import X509, TLSConnection, HandshakeSettings, X509CertChain, parsePEMKey
 from tlslite.utils.python_rsakey import Python_RSAKey
 from tlslite.errors import *
@@ -22,6 +21,7 @@ class HttpsTlsTerminationHandler(BaseHandler):
 
     '''handles the process by routing and calling methods by order.'''
     def process(self, req: Request, client_socket: socket):
+        before = datetime.datetime.now()
         self._client_socket = client_socket
         # send a 200 Connection Established response to client
         self._respond_to_client(req, 200, isConnectionEstablished=True)
@@ -50,19 +50,20 @@ class HttpsTlsTerminationHandler(BaseHandler):
 
             # parse raw request into a Request obj
             client_request = Parser.parse_request(raw_request.decode())
-            logging.info(client_request.prettify())
             
             # handshake server
             handshake_success = self._perform_tls_hanshake_with_server(client_request)
 
             if handshake_success:
                 # send first 'push'
-                self._tls_server_connection.send(client_request.to_raw().encode())
+                self._tls_server_connection.send(client_request.to_raw())
                 # Only run relay if we actually have a secure connection
                 self._run_relay_data()
             else:
                 logging.error("Aborting relay due to failed server handshake.")
                 self._close_sockets()
+        after = datetime.datetime.now()
+        logging.info(f"TIME IT TOOK TLS_TLSLITE-NG - {after}-{before}")
 
         # override Base class method
     

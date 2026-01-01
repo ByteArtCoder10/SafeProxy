@@ -1,81 +1,207 @@
 import socket
-import logging
+import ssl
+import socket
+import shutil
 
 from abc import ABC, abstractmethod
 from ...constants import SOCKET_BUFFER_SIZE
 from ..structures.request import Request
 from ..structures.response import Response
+from ..structures.connection_status import ConnectionStatus
 from ..security.url_manager import UrlManager
-
+from ...logs.logging_config import ProxyLoggerManager
         
 class BaseHandler(ABC):
+    """
+    An abstract base class that defines the core interface and shared utility 
+    methods for all proxy request handlers. It provides mechanisms for 
+    forwarding data, responding to clients, and centralized error handling.
+
+    :var Optional[socket] client_socket: 
+    Socket that will be used to communicate with the client.
     
+    :var Optional[socket] server_socket: 
+    Socket that will be used to communicate with the server.
+    
+    :var UrlManager url_manager: 
+    Helper field used for URL Blacklist and malice checks, as well as redirect URLS creations.
+     """
+
     BUFFER_SIZE = SOCKET_BUFFER_SIZE
+    """The standard chunk size for reading and writing to network sockets."""
 
     def __init__(self):
         self._client_socket = None
         self._server_socket = None
         self.url_manager = UrlManager()
 
-    
+        
     def handle(self, req: Request, client_socket: socket):
-        try:
-            return self.process(req, client_socket)
-        except Exception as e:
-            logging.error(f"Handler crashed: {e}", exc_info=True)
+        """
+        The primary entry point for the handler. Responsible for handling the request 
+        by calling the concrete 'process' implementation.
 
+        :type req: Request
+        :param req: The initial parsed request from the client.
+
+        :type client_socket: socket.socket
+        :param client_socket: The active communication socket for the client.
+        """
+        self.create_logger(req, client_socket)
+        return self.process(req, client_socket)
+        
+
+    def create_logger(self, req, client_socket):
+        # 1. Identify the user
+        addr, port = client_socket.getpeername()
+        
+        # 2. Get the specific logger
+        self.conn_log = ProxyLoggerManager.get_connection_logger(addr, port)
+        
+        self.conn_log.info(f"New request to {req.host} from {addr}:{port}")
+        
+        try:
+            # Now replace 'self.conn_log.debug' with 'self.conn_log.debug'
+            self.conn_log.debug(f"Request Headers: {req.headers}")
+            
+            # ... rest of your logic ...
+        except Exception as e:
+            self.conn_log.error(f"Error in connection: {e}", exc_info=True)
+            raise e
+    
     @abstractmethod
-    def process(self, req, client_socket):
-        pass
+    def process(self, req : Request, client_socket : socket.socket | ssl.SSLSocket):
+        return NotImplemented
+    
+    def _connect_to_server(self, req: Request, googleSearchRedirect: bool) -> ConnectionStatus:
+        """
+        Tries to establish an un-encrypted connection with server.
 
-    '''Forward the request to the target server via the client socket.'''
-    def _forward_request(self, req: Request):
+        :type req: Request
+        :param req: containing host and port's server to connect to.
+
+        :type googleSearchRedirect: bool
+        :param googleSearchRedirect: if True, the function returns a Redirect instruction.
+
+        :rtype: ~ConnectionStatus
+        :returns: a connection instruction for parent function 
+
+        """
         try:
-            raw = req.to_raw()
-            self._server_socket.sendall(raw.encode('utf-8'))
-        except socket.timeout as e:
-            logging.warning(f"Timeout when forwarding request: {e}", exc_info=True)
-            raise
-        except Exception as e:
-            logging.error(f"Forwarding request failed: {e}", exc_info=True)
-            raise
+            self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._server_socket.settimeout(5) # if server doesn't respond in 5s, terminate conenction
+            self._server_socket.connect((req.host, req.port))
 
-    '''Send a response back to the client.'''
+            return ConnectionStatus.SUCCESS
+        
+        # DNS resolution failed / other Errors -> redirect/send 502
+        except Exception:
+            if googleSearchRedirect:
+                return ConnectionStatus.REDIRECT_REQUIRED # Redirect to google search
+            
+        return ConnectionStatus.CONENCT_FAILURE
+    
+    def _forward_request(self, req: Request):
+        """
+        Arranges and transmits an HTTP request to the server.
+
+        :type req: Request
+        :param req: The request object to be forwarded.
+        
+        :raises TimeoutError: If the server socket times out during transmission.
+        :raises Exception: For general transmission failures.
+        """
+        try:
+            raw_req = req.to_raw()
+            self._server_socket.sendall(raw_req)
+        except socket.timeout as e:
+            raise TimeoutError(f"Connection timed-out while trying to forward request: {e}") from e
+        except Exception as e:
+            raise Exception(f"Forwarding request failed: {e}") from e
+
     def _respond_to_client(
         self,
         req: Request,
+        client_socket : socket.socket | ssl.SSLSocket,
         status_code: int,
         *,
-        isConnectionEstablished=False,
-        redirectURL=None,
-        addBlackListHTML=False,
-        addMaliciousHTML=False):
+        isConnectionEstablished : bool=False,
+        redirectURL : str | None =None,
+        addBlackListLabelHTML : bool =False,
+        addMaliciousLabelHTML: bool =False):
 
+        """
+        Constructs and sends an HTTP response back to the client. This method 
+        handles various proxy scenarios including tunnel confirmation, 
+        automatic search redirection, and proxy block pages for blacklisted sites.
+
+        :type req: Request
+        :param req: The original client request (used for protocol versioning).
+
+        :type client_socket: socket.socket | ssl.SSLSocket
+        :param client_socket: The client's communication channel - both unecnrpyted and encrpyted sockets supported.
+
+        :type status_code: int
+        :param status_code: The HTTP status code to return.
+
+        :type isConnectionEstablished: bool
+        :param isConnectionEstablished: If True, sends a 200 'Connection 
+                                         Established' response for TLS tunnels.
+
+        :type redirectURL: str | None
+        :param redirectURL: If provided, generates a 200 'OK' response with an 
+                            HTML-based redirect to the specified URL.
+
+        :type addBlackListLabelHTML: bool
+        :param addBlackListLabelHTML: If True, attaches a standard 'Blocked' 
+                                      landing page to the response body.
+
+        :type addMaliciousLabelHTML: bool
+        :param addMaliciousLabelHTML: If True, attaches a 'Malicious Content' 
+                                      warning page to the response body.
+
+        :raises ConnectionError: If the response cannot be sent to the client.
+        """
+
+        if isConnectionEstablished and status_code == 200:
+            response = Response(
+                req.http_version,
+                status_code,
+                reason="Connection Established",
+                raw_connect=True
+            )
+        
+        elif redirectURL and status_code == 200:
+            response = Response(
+                req.http_version,
+                status_code,
+                redirect_url=redirectURL
+            )
+        else:
+            response = Response(req.http_version, status_code)
+            if addMaliciousLabelHTML:
+                response._add_dynamic_body(addMaliciousLabel=True)
+            elif addBlackListLabelHTML:
+                response._add_dynamic_body()
+
+        self.conn_log.debug(response.prettify())
         try:
-            if isConnectionEstablished and status_code == 200:
-                response = Response(
-                    req.http_version,
-                    status_code,
-                    reason="Connection Established",
-                    raw_connect=True
-                )
-            
-            elif redirectURL and status_code == 200:
-                response = Response(
-                    req.http_version,
-                    status_code,
-                    redirect_url=redirectURL
-                )
-
-            else:
-                response = Response(req.http_version, status_code)
-                if addMaliciousHTML:
-                    response._add_dynamic_body(addMaliciousLabel=True)
-                elif addBlackListHTML:
-                    response._add_dynamic_body()
-            logging.debug(response.prettify())
-            self._client_socket.sendall(response.to_raw().encode("utf-8"))
-
+            client_socket.sendall(response.to_raw())
         except Exception as e:
-            logging.warning(f"Responding to client failed: {e}", exc_info=True)
-            raise
+            raise ConnectionError(f"Responding to client failed: {e}") from e
+
+        '''closes socket objects (origin server and client).'''            
+    
+    def _close_sockets(self):
+        """
+        Safely closes both the client and server sockets to release system 
+        resources and terminate the connection session. 
+        """
+        for sock in (self._client_socket, self._server_socket):
+            if sock:
+                try:
+                    sock.close()
+                except:
+                    pass
+
+        self.conn_log.info("Client and server's sockets closed.")

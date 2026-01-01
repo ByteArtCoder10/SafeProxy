@@ -4,65 +4,86 @@ import logging
 from .base_handler import BaseHandler
 from ..structures.request import Request
 from ..structures.response import Response
+from ..structures.connection_status import ConnectionStatus
 
 class HttpHandler(BaseHandler):
-    '''Handle HTTP requests, or HTTPS after decryption.'''
+    '''Handles HTTP requests'''
 
-    '''Handle a client request: forward if allowed, else send 403.'''
-    def process(self, req: Request, client_socket : socket):
-        self._client_socket = client_socket
+    def process(self, req: Request, client_socket : socket, *, googleSearchRedirect: bool =True):
+        """
+        Handles a client request based on URI requested.
+        - URI blacklisted/malicious -> sends back to client 
+        403 "Forbbiden" response, with customized HTML.
+        - URI unresolved (DNS failure)  -> sends back a 200
+        redirect response or 502 "Bad Response". 
+        
+        :type req: Request
+        :param req: containing host and port's server to connect to.
 
-        url  = req.host + req.path
-        if self.url_manager.is_blacklisted(url):
-            self._respond_to_client(req, 403, addBlackListHTML=True)
-        elif self.url_manager.is_malicious(url):
-            self._respond_to_client(req, 403, addMaliciousHTML=True)
+        :type googleSearchRedirect: bool
+        :param googleSearchRedirect: if True, the function returns a 200 request with
+        """
+        try:
+            self._client_socket = client_socket
+            url = req.host + (req.path or "")
 
-        else:
-            try:
-                self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self._server_socket.settimeout(5)
-                self._server_socket.connect((req.host, req.port))
-            except socket.gaierror:
-                # DNS resolution failed - request header wasn't valid
-                # 2 options based on user prefrences: 1. redirect to google search 2. show 502 error
-                # if user_prefrence = google_src:
-                # HTML Body that handles the redirect
-                google_search_url = self.url_manager.get_google_url(req.host)
-                self._respond_to_client(req, 200, redirectURL=google_search_url)
-                return
-                
-            except Exception as e:
-                logging.info(f"Failed to connect to {req.host}:{req.port}")
-                # send a 502 "Bad Request" response
-                self._respond_to_client(req, 502)
+            # Blacklist and malice checks
+            if self.url_manager.is_blacklisted(url):
+                self._respond_to_client(req, self._client_socket, 403, addBlackListLabelHTML=True)
                 return
             
-            self._forward_request(req)
-            self.forward_response(req.host)
-    
-    '''forward raw response from origin server back to client'''
-    def forward_response(self, host):
-        # # self._server_socket.settimeout(1)
-        s = self._server_socket.recv(8192)
-        logging.info(s)
-        self._client_socket.sendall(s)
-        # try:
-        #     while True:
-        #         chunk = self._server_socket.recv(BaseHandler.BUFFER_SIZE)
-        #         if not chunk:
-        #             break
-        #         if (host =='neverssl.com'):
-        #             logging.info(f"chunk: {chunk}")
-        #         self._client_socket.sendall(chunk)
+            if self.url_manager.is_malicious(url):
+                self._respond_to_client(req, self._client_socket, 403, addMaliciousLabelHTML=True)
+                return
 
-        # except socket.timeout:
-        #     # normal for keep-alive connections
-        #     pass
-        # except Exception as e:
-        #     logging.warning(f"Failed to forward webserver response to client: {e}")
+            # Connection status management
+            conn_status = self._connect_to_server(req, googleSearchRedirect=googleSearchRedirect)
+
+            match conn_status:
+                case ConnectionStatus.SUCCESS:
+                    self._forward_request(req)
+                    self.forward_response()
+                
+                case ConnectionStatus.REDIRECT_REQUIRED:
+                    logging.debug(f"Connection failed for {req.host}. Redirecting to Google.")
+                    google_search_url = self.url_manager.get_google_url(req.host)
+                    self._respond_to_client(req, self._client_socket, 200, redirectURL=google_search_url)
+                
+                case ConnectionStatus.CONNECT_FAILURE:
+                    logging.info(f"Connection failed for {req.host}. Sending 502.")
+                    self._respond_to_client(req, self._client_socket, 502)
+
+        except Exception as e:
+            logging.critical(f"Handler Error: {e}", exc_info=True)
+            # Safe fallback - try to send to client 502 "Bad Request"
+            try:
+                self._respond_to_client(req, self._client_socket, 502)
+            except:
+                self._close_sockets() # Close connection
 
 
+ 
+          
+    def forward_response(self):
+        '''
+        forwards raw data (response) from the server back to the client.
 
-
-
+        :raises TimeoutError: If connection timed out.
+        :raises ConnectionError: If conenction was closed/reset by either peer.
+        :raises Exception: If an unexpected error occured.
+        '''
+        try:
+            while True:
+                # Read chunk from the server
+                data = self._server_socket.recv(self.BUFFER_SIZE)
+                # If data is empty, the server has finished sending
+                if not data:
+                    break
+                # Forward the chunk to the client
+                self._client_socket.sendall(data)
+        except socket.timeout as e:
+            raise TimeoutError(f"Connection timed out: {e}")
+        except OSError as e:
+            raise ConnectionError(e)
+        except Exception as e:
+            raise Exception(f"Unexpected error occured: {e}")

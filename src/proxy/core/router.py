@@ -7,6 +7,7 @@ from ..structures.response import Response
 from ..handlers.http_handler import HttpHandler
 from ..handlers.https_tcp_tunnel_handler import HttpsTcpTunnelHandler
 from ..handlers.https_tls_termination_handler import HttpsTlsTerminationHandler
+from ..handlers.https_tls_termination_handler_ssl import HttpsTlsTerminationHandlerSSL
 
 
 class Router():
@@ -26,8 +27,8 @@ class Router():
                 # elif user only cares about hiding his IP
                 if True:
                     # self.handler = HttpsTcpTunnelHandler()
-                    self.handler = HttpsTlsTerminationHandler()
-
+                    self.handler = HttpsTcpTunnelHandler()
+                    
             elif self.is_valid_http_method(method):
                 self.handler = HttpHandler()
 

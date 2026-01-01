@@ -1,12 +1,12 @@
 import os
 from dotenv import load_dotenv
-from src.logs.logging_config import setup_logging
+from src.logs.logging_config import ProxyLoggerManager
 from src.constants import MAX_CLIENTS
 
 def main():
 
-    setup_logging()
     load_dotenv('.env')
+    ProxyLoggerManager.setup_logging()
 
     from src.proxy.core.proxy_listener import ProxyListener
 

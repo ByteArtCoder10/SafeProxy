@@ -1,5 +1,5 @@
 # ---Network traffic details---
-SOCKET_BUFFER_SIZE =212992
+SOCKET_BUFFER_SIZE =16384
 MAX_CLIENTS = 100
 
 # ---CA cert details---

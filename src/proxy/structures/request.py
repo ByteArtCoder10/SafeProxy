@@ -4,8 +4,29 @@ from typing import Optional
 
 @dataclass
 class Request():
-    '''A representive of an HTTP/S request, with optional fields 
-    like path, headers, and body for encrypted HTTPS request'''
+    """
+    A representation of an HTTP/HTTPS request, designed to hold both 
+    connection-level metadata (host, port) and protocol-level data 
+    (path, headers, body). This class supports transformation into 
+    the raw wire format for transmission.
+
+    :var str method: 
+
+    :var str host: 
+    Request's host appears in request's first line and optionally in headers.
+
+    :var int port: 
+
+    :var str http_version: 
+
+    :var Optional[str] path:
+
+    :var dict[str, str] headers: 
+    headers dictionary.
+
+    :var Optional[str] body:
+    Body section of the request.
+    """
 
     method: str
     host: str
@@ -15,40 +36,70 @@ class Request():
     headers: dict[str, str] = field(default_factory=dict)
     body: Optional[str] = None
 
-    '''handles newaunces after initialization of all fields'''
     def __post_init__(self):
-        '''adds host to headers if not already in there'''
+        """
+        Handles post-initialization logic, specifically ensuring that the 
+        'Host' header is automatically populated if it was not provided 
+        during instantiation.
+        """
         self.add_header("Host", self.host)
     
-    '''add a path to the request'''
-    def add_path(self, path: str) -> None:
+    def add_path(self, path: str):
+        """
+        Assigns a path to the request if one does not already exist.
+
+        :type path: str
+        :param path: The URI path string (example: '/api/v1/resource').
+        """
         if self.path is None:
             self.path = path
-        else:
-            logging.info("path field already exsits in the requests")
 
-    '''add a header to the request'''
-    def add_header(self, header: str, value: str) -> None:            
+    def add_header(self, header: str, value: str):      
+        """
+        Adds a single header key-value pair to the internal headers dictionary.
+
+        :type header: str
+        :param header: The name of the HTTP header.
+
+        :type value: str
+        :param value: The value to associate with the header.
+        """      
         if header not in self.headers:
             self.headers[header] = value
 
-    '''adds a body ot the request'''
-    def add_body(self, body: str) -> None:
+    def add_body(self, body: str):
+        """
+        Attaches a message body to the request.
+
+        :type body: str
+        :param body: The raw string data to be used as the request body.
+        """
         if self.body is None:
             self.body = body
-        else:
-            logging.info(f"Body field already exists in the request")
     
-    '''returns a sendable string request (origin-form)'''
-    def to_raw(self):
+    def to_raw(self) -> bytes:
+        """
+        Arranges the Request object into a raw bytes object compliant with the 
+        HTTP protocol specifications. Includes the Request Line, 
+        Headers, and Body.
+
+        :rtype: bytes
+        :returns: The raw bytes-like object ready to be sent over a socket.
+        """
         first_line = f"{self.method} {self.path or '/'} {self.http_version}\r\n"
         headers = "".join(f"{h}: {v}\r\n" for h, v in self.headers.items())
         body = f"\r\n\r\n{self.body or ""}"
 
-        return first_line + headers + body
+        return (first_line + headers + body).encode()
     
-    '''returns a pretty request (debugging)'''
     def prettify(self) -> str:
+        """
+        Generates a human-readable, formatted string representation of the 
+        request object. Used for logging and debugging purposes.
+
+        :rtype: str
+        :returns: A multi-line string visualizing the request structure.
+        """
         return (
             "\n------REQUEST------"
             f"\n--Method: {self.method}, \n--Host: {self.host}, \n--Port: {self.port},"
@@ -57,6 +108,7 @@ class Request():
             f"\n--Body: \n{self.body}\n"
             "-------------------"
         )
+
 if __name__ == "__main__":
     req = Request(
         method="GET",

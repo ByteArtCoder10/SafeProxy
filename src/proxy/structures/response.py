@@ -4,20 +4,35 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Optional, ClassVar
 import socket
-'''
-A response must have:
-Http_version
-statuscode
-reason
-Optional:
-Headers
-Body
-'''
+
+
 @dataclass
 class Response:
-    '''A representive of an HTTP/S response, with optional fields 
-    like headers and body for encrypted HTTPS response. Proxy's job
-    is to forward webserver response or to make it's own reponse to forward (e.g due to black-listed URL)'''
+    """
+    A representation of an HTTP/HTTPS response. This class is responsible for 
+    arranging data received from a remote webserver or generating custom 
+    responses locally (for example, for blocked pages or redirects). It handles the 
+    automatic generation of HTML bodies and standard-proxy HTTP headers.
+
+    :var str http_version: 
+    HTTP version of the Response.
+
+    :var int status_code:
+
+    :var Optional[str] reason:
+
+    :var dict[str, str] headers: 
+    headers dictionary.
+
+    :var Optional[str] body:
+    Body section of the response.
+
+    :var Optional[bool] raw_connect:
+    Flag to indicate if this is a minimal '200 Connection Established' response for tunnel initialization.
+
+    :var Optional[str] redirect_url:
+    An optional URL used for generating automatic HTML redirects.
+    """
 
     http_version: str
     status_code: int
@@ -27,29 +42,34 @@ class Response:
     raw_connect: Optional[bool] = False
     redirect_url: Optional[str] = None
 
-    '''handles newaunces after initialization of all fields'''
     def __post_init__(self):
-        # If no reason was provided. runs after all fields are intialized
+        """
+        Handles post-initialization logic:
+        - Resolves the 'reason' phrase if missing.
+        - Generates redirect HTML if a redirect_url is provided.
+        - Appends standard proxy headers for non-CONNECT responses.
+        """
+
+        # If no reason was provided. (runs after all fields are intialized)
         if self.reason is None:
             try:
                 self.reason = HTTPStatus(self.status_code).phrase
             except ValueError:
                 self.reason = ""
         
-        # in case of 200 ok response with url redirection in html body 
+        # In case of 200 ok response with url redirection in html body
         if self.redirect_url and self.status_code == 200:
             self._add_redirect_html_body()
         
         # Connection Established isn't usually sent with additional headers
         if self.reason != 'Connection Established':
             self._add_proxy_fixed_headers()
-        
-
-        
-        # adding fixed headers
     
-    '''adds redirect html body to instance's redirect url.'''
     def _add_redirect_html_body(self):
+        """
+        Constructs a simple HTML code that performs a client-side redirect 
+        using both a <meta> refresh tag and JS.
+        """
         html_body = f"""
             <html>
             <head>
@@ -62,10 +82,16 @@ class Response:
             </html> """
         
         self.body = html_body
-        self.headers['Content-length'] = len(self.body.encode('utf-8'))
+        self.headers['Content-length'] = len(self.body.encode())
         
-    #adds dynamic HTML bodt based on status_code, reason.
     def _add_dynamic_body(self, addMaliciousLabel=False):
+        """
+        Generates a 'SafeProxy' landing page for errors or blocked sites.
+
+        :type addMaliciousLabel: bool
+        :param addMaliciousLabel: If True, adds warning about 
+        infected or malicious content.
+        """
         if addMaliciousLabel:
             html_body = f"""<!DOCTYPE html>
             <html lang="en">
@@ -277,20 +303,24 @@ class Response:
         self.body = html_body
         self.headers['Content-length'] = len(self.body.encode('utf-8'))
 
-    '''adds proxy required and preffered headers.
-    Like said, The proxy's job is to forward webserver response, or to make it's own 
-    response to forward. the custom response is defined to have:
-    -Body: HTML
-    -Content-Length: Dynamic
-    -Date: Dynamic
-    -Server: proxy's name
-    -Connection: Closed
-    
-    If one or more of these headers alredy exist, they remian unchanged.
-    '''
     def _add_proxy_fixed_headers(self):
-        '''REQUIRED: Content-Type, Content-Length'''
-        '''PREFFERED: Date, Server, Connection'''
+        """
+        adds proxy required and preffered headers. The proxy's job is 
+        to forward webserver response, or to make it's own response to forward.
+        the custom response is defined to contain:
+        - Body: HTML.
+        - Content-Length: Dynamic.
+        - Date: Dynamic.
+        - Server: proxy's name.
+        - Connection: Closed.
+        
+        distiction: 
+        - Required: Content-Type, Content-Length.
+        - Not required, but Preffered: Date, Server, Connection.
+
+        If one or more of these headers alredy exist, they remian unchanged.
+        """
+
         required_preffered_headers = {
             "Content-Type": "text/html; charset=utf-8",
             "Content-length": f"{len(self.body.encode('utf-8'))}",
@@ -302,20 +332,34 @@ class Response:
             if header not in self.headers:
                 self.headers[header] = value
     
-    '''returns a sendable string request (origin-form)'''
-    def to_raw(self):
+    def to_raw(self) -> bytes:
+        """
+        Arranges the Response object into a raw bytes object compliant with the 
+        HTTP protocol specifications.
+
+        :rtype: bytes
+        :returns: The raw bytes-like object ready to be sent over a socket.
+        """
+        
+        # Only the minimal 200 "Connection Etablished" response
         if self.raw_connect:
-        # Only the minimal 200 CONNECT Connection Etablished response
-            return f"{self.http_version} {self.status_code} {self.reason}\r\nProxy-Agent: SafeProxy\r\n\r\n"
+            response = f"{self.http_version} {self.status_code} {self.reason}\r\nProxy-Agent: SafeProxy\r\n\r\n"
+            return response.encode()
         
         first_line = f"{self.http_version} {self.status_code} {self.reason}\r\n"
         headers = "".join(f"{h}: {v}\r\n" for h, v in self.headers.items())
         body = f"\r\n\r\n{self.body or ""}"
-
-        return first_line + headers + body
+        
+        return (first_line + headers + body).encode()
     
-    '''returns a pretty request (debugging)'''
     def prettify(self) -> str:
+        """
+        Generates a human-readable, formatted string representation of the 
+        response object. Used for logging and debugging purposes.
+
+        :rtype: str
+        :returns: A multi-line string visualizing the response structure.
+        """
         return (
             "\n------RESPONSE------"
             f"\n--Http version: {self.http_version}, \n--Status code: {self.status_code}, \n--Reason: {self.reason},"

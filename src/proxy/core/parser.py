@@ -82,7 +82,7 @@ class Parser():
                 
                 # Check host header match first-line host (if header exists)
                 host_header_value = headers.get("Host", None)
-                logging.info(f"HOST BY FIRST LINE:{host}, HOST BY HEADERS: {host_header_value}")
+                logging.info(f"Host by first line: {host}, Host by headers: {host_header_value}")
 
                 if uri_form == "origin-form" and not host_header_value:
                     raise ValueError("Missing Host header in origin-form request.")
