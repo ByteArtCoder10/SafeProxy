@@ -1,7 +1,7 @@
 import socket
 import ssl
 import socket
-import shutil
+import logging
 
 from abc import ABC, abstractmethod
 from ...constants import SOCKET_BUFFER_SIZE
@@ -9,7 +9,7 @@ from ..structures.request import Request
 from ..structures.response import Response
 from ..structures.connection_status import ConnectionStatus
 from ..security.url_manager import UrlManager
-from ...logs.logging_config import ProxyLoggerManager
+from ...logs.logger_manager import LoggerManager
         
 class BaseHandler(ABC):
     """
@@ -47,27 +47,24 @@ class BaseHandler(ABC):
         :type client_socket: socket.socket
         :param client_socket: The active communication socket for the client.
         """
-        self.create_logger(req, client_socket)
-        return self.process(req, client_socket)
+        try:
+            # self.create_logger(req, client_socket)
+            return self.process(req, client_socket)
+        except ConnectionError as e:
+            logging.critical(f"Handler Crashed. {e}")
         
 
-    def create_logger(self, req, client_socket):
-        # 1. Identify the user
-        addr, port = client_socket.getpeername()
-        
-        # 2. Get the specific logger
-        self.conn_log = ProxyLoggerManager.get_connection_logger(addr, port)
-        
-        self.conn_log.info(f"New request to {req.host} from {addr}:{port}")
-        
-        try:
-            # Now replace 'self.conn_log.debug' with 'self.conn_log.debug'
-            self.conn_log.debug(f"Request Headers: {req.headers}")
-            
-            # ... rest of your logic ...
-        except Exception as e:
-            self.conn_log.error(f"Error in connection: {e}", exc_info=True)
-            raise e
+    # def create_logger(self, req, client_socket):
+    #     # 1. Identify the user
+    #     try:
+    #         addr, port = client_socket.getpeername()
+
+    #         # 2. Get the specific logger
+    #         logging = LoggerManager.create_connection_logger(addr, port, req.host)
+
+    #         logging.info(f"New request to {req.host} from {addr}:{port}")
+    #     except Exception as e:
+    #         raise ConnectionError(f"Failed to load connection logger. {e}") from e
     
     @abstractmethod
     def process(self, req : Request, client_socket : socket.socket | ssl.SSLSocket):
@@ -184,7 +181,7 @@ class BaseHandler(ABC):
             elif addBlackListLabelHTML:
                 response._add_dynamic_body()
 
-        self.conn_log.debug(response.prettify())
+        logging.debug(response.prettify())
         try:
             client_socket.sendall(response.to_raw())
         except Exception as e:
@@ -204,4 +201,4 @@ class BaseHandler(ABC):
                 except:
                     pass
 
-        self.conn_log.info("Client and server's sockets closed.")
+        logging.info("Client and server's sockets closed.")

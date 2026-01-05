@@ -1,6 +1,6 @@
 import socket
 import threading
-
+import logging
 from .base_handler import BaseHandler
 from ..structures.request import Request
 from ..structures.connection_status import ConnectionStatus
@@ -39,11 +39,11 @@ class HttpsTcpTunnelHandler(BaseHandler):
         url = req.host + req.path
 
         if self.url_manager.is_blacklisted(url):
-            self.conn_log.info("URL requested is blacklisted. TLS-Terminating and sending 403 blacklisted.")
+            logging.info("URL requested is blacklisted. TLS-Terminating and sending 403 blacklisted.")
             # TLS termination -> send 403 Blacklisted
             return
         if self.url_manager.is_malicious(url):
-            self.conn_log.info("URL requested is malicious. TLS-Terminating and sending 403 malicious.")
+            logging.info("URL requested is malicious. TLS-Terminating and sending 403 malicious.")
             # TLS termination -> send 403 malicious
             return
         
@@ -55,17 +55,17 @@ class HttpsTcpTunnelHandler(BaseHandler):
                     self._run_tunnel_relay()
                     return
                 case ConnectionStatus.REDIRECT_REQUIRED:
-                    self.conn_log.debug(f"Connection failed for {req.host}. Redirecting to Google.")
+                    logging.debug(f"Connection failed for {req.host}. Redirecting to Google.")
                     # TLS Termination -> Send Redirection repsponse
                     pass
 
                 case ConnectionStatus.CONNECT_FAILURE:
-                    self.conn_log.info(f"Connection failed for {req.host}. TLS-Terminating and Sending 502.")
+                    logging.info(f"Connection failed for {req.host}. TLS-Terminating and Sending 502.")
                     # TLS Termination -> Send 502 Bad Request.
                     pass
 
         except Exception as e:
-            self.conn_log.critical(f"Handler Error: {e}", exc_info=True)
+            logging.critical(f"Handler Error: {e}", exc_info=True)
             # Safe fallback - try to send to client 502 "Bad Request"
             try:
                 # TLS Termination -> send 502
@@ -130,7 +130,7 @@ class HttpsTcpTunnelHandler(BaseHandler):
                 send_socket.sendall(data)
 
         except Exception as e:
-            self.conn_log.debug(f"Negligible relay error ({peer_name}).")
+            logging.debug(f"Negligible relay error ({peer_name}).")
 
         # stop both threads
         self.running = False

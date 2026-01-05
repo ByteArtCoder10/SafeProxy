@@ -1,4 +1,5 @@
 import logging 
+from ...logs.logger_manager import LoggerManager
 from ..structures.request import Request
 class Parser():
     '''Handles HTTP(S) raw requests + responses, and parses them accordingly. 
@@ -14,6 +15,7 @@ class Parser():
     '''
     @staticmethod
     def parse_request(request: str) -> Request:
+            
             try:
                 lines = request.split('\r\n')
 
@@ -82,7 +84,7 @@ class Parser():
                 
                 # Check host header match first-line host (if header exists)
                 host_header_value = headers.get("Host", None)
-                logging.info(f"Host by first line: {host}, Host by headers: {host_header_value}")
+                logging.debug(f"Host by first line: {host}, Host by headers: {host_header_value}")
 
                 if uri_form == "origin-form" and not host_header_value:
                     raise ValueError("Missing Host header in origin-form request.")

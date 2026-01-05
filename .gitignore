@@ -7,8 +7,6 @@ __pycache__/
 
 .env
 
-.safeproxy/
-*
+.safeproxy/*
 
-.certs/
-*
+.certs/*

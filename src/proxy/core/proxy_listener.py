@@ -3,7 +3,8 @@ import threading
 import logging
 from .parser import Parser
 from .router import Router
-from ...constants import SOCKET_BUFFER_SIZE as BUFFER_SIZE
+from ...constants import MAX_CLIENTS, SOCKET_BUFFER_SIZE as BUFFER_SIZE
+from ...logs.logger_manager import LoggerManager
 HTTP_SUPPORTED_METHODS = ['GET', 'POST', 'PUT',
                           'DELETE', 'HEAD', 'OPTIONS', 'PATCH']
 
@@ -20,15 +21,23 @@ class ProxyListener:
         self._parser = Parser
         self._router = Router()
 
+    def setup_and_start_proxy(self):
+        try:
+            LoggerManager.session_claenup()
+            self.start()
+        except Exception as e:
+            logging.critical(f"SafeProxy crashed! {e}.", exc_info=True)
+    
+
     '''starts the server and routes http/s requests.'''
-    def start(self, clients_capacity: int) -> None:
+    def start(self) -> None:
         try:
             self._server_socket = socket.socket(
                 socket.AF_INET, socket.SOCK_STREAM)
             self._server_socket.bind((self._ip, self._port))
             logging.info(f"server is up at {self._ip, self._port}.")
 
-            self._server_socket.listen(clients_capacity)
+            self._server_socket.listen(MAX_CLIENTS)
             while True:
 
                 client_socket, client_address = self._server_socket.accept()
@@ -52,7 +61,6 @@ class ProxyListener:
             
             # Returns a Request obj 
             parsed_request = self._parser.parse_request(client_request)
-            self._parser
             # Route based on request
             self._router.route_request(parsed_request, client_socket)
 
