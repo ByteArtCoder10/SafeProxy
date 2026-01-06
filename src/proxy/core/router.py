@@ -1,7 +1,8 @@
 import socket
 import logging
-
 from http import HTTPMethod
+
+from ...logs.loggers import core_logger
 from ..structures.request import Request
 from ..structures.response import Response
 from ..handlers.http_handler import HttpHandler
@@ -15,6 +16,8 @@ class Router():
     def __init__(self):
         self.handler = None
 
+        # logging
+        core_logger = logging.getLogger("proxy.core")
     '''Routes request based on User prefences 
     (only want to hide his IP -> TCP tunnel, wants filtering URL -> TLS termination)
     and also based on request method(CONNECT/GET...)'''
@@ -27,7 +30,7 @@ class Router():
                 # elif user only cares about hiding his IP
                 if True:
                     # self.handler = HttpsTcpTunnelHandler()
-                    self.handler = HttpsTcpTunnelHandler()
+                    self.handler = HttpsTlsTerminationHandlerSSL()
                     
             elif self.is_valid_http_method(method):
                 self.handler = HttpHandler()
@@ -42,7 +45,7 @@ class Router():
             self.handler.handle(req, client_socket)
 
         except Exception as e:
-            logging.error(f"Unexpected error: {e}", exc_info=True)
+            core_logger.error(f"Unexpected error: {e}", exc_info=True)
                 
 
     def is_valid_http_method(self, method: str) -> bool:

@@ -2,7 +2,7 @@ from yarl import URL
 import urllib.parse
 import logging
 
-black_list = ['www.hello.com', 'www.youtube.com']
+black_list = ['www.hello.com']
 class UrlManager:
     """
     Manages URL-related safety logic for the proxy, including blacklist 

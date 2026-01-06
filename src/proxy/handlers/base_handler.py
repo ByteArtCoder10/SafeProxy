@@ -1,7 +1,6 @@
 import socket
 import ssl
 import socket
-import logging
 
 from abc import ABC, abstractmethod
 from ...constants import SOCKET_BUFFER_SIZE
@@ -9,7 +8,7 @@ from ..structures.request import Request
 from ..structures.response import Response
 from ..structures.connection_status import ConnectionStatus
 from ..security.url_manager import UrlManager
-from ...logs.logger_manager import LoggerManager
+from ...logs.loggers import core_logger
         
 class BaseHandler(ABC):
     """
@@ -51,7 +50,7 @@ class BaseHandler(ABC):
             # self.create_logger(req, client_socket)
             return self.process(req, client_socket)
         except ConnectionError as e:
-            logging.critical(f"Handler Crashed. {e}")
+            core_logger.critical(f"Handler Crashed. {e}")
         
 
     # def create_logger(self, req, client_socket):
@@ -60,9 +59,9 @@ class BaseHandler(ABC):
     #         addr, port = client_socket.getpeername()
 
     #         # 2. Get the specific logger
-    #         logging = LoggerManager.create_connection_logger(addr, port, req.host)
+    #         core_logger = LoggerManager.create_connection_logger(addr, port, req.host)
 
-    #         logging.info(f"New request to {req.host} from {addr}:{port}")
+    #         core_logger.info(f"New request to {req.host} from {addr}:{port}")
     #     except Exception as e:
     #         raise ConnectionError(f"Failed to load connection logger. {e}") from e
     
@@ -181,7 +180,7 @@ class BaseHandler(ABC):
             elif addBlackListLabelHTML:
                 response._add_dynamic_body()
 
-        logging.debug(response.prettify())
+        core_logger.debug(response.prettify())
         try:
             client_socket.sendall(response.to_raw())
         except Exception as e:
@@ -201,4 +200,4 @@ class BaseHandler(ABC):
                 except:
                     pass
 
-        logging.info("Client and server's sockets closed.")
+        core_logger.info("Client and server's sockets closed.")

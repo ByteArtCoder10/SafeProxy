@@ -1,6 +1,6 @@
 # .gitignore
-src/logs/
 *.log
+src/logs/*.log
 
 __pycache__/
 *.pyc
@@ -9,4 +9,6 @@ __pycache__/
 
 .safeproxy/*
 
-.certs/*
+.certs/
+*.crt
+*.key

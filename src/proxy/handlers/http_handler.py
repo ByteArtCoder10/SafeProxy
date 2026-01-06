@@ -1,10 +1,10 @@
 import socket
-import logging
 
 from .base_handler import BaseHandler
 from ..structures.request import Request
 from ..structures.response import Response
 from ..structures.connection_status import ConnectionStatus
+from ...logs.loggers import core_logger
 
 class HttpHandler(BaseHandler):
     '''Handles HTTP requests'''
@@ -45,16 +45,16 @@ class HttpHandler(BaseHandler):
                     self.forward_response()
                 
                 case ConnectionStatus.REDIRECT_REQUIRED:
-                    logging.debug(f"Connection failed for {req.host}. Redirecting to Google.")
+                    core_logger.debug(f"Connection failed for {req.host}. Redirecting to Google.")
                     google_search_url = self.url_manager.get_google_url(req.host)
                     self._respond_to_client(req, self._client_socket, 200, redirectURL=google_search_url)
                 
                 case ConnectionStatus.CONNECT_FAILURE:
-                    logging.info(f"Connection failed for {req.host}. Sending 502.")
+                    core_logger.info(f"Connection failed for {req.host}. Sending 502.")
                     self._respond_to_client(req, self._client_socket, 502)
 
         except Exception as e:
-            logging.critical(f"Handler Error: {e}", exc_info=True)
+            core_logger.critical(f"Handler Error: {e}", exc_info=True)
             # Safe fallback - try to send to client 502 "Bad Request"
             try:
                 self._respond_to_client(req, self._client_socket, 502)

@@ -1,7 +1,6 @@
 import socket
 import ssl
 import threading
-import logging
 import os
 import datetime
 
@@ -12,6 +11,8 @@ from ..structures.request import Request
 from ..structures.response import Response
 from ..core.parser import Parser
 from ..handlers.https_tcp_tunnel_handler import HttpsTcpTunnelHandler
+from ...logs.loggers import core_logger
+from ...logs.proxy_context import ProxyContext
 
 
 class HttpsTlsTerminationHandlerSSL(BaseHandler):
@@ -61,9 +62,9 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
         # resume tls handshake
         raw_request = self._resume_tls_conenction()
         if not raw_request:
-            logging.error("NO REQUEST FROM THE CLIENT - ERROR")
+            core_logger.error("NO REQUEST FROM THE CLIENT - ERROR")
             return
-        logging.info(f"raw_request: {raw_request}")
+        core_logger.info(f"raw_request: {raw_request}")
         
         # parse raw request into a Request obj
         client_request = Parser.parse_request(raw_request.decode())
@@ -76,10 +77,10 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
             # Only run relay if we actually have a secure connection
             self._run_relay_data()
         else:
-            logging.error("Aborting relay due to failed server handshake.")
+            core_logger.error("Aborting relay due to failed server handshake.")
             self._close_sockets()
         after = datetime.datetime.now()
-        logging.info(f"TIME IT TOOK TLS_SSL - {after-before}")
+        core_logger.info(f"TIME IT TOOK TLS_SSL - {after-before}")
         # override Base class method
     
         '''establish a TCP conenction between the given server and the proxy.'''
@@ -89,11 +90,11 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
     def _resume_tls_conenction(self):
         try:        
             self._tls_client_connection.do_handshake()
-            logging.info("Handshake Success! Secure TLS connection is enabled.")
+            core_logger.info("Handshake Success! Secure TLS connection is enabled.")
             
             # Read decrypted data
             raw_request = self._tls_client_connection.recv(self.BUFFER_SIZE)
-            logging.debug(f"Cient's request after TLS termination: \n{raw_request.decode()}")
+            core_logger.debug(f"Cient's request after TLS termination: \n{raw_request.decode()}")
             return raw_request
         except Exception as e:
             raise ConnectionError(f'TLS connection failed: {e}') 
@@ -127,10 +128,10 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
             self._tls_server_connection = self._server_ssl_context.wrap_socket(self._server_socket, server_hostname=req.host)
             return True
         # except ssl.ERROR:
-        #     logging.error("TLS hanshake with server failed. Server requires authentication.")
+        #     core_logger.error("TLS hanshake with server failed. Server requires authentication.")
         #     return False
         except Exception as e:
-            logging.error(f"TLS connection with server failed: {e}", exc_info=True)
+            core_logger.error(f"TLS connection with server failed: {e}", exc_info=True)
             return False
         
 
@@ -140,15 +141,15 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
         
         # recv from client -> send to server
         t1 = threading.Thread(
-            target=self._relay_data,
-            args=(self._tls_client_connection, self._tls_server_connection),
+            target=self._handle_relay_data,
+            args=(self._tls_client_connection, self._tls_server_connection, ProxyContext.get_local()),
             daemon=True
         )
 
         # recv from server -> send to client
         t2 = threading.Thread(
-            target=self._relay_data,
-            args=(self._tls_server_connection, self._tls_client_connection),
+            target=self._handle_relay_data,
+            args=(self._tls_server_connection, self._tls_client_connection, ProxyContext.get_local()),
             daemon=True
         )
 
@@ -161,6 +162,13 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
 
         self._close_sockets()
     
+    def _handle_relay_data(self, recv_socket: ssl.SSLSocket, send_socket: ssl.SSLSocket, local_thread_vars : dict):
+        """wrapper class for handling new threads operations, and relaying data"""
+        # force local thread variables on thread
+        ProxyContext.set_local(local_thread_vars)
+        # relay data
+        self._relay_data(recv_socket, send_socket)
+
     def _relay_data(self, recv_socket: ssl.SSLSocket, send_socket: ssl.SSLSocket):
         recv_socket.settimeout(None)
         send_socket.settimeout(None)
@@ -174,7 +182,7 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
                 send_socket.write(data)
 
         except Exception as e:
-            logging.debug(f"Relay error ({peer_name}): {e}", exc_info=True)
+            core_logger.debug(f"Relay error ({peer_name}): {e}")
     
     '''closes socket objects (origin server and client).'''            
     def _close_sockets(self):
@@ -185,7 +193,7 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
                 except:
                     pass
 
-        logging.info("Tunnel closed.")
+        core_logger.info("Tunnel closed.")
 
     # HELPERS
     '''get reocrd length of a message'''
@@ -269,7 +277,7 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
                 name_type = ext_data[offset] # always DNS host_name
                 name_len = int.from_bytes(ext_data[offset+1:offset+3], "big")
                 hostname = ext_data[offset+3:offset+3+name_len]
-                logging.debug(f"SNI :{hostname.decode('utf-8')}")
+                core_logger.debug(f"SNI :{hostname.decode('utf-8')}")
                 return hostname.decode()
 
             pos += 4 + ext_len

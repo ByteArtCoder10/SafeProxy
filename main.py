@@ -1,11 +1,11 @@
 import os
 from dotenv import load_dotenv
-from src.logs.logger_manager import LoggerManager
+from src.logs.logging_manager import LoggingManager
 
 def main():
 
     load_dotenv('.env')
-    LoggerManager.create_main_logger()
+    LoggingManager.setup_logging()
 
     from src.proxy.core.proxy_listener import ProxyListener
 

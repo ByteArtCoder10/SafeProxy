@@ -5,6 +5,9 @@ from datetime import datetime, timezone
 from typing import Optional, ClassVar
 import socket
 
+from ...logs.loggers import core_logger
+from ...constants import SECURITY_LOCK_BG_PATH
+
 
 @dataclass
 class Response:
@@ -134,11 +137,11 @@ class Response:
                         content: "";
                         position: absolute;
                         inset: 0;
-                        background-image: url(./././assets/security_lock_bg.png);
+                        background-image: url(https://cdn-icons-png.flaticon.com/512/8631/8631491.png);
                         background-size: cover;
                         background-position: center;
                         opacity: 0.18;
-                        filter: blur(6px);
+                        filter: blur(4px);
                     }}
 
                     .content {{
@@ -238,11 +241,11 @@ class Response:
                     content: "";
                     position: absolute;
                     inset: 0;
-                    background-image: url(./././assets/security_lock_bg.png);
+                    background-image: url(https://cdn-icons-png.flaticon.com/512/8631/8631491.png);
                     background-size: cover;
                     background-position: center;
                     opacity: 0.18;
-                    filter: blur(6px);
+                    filter: blur(4px);
                 }}
 
                 .content {{
@@ -302,7 +305,15 @@ class Response:
 
         self.body = html_body
         self.headers['Content-length'] = len(self.body.encode('utf-8'))
-
+    
+    def _load_lock_image(self):
+        try:
+            with open(SECURITY_LOCK_BG_PATH, "r") as f:
+                base64_img = f.read()
+            return base64_img
+        except Exception as e:
+            core_logger.warning(f"Couldn't load lock image for custom proxy response. proceeding without. {e}", exc_info=True)
+    
     def _add_proxy_fixed_headers(self):
         """
         adds proxy required and preffered headers. The proxy's job is 

@@ -1,10 +1,11 @@
 import socket
 import threading
-import logging
 from .base_handler import BaseHandler
 from ..structures.request import Request
 from ..structures.connection_status import ConnectionStatus
 from ..structures.response import Response
+from ...logs.loggers import core_logger
+from ...logs.proxy_context import ProxyContext
 
 
 class HttpsTcpTunnelHandler(BaseHandler):
@@ -39,11 +40,11 @@ class HttpsTcpTunnelHandler(BaseHandler):
         url = req.host + req.path
 
         if self.url_manager.is_blacklisted(url):
-            logging.info("URL requested is blacklisted. TLS-Terminating and sending 403 blacklisted.")
+            core_logger.info("URL requested is blacklisted. TLS-Terminating and sending 403 blacklisted.")
             # TLS termination -> send 403 Blacklisted
             return
         if self.url_manager.is_malicious(url):
-            logging.info("URL requested is malicious. TLS-Terminating and sending 403 malicious.")
+            core_logger.info("URL requested is malicious. TLS-Terminating and sending 403 malicious.")
             # TLS termination -> send 403 malicious
             return
         
@@ -55,17 +56,17 @@ class HttpsTcpTunnelHandler(BaseHandler):
                     self._run_tunnel_relay()
                     return
                 case ConnectionStatus.REDIRECT_REQUIRED:
-                    logging.debug(f"Connection failed for {req.host}. Redirecting to Google.")
+                    core_logger.debug(f"Connection failed for {req.host}. Redirecting to Google.")
                     # TLS Termination -> Send Redirection repsponse
                     pass
 
                 case ConnectionStatus.CONNECT_FAILURE:
-                    logging.info(f"Connection failed for {req.host}. TLS-Terminating and Sending 502.")
+                    core_logger.info(f"Connection failed for {req.host}. TLS-Terminating and Sending 502.")
                     # TLS Termination -> Send 502 Bad Request.
                     pass
 
         except Exception as e:
-            logging.critical(f"Handler Error: {e}", exc_info=True)
+            core_logger.critical(f"Handler Error: {e}", exc_info=True)
             # Safe fallback - try to send to client 502 "Bad Request"
             try:
                 # TLS Termination -> send 502
@@ -85,13 +86,13 @@ class HttpsTcpTunnelHandler(BaseHandler):
         self.running = True
 
         t1 = threading.Thread(
-            target=self._relay_data,
-            args=(self._client_socket, self._server_socket),
+            target=self._handle_relay_data,
+            args=(self._client_socket, self._server_socket, ProxyContext.get_local()),
             daemon=True)
 
         t2 = threading.Thread(
-            target=self._relay_data,
-            args=(self._server_socket, self._client_socket),
+            target=self._handle_relay_data,
+            args=(self._server_socket, self._client_socket, ProxyContext.get_local()),
             daemon=True)
 
         t1.start()
@@ -102,7 +103,15 @@ class HttpsTcpTunnelHandler(BaseHandler):
         t2.join()
 
         self._close_sockets()
+    
 
+    def _handle_relay_data(self, recv_socket: socket, send_socket: socket, local_thread_vars : dict):
+        """wrapper class for handling new threads operations, and relays data"""
+        # force local thread variables on thread
+        ProxyContext.set_local(local_thread_vars)
+        # relay data
+        self._relay_data(recv_socket, send_socket)
+        
     def _relay_data(self, recv_socket: socket, send_socket: socket):
         """
         The worker method for relay threads. Continuously receives raw bytes 
@@ -114,10 +123,11 @@ class HttpsTcpTunnelHandler(BaseHandler):
         :type send_socket: socket.socket
         :param send_socket: The destination socket to write to.
         """
-
-        # setting timeout back to defult in case of keep-alive connection
-        recv_socket.settimeout(None)
-        send_socket.settimeout(None)
+        # forcing in this thread the local variables
+  
+        # setting timeout to 30s in case of keep-alive connection
+        recv_socket.settimeout(30)
+        send_socket.settimeout(30)
 
         try:
             peer_name = recv_socket.getpeername()
@@ -130,7 +140,7 @@ class HttpsTcpTunnelHandler(BaseHandler):
                 send_socket.sendall(data)
 
         except Exception as e:
-            logging.debug(f"Negligible relay error ({peer_name}).")
+            core_logger.debug(f"Negligible relay error ({peer_name}).")
 
         # stop both threads
         self.running = False

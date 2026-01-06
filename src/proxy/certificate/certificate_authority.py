@@ -1,7 +1,6 @@
 from ...constants import ORGANIZTION_NAME, COUNTRY_NAME, LOCALITY_NAME, \
 COMMON_NAME, CA_VALIDITY_DAYS, CA_ROOT_VALIDITY_DAYS, CA_KEY_SIZE, CERTS_DIR, MAX_MEMORY_CERTS
 from dotenv import load_dotenv
-import logging
 import os
 import shutil
 from datetime import datetime, timedelta, timezone
@@ -9,6 +8,7 @@ import fnmatch
 from dataclasses import dataclass
 from typing import Tuple, Optional
 from collections import OrderedDict
+import threading
 
 # Cryptography imports
 from cryptography import x509
@@ -19,6 +19,8 @@ from cryptography.x509.oid import NameOID
 from ..utils.network_utils import NetworkUtils
 from ..structures.cert_bundle import CertBundle
 from ..structures.cert_search_status import CertSearchStatus
+
+from ...logs.loggers import core_logger
 
 
 
@@ -67,33 +69,35 @@ class CertificateAuthority:
         
         # Check memory
         memory_status, memory_matching_host, memory_bundle = self._check_memory(host)
+        core_logger.info(f"memory_matching_host: {memory_matching_host}")
         if memory_status == CertSearchStatus.VALID:
             res_bundle = memory_bundle
         elif memory_status == CertSearchStatus.EXPIRED:
-            logging.info(f"Certificate for {host} expired. Regenerating...")
+            core_logger.info(f"Certificate for {memory_matching_host} expired. Regenerating...")
             res_bundle = self._issue_host_certificate(memory_matching_host, cert_bundle=memory_bundle, KeepPrivKey=True)
         else:
             # Check disk
             disk_status, disk_matching_host, disk_bundle = self._check_disk(host)
+            core_logger.info(f"disk_matching_host: {disk_matching_host}")
             if disk_status == CertSearchStatus.VALID:
                 res_bundle = disk_bundle
             elif disk_status == CertSearchStatus.EXPIRED:
-                logging.info(f"Certificate for {host} expired. Regenerating...")
+                core_logger.info(f"Certificate for {disk_matching_host} expired. Regenerating...")
                 res_bundle = self._issue_host_certificate(disk_matching_host, cert_bundle=disk_bundle, KeepPrivKey=True)
             else:
-                logging.info(f"Certificate for {host} wasn't found. Generating a new one...")
+                core_logger.info(f"Certificate for {host} wasn't found. Generating a new one...")
                 res_bundle = self._issue_host_certificate(host)
         
         # update memory, disk, and known hosts list on memory.
-        self._update_or_add_to_memory(host, res_bundle)
-        status, cert_path, key_path = self._update_or_add_to_disk(host, res_bundle)
+        target_storage_host = memory_matching_host or disk_matching_host or host
+        self._update_or_add_to_memory(target_storage_host, res_bundle)
+        status, cert_path, key_path = self._update_or_add_to_disk(target_storage_host, res_bundle)
         if status:
-            logging.info(f"Added {host} to memory.")
+            core_logger.info(f"Added {target_storage_host} to memory.")
             self._known_on_disk = self._update_or_load_known_on_disk()
             return cert_path, key_path
 
         return None, None
-        # return res_bundle.pem_cert, res_bundle.pem_key, self._ca_bundle.pem_cert
 
     # ==========================================================
     #                       Core Logic
@@ -123,10 +127,10 @@ class CertificateAuthority:
                 cert_modification_time = datetime.fromtimestamp(cert_modification_time_float, tz=timezone.utc)
                 # if the threshold is later than cert and key last modfied date
                 if cert_modification_time < threshold:
-                    logging.info(f"Cleaning up expired/old certificate for {dir_path}")
+                    core_logger.info(f"Cleaning up expired/old certificate for {dir_path}")
                     shutil.rmtree(dir_path) # removes directory
             except Exception as e:
-                logging.error(f"Failed to delete expired/old certifcate for {dir_path}: {e}", exc_info=True)
+                core_logger.error(f"Failed to delete expired/old certifcate for {dir_path}: {e}", exc_info=True)
                 
     """Checks disk cache, in order to find a cert for given host.
         
@@ -137,6 +141,7 @@ class CertificateAuthority:
     """
     def _check_disk(self, host: str) -> tuple[CertSearchStatus, str | None, CertBundle | None] | None:
         try:
+            core_logger.info(f"known_on_disk: {self._known_on_disk}")
             for cert_host in self._known_on_disk:
                 if self._host_matches_sans(host, cert_host):
                     # directory and files paths
@@ -163,7 +168,7 @@ class CertificateAuthority:
                             return CertSearchStatus.VALID, cert_host,  bundle
         
         except Exception as e:
-            logging.warning(f"Couldn't check disk properly for certificate for host: {host}. {e}", exc_info=True)
+            core_logger.warning(f"Couldn't check disk properly for certificate for host: {host}. {e}", exc_info=True)
             return CertSearchStatus.NOT_FOUND, None, None
         
         return CertSearchStatus.NOT_FOUND, None, None # Not found
@@ -177,9 +182,10 @@ class CertificateAuthority:
         - bundle (CertBundle | None
     """
     def _check_memory(self, host: str) -> tuple[CertSearchStatus, str | None, CertBundle | None]: 
+        core_logger.info(self._active_certs.__dict__)
         for cert_host in self._active_certs:
             if self._host_matches_sans(host, cert_host):
-                bundle = self._certificates[cert_host]
+                bundle = self._active_certs[cert_host]
                 if not self._is_valid(bundle.certificate):
                     return CertSearchStatus.EXPIRED, cert_host, bundle
                 if bundle is None: # not expected to happen.
@@ -197,7 +203,7 @@ class CertificateAuthority:
 
     """update or add a PEM key and PEM cert to disk.
        Returns: True if successfull, False otherwise ."""
-    def _update_or_add_to_disk(self, host: str, bundle: CertBundle) -> bool:
+    def _update_or_add_to_disk(self, host: str, bundle: CertBundle) -> tuple[bool, str | None, str | None]:
         try:
             folder_path = os.path.join(CERTS_DIR, host)
             pem_cert_path = os.path.join(folder_path, f"{host}.crt")
@@ -206,10 +212,10 @@ class CertificateAuthority:
                 os.mkdir(folder_path)
             self._save_to_file(pem_cert_path, bundle.pem_cert)
             self._save_to_file(pem_key_path, bundle.pem_key)
-            logging.info(f"Successfully saved/updated to disk {host}'s Cert and private key.")
+            core_logger.info(f"Successfully saved/updated to disk {host}'s cert and private key.")
             return True, pem_cert_path, pem_key_path
         except Exception as e:
-            logging.warning(f"Failed saving/updating to disk {host}'s Cert and private key: {e}", exc_info=True)
+            core_logger.warning(f"Failed saving/updating to disk {host}'s Cert and private key: {e}", exc_info=True)
             return False, None, None
     
 
@@ -220,7 +226,9 @@ class CertificateAuthority:
                 self._active_certs.move_to_end(key)
                 if value != bundle:
                     self._active_certs[key] = bundle
-                logging.info(self._active_certs)
+                core_logger.info(self._active_certs)
+                if len(self._active_certs) > MAX_MEMORY_CERTS:
+                    self._active_certs.popitem(last=False) # pop the first value - less used
                 return
         
         # wasn't found on dict, add to dict + check if passed max size.
@@ -234,10 +242,10 @@ class CertificateAuthority:
         try:
             return [dir_name for dir_name in os.listdir(CERTS_DIR)]
         except FileNotFoundError as e:
-            logging.warning("Directory {CERTS_DIR} wasn't found.")
+            core_logger.warning("Directory {CERTS_DIR} wasn't found.")
             return []
         except Exception as e:
-            logging.warning(f"Unexpected error: \
+            core_logger.warning(f"Unexpected error: \
             couldn't load dirs names from {CERTS_DIR} - {e}", exc_info=True)
             return []
 
@@ -245,7 +253,7 @@ class CertificateAuthority:
     def _load_or_generate_root_ca(self) -> CertBundle:
         if os.path.exists(self._ca_key_path) and os.path.exists(self._ca_cert_path):
             try:
-                logging.info("Loading existing root CA...")
+                core_logger.info("Loading existing root CA...")
                 with open(self._ca_key_path, "rb") as f:
                     pem_ca_key = f.read()
                     priv_key_password = os.getenv("ROOT_CA_PRIVATE_KEY_PASSWORD").encode()
@@ -255,7 +263,7 @@ class CertificateAuthority:
                     cert = x509.load_pem_x509_certificate(pem_ca_cert)
                 
                 if not self._is_valid(cert):
-                    logging.warning("Root CA is expired. Regenerating...")
+                    core_logger.warning("Root CA is expired. Regenerating...")
                     return self._generate_root_ca()
                 
                 return CertBundle(
@@ -263,14 +271,14 @@ class CertificateAuthority:
                     pem_key=pem_ca_key, pem_cert=pem_ca_cert
                 )
             except Exception as e:
-                logging.error(f"Failed to load CA: {e}. Be aware: Root CA cert would need to be re-installed on client's machine.\
+                core_logger.error(f"Failed to load CA: {e}. Be aware: Root CA cert would need to be re-installed on client's machine.\
                               Regenerating...", exc_info=True)
         
         return self._generate_root_ca()
 
     """Generates a Self-Signed Root Certificate. Uses RSA for private, public key and RSA & SHA256 for signatures"""
     def _generate_root_ca(self) -> CertBundle:
-        logging.info("Generating new Self-Signed Root CA...")
+        core_logger.info("Generating new Self-Signed Root CA...")
         
         # generate private key
         private_key = self._generate_private_key()
@@ -491,7 +499,7 @@ class CertificateAuthority:
             with open(path, "wb") as f:
                 f.write(data)
         except OSError as e:
-            logging.error(f"Failed to save {path}: {e}")
+            core_logger.error(f"Failed to save {path}: {e}")
 
     def _read_from_file(self, path: str) -> bytes:
         try:
@@ -499,14 +507,14 @@ class CertificateAuthority:
                 raw_data = f.read()
                 return raw_data
         except OSError as e:
-            logging.error(f"Failed to load {path}: {e}")
+            core_logger.error(f"Failed to load {path}: {e}")
 
 if "__main__" == __name__:
     ca = CertificateAuthority()
-    logging.info(f"ROOT PK AFTER ENC: {ca._ca_bundle.pem_key}")
+    core_logger.info(f"ROOT PK AFTER ENC: {ca._ca_bundle.pem_key}")
     for i in range(30):
         ca.get_certificate_for_host(f"Google{i}.com")
     for cert in ca._active_certs:
-        logging.info(f'CertBundle: {cert}')
-    logging.info("ACTIVE CERTS (hosts): %s", list(ca._active_certs.keys()))
-    logging.info(f"KNOWN ON DISK: {ca._known_on_disk}")
+        core_logger.info(f'CertBundle: {cert}')
+    core_logger.info("ACTIVE CERTS (hosts): %s", list(ca._active_certs.keys()))
+    core_logger.info(f"KNOWN ON DISK: {ca._known_on_disk}")
