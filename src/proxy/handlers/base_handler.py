@@ -49,8 +49,8 @@ class BaseHandler(ABC):
         try:
             # self.create_logger(req, client_socket)
             return self.process(req, client_socket)
-        except ConnectionError as e:
-            core_logger.critical(f"Handler Crashed. {e}")
+        except Exception as e:
+            core_logger.critical(f"Client's Handler Crashed. {e}", exc_info=True)
         
 
     # def create_logger(self, req, client_socket):

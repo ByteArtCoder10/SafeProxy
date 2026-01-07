@@ -17,9 +17,9 @@ from ...logs.proxy_context import ProxyContext
 
 class HttpsTlsTerminationHandlerSSL(BaseHandler):
 
-    def __init__(self):
+    def __init__(self, ca : CertificateAuthority):
         super().__init__()
-        self._ca_authority = CertificateAuthority()
+        self._ca_authority = ca
         # create en empty ssl context
         self._server_ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         # get root ca's certifciate's path
@@ -58,13 +58,13 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
         self.url_manager.is_malicious(sni):
             self._respond_to_client(req, self._tls_client_connection, 403, addBlackListLabelHTML=True)
 
-        # sdd cert to ssl's context
+        # add cert to ssl's context
         # resume tls handshake
         raw_request = self._resume_tls_conenction()
         if not raw_request:
-            core_logger.error("NO REQUEST FROM THE CLIENT - ERROR")
+            core_logger.error("No request from the client.")
             return
-        core_logger.info(f"raw_request: {raw_request}")
+        core_logger.debug(f"Raw Request: {raw_request}")
         
         # parse raw request into a Request obj
         client_request = Parser.parse_request(raw_request.decode())
@@ -99,20 +99,6 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
         except Exception as e:
             raise ConnectionError(f'TLS connection failed: {e}') 
     
-    # def _set_client_tlslite_object(self, cert: bytes, private_key: bytes, root_ca_cert: bytes):
-    #     # Create tlslite-objects for storing private key and cert
-        
-    #     # host certifcate
-    #     x509_host_cert = X509()
-    #     x509_host_cert.parse(cert.decode())
-
-    #     # root ca certificate
-    #     x509_ca_root = X509()
-    #     x509_ca_root.parse(root_ca_cert.decode())
-
-    #     tlslite_cert_chain = X509CertChain([x509_host_cert, x509_ca_root])
-    #     tlslite_private_key = parsePEMKey(private_key.decode(), private=True)
-    #     return tlslite_cert_chain, tlslite_private_key
 
     # PROXY-SERVER FUNCTIONS
 
@@ -126,6 +112,7 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
         
         try:
             self._tls_server_connection = self._server_ssl_context.wrap_socket(self._server_socket, server_hostname=req.host)
+            core_logger.debug(f"Successfully securely connected to server {req.host}.")
             return True
         # except ssl.ERROR:
         #     core_logger.error("TLS hanshake with server failed. Server requires authentication.")
@@ -153,6 +140,7 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
             daemon=True
         )
 
+        core_logger.debug("starts relaying data bidervtionally.")
         t1.start()
         t2.start()
 
@@ -193,7 +181,7 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
                 except:
                     pass
 
-        core_logger.info("Tunnel closed.")
+        core_logger.info("closed client's and server's sockets. Connection ended.")
 
     # HELPERS
     '''get reocrd length of a message'''

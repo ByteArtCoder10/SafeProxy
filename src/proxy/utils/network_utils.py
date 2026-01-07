@@ -28,7 +28,8 @@ class NetworkUtils:
         '''
         # check if IP given is valid
         if not NetworkUtils.is_valid_ip(ip_addr):
-            return None
+            # not an IP, but a host, return the host
+            return ip_addr
 
         # Check if the ip has a corresponding hostname
         try:

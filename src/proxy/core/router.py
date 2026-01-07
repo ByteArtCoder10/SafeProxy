@@ -9,7 +9,7 @@ from ..handlers.http_handler import HttpHandler
 from ..handlers.https_tcp_tunnel_handler import HttpsTcpTunnelHandler
 from ..handlers.https_tls_termination_handler import HttpsTlsTerminationHandler
 from ..handlers.https_tls_termination_handler_ssl import HttpsTlsTerminationHandlerSSL
-
+from ..certificate.certificate_authority import CertificateAuthority
 
 class Router():
     
@@ -21,7 +21,7 @@ class Router():
     '''Routes request based on User prefences 
     (only want to hide his IP -> TCP tunnel, wants filtering URL -> TLS termination)
     and also based on request method(CONNECT/GET...)'''
-    def route_request(self, req: Request, client_socket: socket) -> None:
+    def route_request(self, req: Request, client_socket: socket, ca  : CertificateAuthority) -> None:
         try:
             method = req.method
             if method == "CONNECT": 
@@ -30,7 +30,7 @@ class Router():
                 # elif user only cares about hiding his IP
                 if True:
                     # self.handler = HttpsTcpTunnelHandler()
-                    self.handler = HttpsTlsTerminationHandlerSSL()
+                    self.handler = HttpsTlsTerminationHandlerSSL(ca)
                     
             elif self.is_valid_http_method(method):
                 self.handler = HttpHandler()

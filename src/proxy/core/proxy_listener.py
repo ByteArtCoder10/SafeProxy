@@ -7,6 +7,7 @@ from ...constants import MAX_CLIENTS, SOCKET_BUFFER_SIZE as BUFFER_SIZE
 from ...logs.logging_manager import LoggingManager
 from ...logs.loggers import core_logger
 from ...logs.proxy_context import ProxyContext
+from ..certificate.certificate_authority import CertificateAuthority
 HTTP_SUPPORTED_METHODS = ['GET', 'POST', 'PUT',
                           'DELETE', 'HEAD', 'OPTIONS', 'PATCH']
 
@@ -26,7 +27,8 @@ class ProxyListener:
 
     def setup_and_start_proxy(self):
         try:
-            # LoggingManager.session_claenup()
+            # set up Certifcate aouthority to have a singelton CA in all proxy
+            self._ca = CertificateAuthority()
             self.start()
         except Exception as e:
             core_logger.critical(f"SafeProxy crashed! {e}.", exc_info=True)
@@ -72,7 +74,7 @@ class ProxyListener:
             ProxyContext.set_local_host(parsed_request.host)
 
             # Route based on request
-            self._router.route_request(parsed_request, client_socket)
+            self._router.route_request(parsed_request, client_socket, self._ca)
 
             
         except Exception as e:

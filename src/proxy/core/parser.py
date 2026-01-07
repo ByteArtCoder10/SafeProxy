@@ -95,7 +95,11 @@ class Parser():
                 
                 # if first-line host is None, and Host header has a value
                 if not host:
-                    host = host_header_value
+                    # check if host_header value has port in it
+                    if ":" in host_header_value:
+                        host = host_header_value.split(":")[0]
+                    else:
+                        host = host_header_value
                     
                 # turnning Parsing information to a Request obj
                 parsed_request = Request(method, host, port, http_version, path, headers, body)

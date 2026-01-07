@@ -50,7 +50,7 @@ class CertificateAuthority:
         self._ca_bundle = self._load_or_generate_root_ca()
 
     # ==========================================================
-    # Public API
+    # Public Func
     # ==========================================================
 
     """
@@ -69,7 +69,7 @@ class CertificateAuthority:
         
         # Check memory
         memory_status, memory_matching_host, memory_bundle = self._check_memory(host)
-        core_logger.info(f"memory_matching_host: {memory_matching_host}")
+        core_logger.debug(f"memory_matching_host: {memory_matching_host}")
         if memory_status == CertSearchStatus.VALID:
             res_bundle = memory_bundle
         elif memory_status == CertSearchStatus.EXPIRED:
@@ -102,6 +102,22 @@ class CertificateAuthority:
     # ==========================================================
     #                       Core Logic
     # ==========================================================
+    
+    # def _background_save_or_update(self, host: str, bundle : CertBundle):
+    #     """
+    #     Creates a thread that saves/updates certifcates to the disk and memory
+    #     in the background, with the goal of enabling faster return times of
+    #     the requested certifcate to the host.
+    #     """
+
+    #     t1 = threading.Thread(target=)
+    
+    # def _save_or_update_storage(self, host: str, bundle: CertBundle):
+    #     """
+    #     Responsible for updating/saving a Certifcate to
+    #     1. local memory - orderedDict (up to 100 BundleCerts)
+    #     2. disk
+    #     """
     
     """Cleans the disk from invalid certifcates, and certifcates that aren't in use for
        a long period of time (MAX_MEMORY_CERT).
@@ -182,7 +198,6 @@ class CertificateAuthority:
         - bundle (CertBundle | None
     """
     def _check_memory(self, host: str) -> tuple[CertSearchStatus, str | None, CertBundle | None]: 
-        core_logger.info(self._active_certs.__dict__)
         for cert_host in self._active_certs:
             if self._host_matches_sans(host, cert_host):
                 bundle = self._active_certs[cert_host]
@@ -226,11 +241,10 @@ class CertificateAuthority:
                 self._active_certs.move_to_end(key)
                 if value != bundle:
                     self._active_certs[key] = bundle
-                core_logger.info(self._active_certs)
                 if len(self._active_certs) > MAX_MEMORY_CERTS:
                     self._active_certs.popitem(last=False) # pop the first value - less used
                 return
-        
+    
         # wasn't found on dict, add to dict + check if passed max size.
         self._active_certs[host] = bundle
         if len(self._active_certs) > MAX_MEMORY_CERTS:
@@ -354,6 +368,7 @@ class CertificateAuthority:
         # SAN extension - mandatory for modern browsers
         # generate optimizations for SANS
         san_list = self._wildcard_san_optimazition(host)
+        core_logger.debug(f"san_list for cert: {san_list}")
         builder = builder.add_extension(
             x509.SubjectAlternativeName(
                 [x509.DNSName(san_host) for san_host in san_list]
@@ -397,7 +412,8 @@ class CertificateAuthority:
             return san_list
         else:
             # add ip's matching hostname to dictionary
-            san_list.append(hostname_match)
+            if hostname_match not in san_list:
+                san_list.append(hostname_match)
             host  = hostname_match
         
         parts = host.split('.')
@@ -453,10 +469,27 @@ class CertificateAuthority:
         
         base_host_sans = self._wildcard_san_optimazition(base_host)
         for san_host in base_host_sans:
-            if san_host.startswith("*") and san_host.count(".") == requested_host.count("."):
+            core_logger.debug(f"host check: opt - {san_host}, req - {requested_host}")
+            if san_host.startswith("*") and san_host.count(".") == requested_host.count(".") +1:
+                # Wildcard Dot Count Validation Logic:
+                # ------------------------------------
+                # a wildcard (*) matches ONLY ONE single label 
+                # within a domain name. It cannot span across multiple dots.
+
+                # Example 1: san_host = "*.gstatic.com" (3 dots), requested_host = "www.gstatic.com" (2 dots)
+                # Match: YES. The '*' replaces 'www'. 
+                # Count check: 3 == 2 + 1 (Valid)
+
+                # Example 2: san_host = "*.gstatic.com" (3 dots), requested_host = "gstatic.com" (1 dot)
+                # Match: NO. A wildcard at the beginning requires a sub-label to exist. 
+                # 'gstatic.com' is the base domain, not a subdomain of itself.
+                # Count check: 3 == 1 + 1 (False -> Prevents invalid match)
+
                 if fnmatch.fnmatch(requested_host, san_host):
+                    core_logger.debug(f"{san_host} matched")
                     return True
-            elif san_host == base_host: 
+            elif san_host == requested_host: 
+
                     # Edge case where base_host starts with www and 
                     # requested_host is a basic host (no subdomains or www)
                     # for example:
