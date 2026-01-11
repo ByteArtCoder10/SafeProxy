@@ -29,8 +29,8 @@ class Router():
                     # self.httpsTlsTerminationHandler
                 # elif user only cares about hiding his IP
                 if True:
-                    # self.handler = HttpsTcpTunnelHandler()
-                    self.handler = HttpsTlsTerminationHandlerSSL(ca)
+                    self.handler = HttpsTcpTunnelHandler(ca)
+                    # self.handler = HttpsTlsTerminationHandlerSSL(ca)
                     
             elif self.is_valid_http_method(method):
                 self.handler = HttpHandler()

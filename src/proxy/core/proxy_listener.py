@@ -43,7 +43,7 @@ class ProxyListener:
             core_logger.info(f"server is up at {self._ip, self._port}.")
 
             self._server_socket.listen(MAX_CLIENTS)
-            while True:
+            while len(self._clients)!=1000:
 
                 client_socket, client_address = self._server_socket.accept()
                 core_logger.info(f"client connected - {client_address}.")
@@ -54,6 +54,10 @@ class ProxyListener:
                 client_thread.daemon = True
                 client_thread.start()
                 core_logger.info(f"Thread started for client - {client_address}")
+            
+            from ...logs.logging_manager import time_list, count_list, word_list
+            for i, time in enumerate(time_list):
+                core_logger.critical(f"{word_list[i]} - average time - {time/count_list[i]}]")
 
         except Exception as e:
             core_logger.warning(f"Unexpected error:\n{e}", exc_info=True)
@@ -78,7 +82,7 @@ class ProxyListener:
 
             
         except Exception as e:
-            core_logger.warning(f"Unexpected Error: {e}", exc_info=True)
+            core_logger.error(f"Unexpected Error: {e}", exc_info=True)
 
     
     def _set_thread_vars(self, host: str | None, ip : str, port: int):

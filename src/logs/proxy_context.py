@@ -2,6 +2,14 @@ import threading
 
 
 class ProxyContext():
+    """
+    Provides a thread-local storage (per thread variables) to track context-specific logs 
+    (Host, IP, and Port).
+    
+    This class ensures that logging and analytics can identify which client 
+    session a specific log message or metric belongs to without passing 
+    context objects through every function call.
+    """
 
     thread_local = threading.local()
 
@@ -33,6 +41,11 @@ class ProxyContext():
     
     @staticmethod
     def clear_local():
+        """
+        Resets the context variables to None. 
+        Should be called when a thread is returned to a pool or a connection is closed
+        to prevent 'context leaking' between sessions.
+        """
         ProxyContext.thread_local.host = None
         ProxyContext.thread_local.ip = None
         ProxyContext.thread_local.port = None     

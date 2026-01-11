@@ -10,7 +10,6 @@ from .base_handler import BaseHandler
 from ..structures.request import Request
 from ..structures.response import Response
 from ..core.parser import Parser
-from ..handlers.https_tcp_tunnel_handler import HttpsTcpTunnelHandler
 from ...logs.loggers import core_logger
 from ...logs.proxy_context import ProxyContext
 
@@ -31,71 +30,110 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
 
     '''handles the process by routing and calling methods by order.'''
     def process(self, req: Request, client_socket: socket):
-        before = datetime.datetime.now()
-        self._client_socket = client_socket
+        try:
+            core_logger.debug(req.host)
+            abs_before = datetime.datetime.now()
+            before = datetime.datetime.now()
+            self._client_socket = client_socket
 
-        # create a deafult SSL context with client's socket
+            # create a deafult SSL context with client's socket
 
-        # send a 200 Connection Established response to client
-        self._respond_to_client(req, self._client_socket, 200, isConnectionEstablished=True)
-        
+            # send a 200 Connection Established response to client
+            self._respond_to_client(req, self._client_socket, 200, isConnectionEstablished=True)
+            core_logger.debug(f"TIMECHECK0 - {datetime.datetime.now() - before}")
+            before=datetime.datetime.now()
 
-        # get ClientHello SNI
-        client_hello_length = self._get_record_length()
-        client_hello_data = self._recvall(client_hello_length, msg_peek=True) # msg_peek?
-        sni = self._extract_sni_from_client_hello(client_hello_data)
-        
+            # get ClientHello SNI
+            client_hello_length = self._get_record_length()
+            client_hello_data = self._recvall(client_hello_length, msg_peek=True) # msg_peek?
+            core_logger.debug(f"ClientHello: {client_hello_data}")
+            sni = self._extract_sni_from_client_hello(client_hello_data)
+            if not sni:
+                sni = req.host
+            
+            core_logger.debug(f"TIMECHECK1 - {datetime.datetime.now() - before}")
+            before=datetime.datetime.now()
 
 
-        # Create a 'on-the-fly' cert
-        cert_path, key_path = self._ca_authority.get_certificate_for_host(sni)
-        client_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        client_context.load_cert_chain(certfile=cert_path, keyfile=key_path)
-        self._tls_client_connection = client_context.wrap_socket(self._client_socket, server_side=True)
+            # Create a 'on-the-fly' cert
+            core_logger.debug(sni)
+            cert_path, key_path = self._ca_authority.get_certificate_for_host(sni) # if sno wasnt found - host
+            core_logger.debug(f"TIMECHECK2 - {datetime.datetime.now() - before}")
+            before=datetime.datetime.now()
+            client_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            client_context.load_cert_chain(certfile=cert_path, keyfile=key_path)
+            # client_context.set_ciphers('ECDHE-ECDSA-AES128-GCM-SHA256')
+            core_logger.debug(f"{client_context.get_ciphers()}")
+            core_logger.debug(f"TIMECHECK3 - {datetime.datetime.now() - before}")
+            before=datetime.datetime.now()
+            self._tls_client_connection = client_context.wrap_socket(self._client_socket, server_side=True)
+            core_logger.debug(f"TIMECHECK4 - {datetime.datetime.now() - before}")
+            before=datetime.datetime.now()
 
-        # check SNI for blacklist or malicious    
-        if self.url_manager.is_blacklisted(sni) or \
-        self.url_manager.is_malicious(sni):
-            self._respond_to_client(req, self._tls_client_connection, 403, addBlackListLabelHTML=True)
+            # check SNI for blacklist or malicious    
+            if self.url_manager.is_blacklisted(sni) or \
+            self.url_manager.is_malicious(sni):
+                self._respond_to_client(req, self._tls_client_connection, 403, addBlackListLabelHTML=True)
 
-        # add cert to ssl's context
-        # resume tls handshake
-        raw_request = self._resume_tls_conenction()
-        if not raw_request:
-            core_logger.error("No request from the client.")
-            return
-        core_logger.debug(f"Raw Request: {raw_request}")
-        
-        # parse raw request into a Request obj
-        client_request = Parser.parse_request(raw_request.decode())
-        
-        # handshake server
-        handshake_success = self._perform_tls_hanshake_with_server(client_request)
-        if handshake_success:
-            # send first 'push'
-            self._tls_server_connection.sendall(client_request.to_raw())
-            # Only run relay if we actually have a secure connection
-            self._run_relay_data()
-        else:
-            core_logger.error("Aborting relay due to failed server handshake.")
-            self._close_sockets()
-        after = datetime.datetime.now()
-        core_logger.info(f"TIME IT TOOK TLS_SSL - {after-before}")
-        # override Base class method
+            # add cert to ssl's context
+            # resume tls handshake
+            raw_request = self._resume_tls_conenction()
+            core_logger.debug(f"TIMECHECK5 - {datetime.datetime.now() - before}")
+            before=datetime.datetime.now()
+            if not raw_request:
+                return
+            
+            # parse raw request into a Request obj
+            client_request = Parser.parse_request(raw_request.decode())
+            
+            # handshake server
+            handshake_success = self._perform_tls_hanshake_with_server(client_request)
+            core_logger.debug(f"TIMECHECK6 - {datetime.datetime.now() - before}")
+            before=datetime.datetime.now()
+
+            if handshake_success:
+                # send first 'push'
+                self._tls_server_connection.sendall(client_request.to_raw())
+                # Only run relay if we actually have a secure connection
+                core_logger.debug(f"TIMECHECK7 - {datetime.datetime.now() - before}")
+                before=datetime.datetime.now()
+                self._run_relay_data()
+                core_logger.debug(f"TIMECHECK8 - {datetime.datetime.now() - before}")
+                before=datetime.datetime.now()
+            else:
+                core_logger.error("Aborting relay due to failed server handshake.")
+                self._close_sockets()
+            after = datetime.datetime.now()
+            core_logger.info(f"TIMECHECK9 - {after-abs_before}")
+        except ConnectionAbortedError:
+            core_logger.info("Client Unexpectedly closed conenction. Handled gracefully.")
     
         '''establish a TCP conenction between the given server and the proxy.'''
     
     # PROXY-CLIENT FUNCTIONS
   
-    def _resume_tls_conenction(self):
+    def _resume_tls_conenction(self) -> bytes | None:
         try:        
             self._tls_client_connection.do_handshake()
             core_logger.info("Handshake Success! Secure TLS connection is enabled.")
-            
+            core_logger.debug(f"{self._tls_client_connection.cipher()}")
             # Read decrypted data
             raw_request = self._tls_client_connection.recv(self.BUFFER_SIZE)
+            if not raw_request:
+                core_logger.debug("Client closed TLS connection without sending data")                    
+                return None
+            
             core_logger.debug(f"Cient's request after TLS termination: \n{raw_request.decode()}")
             return raw_request
+            
+        # Client/Proxy closed the connection
+        except (ConnectionAbortedError, ConnectionResetError) as e:
+                core_logger.warning(f"Client closed connection prematurely: {e}")
+                return None
+        except socket.timeout:
+                core_logger.debug("Connection timed out - client didn't send any request.")
+                return None
+        
         except Exception as e:
             raise ConnectionError(f'TLS connection failed: {e}') 
     
@@ -104,19 +142,17 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
 
 
     def _perform_tls_hanshake_with_server(self, req: Request):
-        # create socket obj
-        self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self._server_socket.settimeout(5)
-        self._server_socket.connect((req.host, 443))
-        # tlslit-ng connection object
         
         try:
+            # create socket obj
+            self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._server_socket.settimeout(5)
+            self._server_socket.connect((req.host, 443))
+            # wrap socket
             self._tls_server_connection = self._server_ssl_context.wrap_socket(self._server_socket, server_hostname=req.host)
-            core_logger.debug(f"Successfully securely connected to server {req.host}.")
+            core_logger.info(f"Successfully and securely connected to server {req.host}.")
             return True
-        # except ssl.ERROR:
-        #     core_logger.error("TLS hanshake with server failed. Server requires authentication.")
-        #     return False
+
         except Exception as e:
             core_logger.error(f"TLS connection with server failed: {e}", exc_info=True)
             return False
@@ -140,7 +176,7 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
             daemon=True
         )
 
-        core_logger.debug("starts relaying data bidervtionally.")
+        core_logger.info("starts relaying data biderctionally.")
         t1.start()
         t2.start()
 
@@ -265,7 +301,7 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
                 name_type = ext_data[offset] # always DNS host_name
                 name_len = int.from_bytes(ext_data[offset+1:offset+3], "big")
                 hostname = ext_data[offset+3:offset+3+name_len]
-                core_logger.debug(f"SNI :{hostname.decode('utf-8')}")
+                core_logger.debug(f"SNI :{hostname.decode()}")
                 return hostname.decode()
 
             pos += 4 + ext_len

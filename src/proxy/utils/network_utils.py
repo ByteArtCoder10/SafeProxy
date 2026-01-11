@@ -43,6 +43,13 @@ class NetworkUtils:
             logging.warning(f"DNS hostname lookup failed for {ip_addr}" ,exc_info=True)
         return None
 
+    @staticmethod
+    def get_ip_obj(ip : str) -> ipaddress.IPv4Address | ipaddress.IPv6Address | ipaddress.IPv4Network | ipaddress.IPv6Network | None:
+        try:
+            return ipaddress.ip_address(ip)
+        except:
+            return None
+
 if __name__ == "__main__":
     print(NetworkUtils.get_hostname_from_ip('8.8.8.8'))
     print(NetworkUtils.get_hostname_from_ip('10.100.102.1'))

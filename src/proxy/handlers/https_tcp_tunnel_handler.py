@@ -6,6 +6,8 @@ from ..structures.connection_status import ConnectionStatus
 from ..structures.response import Response
 from ...logs.loggers import core_logger
 from ...logs.proxy_context import ProxyContext
+from .https_tls_termination_handler_ssl import HttpsTlsTerminationHandlerSSL
+from ..certificate.certificate_authority import CertificateAuthority
 
 
 class HttpsTcpTunnelHandler(BaseHandler):
@@ -15,9 +17,10 @@ class HttpsTcpTunnelHandler(BaseHandler):
     server without performing TLS termination or inspection. 
     """
 
-    def __init__(self):
+    def __init__(self, ca: CertificateAuthority):
         super().__init__()
         self.running = False
+        self._ca_authority = ca
 
     def process(self, req, client_socket,*, googleSearchRedirect: bool =True):
         """
@@ -41,11 +44,12 @@ class HttpsTcpTunnelHandler(BaseHandler):
 
         if self.url_manager.is_blacklisted(url):
             core_logger.info("URL requested is blacklisted. TLS-Terminating and sending 403 blacklisted.")
-            # TLS termination -> send 403 Blacklisted
+            HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket)
             return
         if self.url_manager.is_malicious(url):
             core_logger.info("URL requested is malicious. TLS-Terminating and sending 403 malicious.")
             # TLS termination -> send 403 malicious
+            HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket)
             return
         
         try:
@@ -58,11 +62,13 @@ class HttpsTcpTunnelHandler(BaseHandler):
                 case ConnectionStatus.REDIRECT_REQUIRED:
                     core_logger.debug(f"Connection failed for {req.host}. Redirecting to Google.")
                     # TLS Termination -> Send Redirection repsponse
+                    HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket)
                     pass
 
                 case ConnectionStatus.CONNECT_FAILURE:
                     core_logger.info(f"Connection failed for {req.host}. TLS-Terminating and Sending 502.")
                     # TLS Termination -> Send 502 Bad Request.
+                    HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket)
                     pass
 
         except Exception as e:

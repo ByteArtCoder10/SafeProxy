@@ -52,9 +52,10 @@ class HttpHandler(BaseHandler):
                 case ConnectionStatus.CONNECT_FAILURE:
                     core_logger.info(f"Connection failed for {req.host}. Sending 502.")
                     self._respond_to_client(req, self._client_socket, 502)
-
+        except socket.timeout:
+            core_logger.info("Connection timed-out. handled gracefully.")
         except Exception as e:
-            core_logger.critical(f"Handler Error: {e}", exc_info=True)
+            core_logger.critical(f"Handler crashed: {e}", exc_info=True)
             # Safe fallback - try to send to client 502 "Bad Request"
             try:
                 self._respond_to_client(req, self._client_socket, 502)

@@ -3,6 +3,7 @@ from dataclasses import dataclass
 # Cryptography imports
 from cryptography import x509
 from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import ec
 
 @dataclass
 class CertBundle:
@@ -10,7 +11,7 @@ class CertBundle:
     Helper dataclass. Allows saving cryptograpic pieces together -
     Certificate and Private Key togehter.
 
-    :var cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey private_key: 
+    :var cryptography.hazmat.primitives.asymmetric.rsa.RSAPrivateKey | cryptography.hazmat.primitives.asymmetric.ec.EllipticCurvePrivateKey private_key: 
     The private key object.
 
     :var cryptography.x509.Certificate certificate: 
@@ -22,7 +23,7 @@ class CertBundle:
     :var bytes pem_cert:
     The PEM formatted certificate.
     """
-    private_key: rsa.RSAPrivateKey
+    private_key: rsa.RSAPrivateKey | ec.EllipticCurvePrivateKey
     certificate: x509.Certificate
     pem_key: bytes
     pem_cert: bytes
