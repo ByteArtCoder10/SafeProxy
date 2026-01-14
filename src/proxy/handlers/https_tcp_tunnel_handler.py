@@ -78,14 +78,14 @@ class HttpsTcpTunnelHandler(BaseHandler):
                 # TLS Termination -> send 502
                 pass
             except:
-                self._close_sockets() # Close connection
+                self._close_sockets(self._client_socket, self._server_socket) # Close connection
     
 
     def _run_tunnel_relay(self):
         """
         Starts two concurrent threads to handle bidirectional data flow:
-        - Thread 1: Client to Server (Upstream)
-        - Thread 2: Server to Client (Downstream)
+        - Thread 1: Client to Serve
+        - Thread 2: Server to Client
         
         Joins the threads and ensures sockets are cleaned up upon disconnection.
         """
@@ -93,35 +93,39 @@ class HttpsTcpTunnelHandler(BaseHandler):
 
         t1 = threading.Thread(
             target=self._handle_relay_data,
-            args=(self._client_socket, self._server_socket, ProxyContext.get_local()),
+            args=(self._client_socket, self._server_socket, ProxyContext.get_local().__dict__),
             daemon=True)
 
         t2 = threading.Thread(
             target=self._handle_relay_data,
-            args=(self._server_socket, self._client_socket, ProxyContext.get_local()),
+            args=(self._server_socket, self._client_socket, ProxyContext.get_local().__dict__),
             daemon=True)
 
+        core_logger.info("Starts relaying data biderctionally.")
         t1.start()
         t2.start()
 
-        # wait for both threads ot finish before closing sockets
+
+
         t1.join()
         t2.join()
 
-        self._close_sockets()
+        # wait for both threads ot finish before closing sockets
+        self._close_sockets(self._client_socket, self._server_socket)
     
-
     def _handle_relay_data(self, recv_socket: socket, send_socket: socket, local_thread_vars : dict):
         """wrapper class for handling new threads operations, and relays data"""
         # force local thread variables on thread
-        ProxyContext.set_local(local_thread_vars)
+        
+        ProxyContext.set_local(host=local_thread_vars["host"], ip=local_thread_vars["ip"], port=local_thread_vars["port"])
+
         # relay data
         self._relay_data(recv_socket, send_socket)
         
     def _relay_data(self, recv_socket: socket, send_socket: socket):
         """
         The worker method for relay threads. Continuously receives raw bytes 
-        from one socket and transmits them to another.
+        from one socket and sends them to another.
 
         :type recv_socket: socket.socket
         :param recv_socket: The source socket to read from.
@@ -129,28 +133,31 @@ class HttpsTcpTunnelHandler(BaseHandler):
         :type send_socket: socket.socket
         :param send_socket: The destination socket to write to.
         """
-        # forcing in this thread the local variables
-  
-        # setting timeout to 30s in case of keep-alive connection
-        recv_socket.settimeout(30)
-        send_socket.settimeout(30)
-
         try:
-            peer_name = recv_socket.getpeername()
+            # for keep-alive conenctions
+            recv_socket.settimeout(30) 
 
             while self.running:
-                data = recv_socket.recv(BaseHandler.BUFFER_SIZE)
+                try:
+                    data = recv_socket.recv(self.BUFFER_SIZE)
+                    if not data:
+                        break
+                    
+                    send_socket.sendall(data)
 
-                if not data:
-                    break # connection was closed
-                send_socket.sendall(data)
+                except (ConnectionResetError, OSError, BrokenPipeError):
+                    # If the other peer closed just loop back and try to recv again 
+                    # until the socket is actually dead.
+                    continue
+            
+            core_logger.debug("Escaped relay-data loop.")
+
+            #Kill session
 
         except Exception as e:
-            core_logger.debug(f"Negligible relay error ({peer_name}).")
+            core_logger.error(f"Failed setting a timeout for the socket: {e}", exc_info=True)
 
-        # stop both threads
         self.running = False
-
 
 
 

@@ -1,37 +1,78 @@
 import flet as ft
 import sys
-from  ....main import main as core_main
+import os
+import threading
+from src.ui.utils.colors import ColorPalatte
+# Add the project root to sys.path so we can find 'main.py'
+root_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+if root_path not in sys.path:
+    sys.path.append(root_path)
 
+import main as core_main 
 def main(page: ft.Page):
     page.title = "SafeProxy Admin Dashboard"
-    page.theme_mode=ft.ThemeMode.DARK
-    page.bgcolor = "black"
+    page.theme_mode = ft.ThemeMode.LIGHT
+    page.bgcolor = ColorPalatte.BG
     page.window_width = 500
     page.window_height = 350
-    primary_color = "#12ff00"
-    header = ft.Row(
-        [
-            ft.Text("SafeProxy", size=30, weight="bold", color=ft.Colors.GREEN_600),
-            ft.VerticalDivider(width=10, thickness=10, color=ft.Colors.WHITE),
-            ft.Text("Admin Control Panel", size=25, color=ft.Colors.GREY_300),
-        ],
-        alignment=ft.MainAxisAlignment.START,
-    )
 
-    activate = ft.Row(
-        [
-            ft.Text("Activate Proxy", size=20, weight=ft.FontWeight.BOLD, color=primary_color),
-            ft.Button("Activate", color=primary_color, on_click=start_proxy),
-        ],
-        alignment=ft.MainAxisAlignment.CENTER
-    )
+    def handle_activate_click(e):
+        # Disable button to prevent double-click
+        btn_activate.disabled = True
+        page.update()
+        
+        # Start proxy in background thread
+        proxy_thread = threading.Thread(target=core_main.main, daemon=True)
+        proxy_thread.start()
+        
+        print("Proxy started in background thread.")
 
-    def start_proxy():
-        core_main()
-    
+    header = ft.Container(
+            content=ft.Row(
+                height=60,
+                controls=[
+                    ft.Text(
+                        "SafeProxy", 
+                        size=30, 
+                        weight="bold", 
+                        color=ColorPalatte.PRIMARY
+                    ),
+                    
+                    ft.VerticalDivider(
+                        width=20,
+                        thickness=2,   
+                        color=ColorPalatte.PRIMARY,
+                        leading_indent=21,
+                        trailing_indent=13
+                    ),
+                    
+                    ft.Text(
+                        "Admin Dashboard", 
+                        size=30, 
+                        weight="bold",
+                        color=ColorPalatte.PRIMARY
+                    ),
+                ],
+                alignment=ft.MainAxisAlignment.CENTER,
+                vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            ),
+            padding=ft.padding.all(5),
+        )
+
+
+    settings = ft.Card(
+        ft.Text(value="Settings"),
+        bgcolor=ColorPalatte.BG,
+        col=12
+
+    )
+    btn_activate = ft.Button("Activate", color=ColorPalatte.PRIMARY)
+
     page.add(
         header,
-        activate
+        settings,
+        ft.Row([ft.Text("Activate Proxy", size=20), btn_activate], alignment=ft.MainAxisAlignment.CENTER)
     )
 
-ft.app(target=main)
+if __name__ == "__main__":
+    ft.run(main=main)

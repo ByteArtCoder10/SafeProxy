@@ -32,7 +32,7 @@ class BaseHandler(ABC):
     def __init__(self):
         self._client_socket = None
         self._server_socket = None
-        self.url_manager = UrlManager()
+        self.url_manager = UrlManager
 
         
     def handle(self, req: Request, client_socket: socket):
@@ -186,16 +186,17 @@ class BaseHandler(ABC):
         except Exception as e:
             raise ConnectionError(f"Responding to client failed: {e}") from e
 
-        '''closes socket objects (origin server and client).'''            
     
-    def _close_sockets(self):
+    def _close_sockets(self, sock1: socket.socket | ssl.SSLSocket, sock2: socket.socket | ssl.SSLSocket):
         """
         Safely closes both the client and server sockets to release system 
         resources and terminate the connection session. 
         """
-        for sock in (self._client_socket, self._server_socket):
+        for sock in (sock1, sock2):
             if sock:
                 try:
+                    if isinstance(sock, ssl.SSLSocket):
+                        sock.unwrap()
                     sock.close()
                 except:
                     pass

@@ -16,15 +16,25 @@ class ProxyContext():
     @staticmethod
     def get_local():
         return ProxyContext.thread_local
-
+    
     @staticmethod
-    def set_local(host=None, ip=None, port=None, thread_local=None):
-        if thread_local is not None:
-            ProxyContext.thread_local = thread_local
-        else:
-            ProxyContext.thread_local.host = host
-            ProxyContext.thread_local.ip = ip
-            ProxyContext.thread_local.port = port
+    def get_local_dict():
+        return {
+            "host": getattr(ProxyContext.thread_local, "host", None),
+            "ip": getattr(ProxyContext.thread_local, "ip", None),
+            "port": getattr(ProxyContext.thread_local, "port", None)
+        }
+    
+    @staticmethod
+    def set_local(host=None, ip=None, port=None, thread_local : dict | None=None):
+        if thread_local:
+            host = thread_local.host
+            ip = thread_local.ip
+            port = thread_local.port
+
+        ProxyContext.thread_local.host = host
+        ProxyContext.thread_local.ip = ip
+        ProxyContext.thread_local.port = port
 
 
     @staticmethod
@@ -43,7 +53,7 @@ class ProxyContext():
     def clear_local():
         """
         Resets the context variables to None. 
-        Should be called when a thread is returned to a pool or a connection is closed
+        Should be called when a thread becomes in-active or a connection is closed
         to prevent 'context leaking' between sessions.
         """
         ProxyContext.thread_local.host = None

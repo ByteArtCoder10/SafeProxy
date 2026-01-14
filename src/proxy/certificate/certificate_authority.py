@@ -319,13 +319,17 @@ class CertificateAuthority:
                     # check if passed max size.
                     if len(self._active_certs) > MAX_MEMORY_CERTS:
                         self._active_certs.popitem(last=False) # pop the first value - least used
+
+                    core_logger.info(f"Successfully added to memory {host}'s CertBundle.")
                     return
     
         # wasn't found on dict, add to dict + check if passed max size.
         self._active_certs[host] = bundle
+        core_logger.info(f"Successfully saved/updated to disk {host}'s cert and private key.")
 
         if len(self._active_certs) > MAX_MEMORY_CERTS:
             self._active_certs.popitem(last=False) # pop the first value - least used
+            core_logger.info(f"Performed LRU rotation. Replaced LRU CertBundle with {host}'s CertBundle.")
 
     def _update_or_load_known_on_disk(self) -> list[str]:
         """
@@ -626,6 +630,11 @@ class CertificateAuthority:
         base_host_sans = self._wildcard_san_optimazition(base_host)
         for san_host in base_host_sans:
             core_logger.debug(f"host check: opt - {san_host}, req - {requested_host}")
+
+            if san_host == requested_host:
+                core_logger.debug(f"{san_host} matched to {requested_host}")
+                return True
+            
             if san_host.startswith("*") and san_host.count(".") == requested_host.count("."):
 
                 # a wildcard (*) matches only ONE single label within a domain name.

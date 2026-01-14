@@ -28,7 +28,7 @@ class LoggingManager():
         """
         try:
 
-            LoggingManager.cleanup_client_logs()
+            LoggingManager.cleanup_client_and_main_logs()
             
             # set root logger level
             root_logger = logging.getLogger()
@@ -67,19 +67,25 @@ class LoggingManager():
             print(f"CRITICAL ERROR: could not intalize logging system: {e}", file=sys.stderr)
     
     @staticmethod
-    def cleanup_client_logs():
+    def cleanup_client_and_main_logs():
         """
         cleans up the per-client log directory to ensure a clean state 
         at startup.
         """
-        if os.path.exists(CORE_CLIENTS_LOG_DIR_PATH):
-            try:
-                for file_name in os.listdir(CORE_CLIENTS_LOG_DIR_PATH):
-                    file_path = os.path.join(CORE_CLIENTS_LOG_DIR_PATH, file_name)
-                    if os.path.isfile(file_path):
-                        os.remove(file_path)
-            except OSError as e:
-                print(f"NON-CRITICAL ERROR: Failed to cleanup client logs: {e}", file=sys.stderr)
+        try:
+
+            if os.path.exists(CORE_CLIENTS_LOG_DIR_PATH):
+                    for dirname in os.listdir(CORE_CLIENTS_LOG_DIR_PATH):
+                        dir_path = os.path.join(CORE_CLIENTS_LOG_DIR_PATH, dirname)
+                        shutil.rmtree(dir_path)
+            
+            # core.log
+            if os.path.exists(CORE_MAIN_LOG_FILE_PATH):
+                with open(CORE_MAIN_LOG_FILE_PATH, 'w') as f:
+                    pass # delete the contents of it
+    
+        except OSError as e:
+            print(f"NON-CRITICAL ERROR: Failed to cleanup client logs: {e}", file=sys.stderr)
 
             
 word_list = ["200 Connection established","get SNI","get Cert","Load client's cert to SSL","Wrap socket with SSLSocket","Resume TLS connection and get request","connect to server - TLS handsake","send request to server","Relay data", "OVERALL TIME"]
@@ -116,6 +122,7 @@ class DynamicPerClientFileHandler(logging.Handler):
             # Metric Extraction
             if isinstance(record.msg, str) and record.msg.startswith("TIMECHECK"):
                 self._process_metrics(record.msg)
+                return
             
             # Thread vars context 
             host = getattr(ProxyContext.thread_local, "host", None)
@@ -126,18 +133,20 @@ class DynamicPerClientFileHandler(logging.Handler):
                 return
 
             pending_name = f"PENDING_{ip}_{port}.log"
-            pending_path = os.path.join(CORE_CLIENTS_LOG_DIR_PATH, pending_name)
+            ip_dir_path = os.path.join(CORE_CLIENTS_LOG_DIR_PATH, ip)
+            os.makedirs(ip_dir_path, exist_ok=True)
+            pending_log_path = os.path.join(ip_dir_path, pending_name)
             formatted_msg = self.format(record)
 
 
             if host is None:
-                self._write_to_file(formatted_msg, pending_path)
+                self._write_to_file(formatted_msg, pending_log_path)
             else:
                 final_name = f"{host}_{ip}_{port}.log"
-                final_path = os.path.join(CORE_CLIENTS_LOG_DIR_PATH, final_name)
+                final_path = os.path.join(ip_dir_path, final_name)
                 
-                if os.path.exists(pending_path):
-                    self._merge_files(pending_path, final_path)
+                if os.path.exists(pending_log_path):
+                    self._merge_files(pending_log_path, final_path)
                 
                 self._write_to_file(formatted_msg, final_path)
 
@@ -148,8 +157,8 @@ class DynamicPerClientFileHandler(logging.Handler):
         """Parses "TIMECHECK" messages and adds time metrics to analytics objects."""
         try:
             parts = msg.split(" ")
-            index = int(parts[0][-2])
-            h, m, s = parts[1].split(':')
+            index = int(parts[0][-1])
+            h, m, s = parts[2].split(':')
             duration = datetime.timedelta(hours=int(h), minutes=int(m), seconds=float(s))
             time_list[index] += duration
             count_list[index] += 1
@@ -173,10 +182,7 @@ class DynamicPerClientFileHandler(logging.Handler):
             with open(path, mode="a", encoding="utf-8") as f:
                 f.write(msg + "\n")
         except (OSError, IOError) as e:
-            print(f"NON-CRITICAL ERROR: Write failed to {path}", file=sys.stderr)
-
-        
-    
+            print(f"NON-CRITICAL ERROR: Writing failed to {path}: {e}", file=sys.stderr)
 
 class MainFilter(logging.Filter):
     """

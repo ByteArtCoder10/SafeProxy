@@ -60,7 +60,7 @@ class HttpHandler(BaseHandler):
             try:
                 self._respond_to_client(req, self._client_socket, 502)
             except:
-                self._close_sockets() # Close connection
+                self._close_sockets(self._client_socket, self._server_socket) # Close connection
 
 
  
