@@ -1,0 +1,5 @@
+flet==0.28.3
+cryptography
+py-diffie-hellman
+pyjwt
+yarl

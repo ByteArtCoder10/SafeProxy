@@ -1,6 +1,7 @@
 # .gitignore
 *.log
-src/logs/*.log
+src/server/logs/output/
+*.log
 
 __pycache__/
 *.pyc
@@ -9,6 +10,18 @@ __pycache__/
 
 .safeproxy/*
 
+certs/
 .certs/
 *.crt
 *.key
+*.pem
+
+venv/
+.venv/
+env/
+
+*.db
+*.sqlite3
+
+
+.vscode/
