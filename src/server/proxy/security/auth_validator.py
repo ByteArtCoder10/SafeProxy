@@ -1,4 +1,5 @@
 import os
+
 from ...logs.loggers import core_logger
 from ...auth_server.jwt_manager import JWTManager
 from ..structures.request import Request
@@ -6,11 +7,11 @@ from ...constants import HTTP_AUTH_HEADER_NAME
 class AuthValidator:
 
     @staticmethod    
-    def is_request_authorized(req: Request, auth_public_key : str) -> bool:
+    def is_request_authorized(req: Request, auth_public_key : str) -> tuple[bool, str | None]:
         if HTTP_AUTH_HEADER_NAME not in req.headers:
             return False
         
-        token = req.headers[HTTP_AUTH_HEADER_NAME]
+        token = req.headers.get(HTTP_AUTH_HEADER_NAME)
         if not token:
             return False
         

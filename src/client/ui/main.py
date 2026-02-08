@@ -1,6 +1,8 @@
 import flet as ft
 import logging
+
 from src.client.ui.utils.viewRouter import ViewRouter
+from ..logs.logging_manager import LoggingManager
 from ..core.authentication.auth_handler import AuthHandler
 
 def main(page: ft.Page):
@@ -50,7 +52,13 @@ def main(page: ft.Page):
 
     page.theme_mode = ft.ThemeMode.LIGHT
 
+    
+    # logging
+    LoggingManager.setup_logging()
+    
+    # auth handler
     set_backend(page)
+    
 
     router = ViewRouter(page)
     
@@ -58,11 +66,15 @@ def main(page: ft.Page):
     page.go("/")
 
 def set_backend(page : ft.Page):
-    
+    if not hasattr(page, "auth_handler"):
     # connect to auth-server
-    page.auth_handler = AuthHandler("127.0.0.1")
-    page.auth_handler.connect()
+        page.auth_handler =  AuthHandler("127.0.0.1")
+        page.auth_handler.connect()
+
+    # if rsp status is SUCCESS and jwt provided, Start inject server
+    # if response.status == RspStatus.SUCCESS and response.jwt_token:
+    #     self._start_inject_server(response.jwt_token)
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO) # flet logging system
     ft.app(target=main)

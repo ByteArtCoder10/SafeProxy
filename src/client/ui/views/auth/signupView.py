@@ -1,4 +1,6 @@
 import flet as ft
+
+from ....logs.logger import client_logger
 from ...controls.custom_controls import CustomTextField, CustomBtn
 from ...utils.validation import AuthValidatior
 
@@ -90,9 +92,10 @@ class SignUpView:
         # Check DB (backend requst to AuthServer)
         response = self.page.auth_handler.signup(username, password)
 
-        if response.status == RspStatus.SUCCESS:
-            print("[UI] Signup Successful, Auto-Logging in...")
+        if response.status == RspStatus.SUCCESS and response.jwt_token:
+            client_logger.info(f"Signup Successful as {username}, Auto-Logging in...")
             self.page.session.set("username", username)
+            self.page.session.set("jwt_token", response.jwt_token)
             self.page.go("/client_home")
         else:
             self._map_error_to_ui(response.fail_reason)
@@ -126,6 +129,5 @@ def main(page: ft.Page):
     page.update()
 
 if __name__ == "__main__":
-    import logging
-    logging.basicConfig(level=logging.DEBUG)
+    # logging.basicConfig(level=client_logger.DEBUG)
     ft.app(target=main)

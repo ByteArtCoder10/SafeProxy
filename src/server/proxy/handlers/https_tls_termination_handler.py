@@ -73,7 +73,7 @@ class HttpsTlsTerminationHandler(BaseHandler):
             sni = self._extract_sni_from_client_hello(client_hello_data)
 
             # check SNI for blacklist or malicious    
-            if self.url_manager.is_blacklisted(sni) or \
+            if self.url_manager.is_blacklisted(sni, self._username) or \
             self.url_manager.is_malicious(sni):
                 self._respond_to_client(req, 403, addBlackListHTML=True)
             
@@ -106,7 +106,7 @@ class HttpsTlsTerminationHandler(BaseHandler):
             after = datetime.datetime.now()
             core_logger.info(f"TIME IT TOOK TLS_TLSLITE-NG - {after}-{before}")
         
-        except ConnectionAbortedError:
+        except (ConnectionAbortedError, ConnectionResetError):
             core_logger.info("Client Unexpectedly closed conenction. Handled gracefully.")
         
         finally:

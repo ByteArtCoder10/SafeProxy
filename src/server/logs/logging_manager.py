@@ -13,7 +13,6 @@ class LoggingManager():
     Manages the logging infrastructure for the Proxy system.
     Handles the initialization of:
     * db proxy logger (proxy.db)
-    * ui proxy logger (proxy.ui)
     * core proxy logger (proxy.core)
     * console output
     * automated cleanup of previous client session logs.
@@ -37,12 +36,10 @@ class LoggingManager():
 
             # Create Loggers
             core_logger = logging.getLogger("proxy.core")
-            ui_logger = logging.getLogger("proxy.ui")
             db_logger = logging.getLogger("proxy.db")
 
             # !propogate 
             core_logger.propagate = False
-            ui_logger.propagate = False
             db_logger.propagate = False
 
 

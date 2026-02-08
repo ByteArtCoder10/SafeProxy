@@ -1,8 +1,9 @@
 
 import flet as ft
+
+from ....logs.logger import client_logger
 from ...controls.custom_controls import CustomTextField, CustomBtn
 from ...utils.validation import AuthValidatior
-
 # --Backend imports--
 from ....core.authentication.auth_handler import RspStatus, FailReason
 
@@ -93,9 +94,10 @@ class LoginView:
         # Check DB (backend requst to AuthServer)
         response = self.page.auth_handler.login(username, password)
 
-        if response.status == RspStatus.SUCCESS:
-            print("[UI] Login Successful")
+        if response.status == RspStatus.SUCCESS and response.jwt_token:
+            client_logger.info(f"Login Successful as {username}.")
             self.page.session.set("username", username)
+            self.page.session.set("jwt_token", response.jwt_token)
             self.page.go("/client_home")
 
         else:
@@ -134,6 +136,5 @@ def main(page: ft.Page):
     page.update()
 
 if __name__ == "__main__":
-    import logging
-    logging.basicConfig(level=logging.DEBUG)
+    # Logging.basicConfig(level=client_logger.DEBUG)
     ft.app(target=main)

@@ -28,7 +28,7 @@ class HttpHandler(BaseHandler):
             url = req.host + (req.path or "")
 
             # Blacklist and malice checks
-            if self.url_manager.is_blacklisted(url):
+            if self.url_manager.is_blacklisted(url, self._username):
                 self._respond_to_client(req, self._client_socket, 403, addBlackListLabelHTML=True)
                 return
             

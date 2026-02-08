@@ -1,6 +1,8 @@
 import subprocess
 import os
-from ...constants import ROOT_CA_CERT_PATH
+
+from ...logs.logger import client_logger
+from ...constants import ROOT_CA_CERT_PATH, CERT_STORE_PATH
 class CAHandler():
 
     @staticmethod
@@ -34,13 +36,15 @@ class CAHandler():
 
             result = subprocess.run(["powershell", "-Command", cmd], timeout=60, capture_output=True, text=True, check=True)
 
-            print("Args:", result.args)
-            print("RetrunCode:", result.returncode)
-            print("stdout: ", result.stdout)
-            print("stderr:", result.stderr)
+            client_logger.info(
+                f"Args:{result.args}\n" \
+                f"RetrunCode: {result.returncode}\n" \
+                f"stdout: {result.stdout}\n" \
+                f"stderr: {result.stderr}\n" \
+            )
             return "SafeProxy" in result.stdout
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
-            print(f"[CA Handler] Failed to check if SafeProxy root CA cert is installed: {e}")
+            client_logger.error(f"Failed to check if SafeProxy root CA cert is installed: {e}", exc_info=True)
             return False
 
     @staticmethod
@@ -75,13 +79,13 @@ class CAHandler():
         :rtype: bool
         """
         if CAHandler.is_ca_installed():
-            print("[CA Handler] SafeProxy certifcate already Installed.")
+            client_logger.info("SafeProxy certifcate already Installed.", exc_info=True)
             return
 
         try:        
             # get cert from resources
-            install_command = f'Start-Process powershell -ArgumentList "-Command Import-Certificate -FilePath {ROOT_CA_CERT_PATH} -Cert-Store-Location cert:\LocalMachine\Root" -Verb RunAs -Wait'
-            inner_command = f"Import-Certificate -FilePath '{ROOT_CA_CERT_PATH}' -CertStoreLocation Cert:\\LocalMachine\\Root"
+            install_command = f'Start-Process powershell -ArgumentList "-Command Import-Certificate -FilePath {ROOT_CA_CERT_PATH} -Cert-Store-Location {CERT_STORE_PATH}" -Verb RunAs -Wait'
+            inner_command = f"Import-Certificate -FilePath '{ROOT_CA_CERT_PATH}' -CertStoreLocation {CERT_STORE_PATH}"
             install_command = f'Start-Process powershell -ArgumentList " -Command {inner_command}" -Verb RunAs -Wait'
             result = subprocess.run(
                 ["powershell", "-Command", install_command],
@@ -90,10 +94,14 @@ class CAHandler():
                 text=True,
                 check=True
             )
-            print(result)
-            
+
+            client_logger.info(
+                f"Args:{result.args}" \
+                f"RetrunCode: {result.returncode}" \
+                f"stdout: {result.stdout}" \
+                f"stderr: {result.stderr}" \
+            )
             return True
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
-            print(f"[CA Handler] Failed to installed SafeProxy root CA cert: {e.stderr}")
+            client_logger.error(f"Failed to installed SafeProxy root CA cert: {e.stderr}", exc_info=True)
             return False            
-        # install cert

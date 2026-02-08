@@ -1,5 +1,6 @@
 import flet as ft
 from ...controls.custom_controls import CustomTextField, CustomBtn, CustomCard, CardTitle, CustomPageHeader, CustomAlertDialog
+from ....logs.logger import client_logger
 class AccountView:
     def __init__(self, page: ft.Page):
         self.page = page
@@ -40,7 +41,7 @@ class AccountView:
         self.page.update()
 
     def _delete_account(self, e):
-        print("Account deleted")
+        client_logger.info("Account deleted")
         self._close_dialog(e)
     
     def get_content(self):

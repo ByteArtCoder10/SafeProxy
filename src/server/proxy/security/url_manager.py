@@ -1,19 +1,23 @@
-from yarl import URL
-import urllib.parse
 import logging
 
-black_list = ['www.hello.com', 'www.youtube.com', "www.example.com", "www.fxp.co.il"]
+from yarl import URL
+import urllib.parse
+from ...db.sql_auth_manager import SQLAuthManager
+from ...logs.loggers import core_logger
 class UrlManager:
     """
-    Worker class - Manages URL-related safety logic for the proxy, including blacklist 
+    Manages URL-related safety logic for the proxy, including blacklist 
     verification, malicious site detection, and URL normalization for 
     search redirection.
     """
+
+    db = SQLAuthManager()
     
     @staticmethod
-    def is_blacklisted(url: str) -> bool:
+    def is_blacklisted(url_list: list[str] , username: str) -> bool:
         """
-        Checks if a given URL matches any host in the proxy's blacklist.
+        Checks if a given URL matches any host in the proxy's blacklist, using a db query for 
+        the blacklist of a specific user.
         The function supports "www." identification, host-only blocking and explicit 
         path-based blocking.
 
@@ -35,23 +39,42 @@ class UrlManager:
         Example: If example.com/index.html is blocked, the Function returns False for
         example.com and example.con/robots.txt.
 
-        :type url: str
         :param url: The raw URL or hostname string to check.
+        :param username: The username's blacklist to check against.
 
         :rtype: bool
         :returns: True if the URL starts with a blacklisted entry, False otherwise.
         """
-        url = url.lower()
-        if url.startswith("www."):
-            url = url[4:]
+        blacklist = UrlManager.db.get_blacklist(username)
+        core_logger.debug(f"Blacklist in URL manager: {blacklist}")
+        core_logger.debug(f"URL list: {url_list}")
+        if blacklist == {} or not blacklist:
+            # bl == {} - no blacklist configured.
+            # not bl - db error occured. assuming it is not blacklisted.
+            core_logger.debug(f"Blacklst was empty. Returning False")
+            return False
 
-        
-        for bl in black_list:
-            if url.startswith(bl) or f"www.{url}".startswith(bl): # www.example.com or example.com
-                return True
-        return False
+        for url in url_list:
+            if url.startswith("www."):
+                url = url[4:]
+
+            core_logger.debug(f"Current URL checked: {url}")
+            for bl in blacklist.keys():
+                core_logger.debug(f"BL -> {bl} URL -> {url}")
+                
+                if url.startswith(bl):
+                    # 5 possible edge-cases:
+                    # 1. BL= x.com, URL = x.com => returns blacklisted
+                    # 2. BL= x.com, URL = x.com/* => returns blacklisted
+                    # 3. BL= x.com/*, URL = x.com => returns NOT blacklisted
+                    # 4. BL= x.com/*, URL = x.com/* => returns blacklisted
+                    # 5. BL= x.com/hello (long), URL = x.com/yes (short) => returns NOT blacklisted
+                    if len(url) == len(bl) or url[len(bl)] in ['/', '\\', '?', '#']:
+                        core_logger.debug(f"BL -> {bl} URL -> {url} matched. Returning blacklisted")
+                        return True
+            return False
     
-    "NO IMPLEMETATION"
+
     @staticmethod
     def is_malicious(url: str) -> bool:
         """
@@ -66,7 +89,6 @@ class UrlManager:
         """
         return False
     
-    "NOT FINISHED"
     @staticmethod
     def get_google_url(search_str: str) -> str:
         """

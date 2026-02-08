@@ -73,7 +73,7 @@ class EncryptionManager:
         :param txt: The plaintext string to encrypt.
 
         :rtype: bytes
-        Nonce + cipher text + (tag, for auth)
+        :returns: Nonce + cipher text + (tag, for auth)
         """
         # set unique nonce for every msg (NIST recommends 12-byte nonce)
         nonce = os.urandom(12)
@@ -156,6 +156,7 @@ class EncryptionManager:
     @staticmethod
     def generate_jwt_key_pair(isECDSA=True):
         """
+        NOTE:
         A one-time use only function, to create a pair of RSA/ECDSA private-key and public key for sigining.
         The private_key will be used by the auth server for signing JWT tokens.
         The public_key will be used by the proxy-server for verifing JWT tokens.
@@ -194,8 +195,6 @@ class EncryptionManager:
                 f2.write(public_pem)
         except Exception as e:
            db_logger.critical(f"Couldn't save Auth key pair to disk: {e}", exc_info=True)
-
-
 
 
 if __name__ == "__main__":

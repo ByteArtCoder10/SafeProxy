@@ -106,7 +106,6 @@ class Parser():
             
             # Check host header match first-line host (if header exists)
             host_header_value = headers.get("Host", None)
-            print(f"Host by first line: {host}, Host by headers: {host_header_value}")
 
             if uri_form == "origin-form" and not host_header_value:
                 raise ValueError("Missing Host header in origin-form request.")
@@ -126,7 +125,6 @@ class Parser():
                 
             # Turning parsed-information to a Request obj
             parsed_request = Request(method, host, port, http_version, path, headers, body)
-            print(parsed_request.prettify())
             return parsed_request
 
         except ValueError as e:

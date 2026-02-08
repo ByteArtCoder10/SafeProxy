@@ -3,8 +3,8 @@ import json
 import threading
 from dataclasses import dataclass
 from enum import Enum
-import logging
 
+from ...logs.logger import client_logger
 from ...constants import AUTH_SERVER_PORT, SOCKET_BUFFER_SIZE
 from .encryption_manager import EncryptionManager
 from ..inject_server.inject_server import InjectServer
@@ -23,9 +23,17 @@ class BaseFormattedObj:
         return cls(**data)
 
 class ReqCMD(Enum):
+    # Auth proccess
     LOGIN = "LOGIN"
     SIGNUP =  "SIGNUP"
     DELETE = "DELETE"
+
+    # blacklist proccess - 
+    ADD_BLACKLISTED_HOST = "ADD_BLACKLISTED_HOST"
+    DELETE_BLACKLISTED_HOST = "DELETE_BLACKLISTED_HOST"
+    DELETE_ALL_BLACKLSITED = "DELETE_ALL_BLACKLSITED"
+    GET_BLACKLIST = "GET_BLACKLIST" 
+
 
 class RspStatus(Enum):
     FAIL = "FAIL"
@@ -39,18 +47,25 @@ class FailReason(Enum):
     USER_DOESNT_EXIST = "Username doesn't exist." 
     WRONG_PW = "Wrong password."
     
-    # general
-    INVALID_FORMAT = "Request's format invalid."
+    # Auth-general
     INVALID_USERNAME_LEN = "Username's length invalid."
-    INVALID_PW_LEN = "Password's length invalid."
     JWT_ERROR = "Failed generating JWT token."
+    INVALID_PW_LEN = "Password's length invalid."
+    
+
+    # General
+    DB_ERROR = "Database error."
+    INVALID_FORMAT = "Request's format invalid."
     NETWORK_ERROR = "Network communication error."
+
 
 @dataclass
 class FormattedReq(BaseFormattedObj):
     cmd: ReqCMD
     username: str
     pw: str | None = None
+    blacklisted_host : str | None = None
+    blacklist_host_details : str | None = None
     
     @classmethod
     def from_json(cls, json_str: str):
@@ -70,6 +85,7 @@ class FormattedReq(BaseFormattedObj):
 class FormattedRsp(BaseFormattedObj):
     status: RspStatus
     jwt_token: str | None = None
+    blacklist: dict | None = None
     fail_reason: FailReason | None = None
 
     @classmethod
@@ -93,7 +109,8 @@ class FormattedRsp(BaseFormattedObj):
             
             return cls.from_dict(data)
         
-        except Exception:
+        except Exception as e:
+            client_logger.error(e, exc_info=True)
             return cls(status=RspStatus.FAIL, fail_reason=FailReason.INVALID_FORMAT)
 
 class AuthHandler:
@@ -125,14 +142,15 @@ class AuthHandler:
         try:
             self._client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self._client_socket.connect((self._server_ip, self._server_port))
-            logging.warning(f"[Auth] Connected to Auth server at ({self._server_ip},{self._server_port})")
+            client_logger.info(f"[Auth] Connected to Auth server at ({self._server_ip},{self._server_port})")
 
             self._establish_secure_connection()
             return True
         
         except Exception as e:
-            logging.warning(f"[Auth] Secure connection with Auth server failed: {e}")
+            client_logger.error(f"[Auth] Secure connection with Auth server failed: {e}")
             return False
+        
 
     def _establish_secure_connection(self):
         """
@@ -151,7 +169,7 @@ class AuthHandler:
         
         # Create EncryptonManager instance for AES-encrpyt/decrpyt.
         self.em = EncryptionManager(aes_key)
-        logging.warning("[Auth] Secure connection established.")
+        client_logger.info("[Auth] Secure connection established.")
 
     def login(self, username: str, password: str) -> FormattedRsp:
         """
@@ -183,6 +201,51 @@ class AuthHandler:
         req = FormattedReq(cmd=ReqCMD.DELETE, username=username, pw=password)
         return self._send_and_get_rsp(req)
     
+    def add_blacklist_host(self, username : str, blacklisted_host : str, details: str)-> FormattedRsp:
+        """
+        API function - for UI to call. 
+        Handles dding/updating a given host to a user's blacklist. (send Request -> Return Response)
+
+        :return FormattedRsp: Auth server's response
+        """
+        req = FormattedReq(
+            cmd=ReqCMD.ADD_BLACKLISTED_HOST,
+            username=username,
+            blacklisted_host=blacklisted_host,
+            blacklist_host_details=details
+        )
+        return self._send_and_get_rsp(req)
+
+    def delete_blacklist_host(self, username : str, blacklisted_host : str)-> FormattedRsp:
+        """
+        API function - for UI to call. 
+        Handles deleting a given host froma user's blacklist (send Request -> Return Response)
+
+        :return FormattedRsp: Auth server's response
+        """
+        req = FormattedReq(cmd=ReqCMD.DELETE_BLACKLISTED_HOST, username=username, blacklisted_host=blacklisted_host, )
+        return self._send_and_get_rsp(req)
+    
+    def delete_full_blacklist(self, username : str,)-> FormattedRsp:
+        """
+        API function - for UI to call. 
+        Handles deleting full blacklist of a user (send Request -> Return Response)
+
+        :return FormattedRsp: Auth server's response
+        """
+        req = FormattedReq(cmd=ReqCMD.DELETE_ALL_BLACKLSITED, username=username)
+        return self._send_and_get_rsp(req)
+    
+    def get_blacklist(self, username : str,)-> FormattedRsp:
+        """
+        API function - for UI to call. 
+        Handles getting full blacklist of a user (send Request -> Return Response)
+
+        :return FormattedRsp: Auth server's response
+        """
+        req = FormattedReq(cmd=ReqCMD.GET_BLACKLIST, username=username)
+        return self._send_and_get_rsp(req)
+    
     def _send_and_get_rsp(self, req: FormattedReq) -> FormattedRsp:
         """
 
@@ -199,6 +262,7 @@ class AuthHandler:
 
         
         """
+        client_logger.info(f"Client's request: {req.__dict__}")
         if not self._client_socket:
             if not self.connect():
                 return FormattedRsp(status=RspStatus.FAIL, fail_reason=FailReason.NETWORK_ERROR)
@@ -214,17 +278,14 @@ class AuthHandler:
             decrypted_rsp = self.em.aes_decrypt(encrypted_rsp)
             response = FormattedRsp.from_json(decrypted_rsp)
             
-            # if rsp status is SUCCESS and jwt provided, Start inject server
-            if response.status == RspStatus.SUCCESS and response.jwt_token:
-                self._start_inject_server(response.jwt_token)
             
             return response
 
         except Exception as e:
-            logging.warning(f"[Auth] Sending request/recieving response failed: {e}", exc_info=True)
+            client_logger.warning(f"[Auth] Sending request/recieving response failed: {e}", exc_info=True)
             return FormattedRsp(status=RspStatus.FAIL, fail_reason=FailReason.NETWORK_ERROR)
 
-    def _start_inject_server(self, token: str) -> bool:
+    def _start_inject_server(self, token: str):
         """
         Starts the local Inject Server in a background thread 
         using the given JWT.
@@ -234,11 +295,11 @@ class AuthHandler:
         :return bool: True if setting up injectServer and connecting to
         proxy server successful, otherwise False.
         """
-        logging.warning("[Auth] Starting Inject Server...")
+        client_logger.warning("[Auth] Starting Inject Server...")
         
         # Asuming proxy and auth_server sit on same IP, we can use auth_Server ip
         # to connect the inject server to the proxy.
-        inject_server = InjectServer(self._server_ip) 
+        inject_server = InjectServer() 
         
         self.inject_server_thread = threading.Thread(
             target=inject_server.start, 

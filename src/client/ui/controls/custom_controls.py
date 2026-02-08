@@ -218,7 +218,7 @@ class CustomPopUpModal(ft.Container):
                 ft.Divider(),
                 
                 ft.Row([
-                    ft.TextButton("Set", on_click=self._add_user),
+                    ft.TextButton("Set", on_click=self.on_submit_func),
                     ft.TextButton("Cancel", on_click=self.close),
                 ], 
                 alignment=ft.MainAxisAlignment.END)
@@ -226,14 +226,14 @@ class CustomPopUpModal(ft.Container):
         )
 
     def open(self, e=None):
+        
         self.visible = True
         self.update()
-
+   
     def close(self, e=None):
+        # reset input fields values
+        self.input_field.value = ""
+        self.details_field.value = ""
         self.visible = False
         self.update()
-
-    def _add_user(self):
-        self.on_submit_func(self.input_field.value.strip(), self.input_field.value.strip())
-        self.close()
 

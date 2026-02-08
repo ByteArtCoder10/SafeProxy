@@ -29,7 +29,7 @@ class JWTManager:
             return None
     
     @staticmethod
-    def verify_token(jwt_auth_public_key: str, jwt_token: str, isECDSA=True) -> bool:
+    def verify_token(jwt_auth_public_key: str, jwt_token: str, isECDSA=True) -> tuple[bool, str | None]:
         """
         Verifies signature and expiration of a JWT.
         signature-wise: uses RSA/ECDSA to verify the tokens
@@ -43,6 +43,8 @@ class JWTManager:
                     algorithms="ES256" if isECDSA else "RS256",
                     options={"verify_signature": True}
             )
-            return True
+            print
+            return True, payload.get("sub", None)
         except Exception:
-            return False
+            return False, None
+        

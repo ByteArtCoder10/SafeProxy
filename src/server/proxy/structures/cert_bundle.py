@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-# Cryptography imports
 from cryptography import x509
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric import ec

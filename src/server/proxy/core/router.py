@@ -10,6 +10,7 @@ from ..handlers.https_tcp_tunnel_handler import HttpsTcpTunnelHandler
 # from ..handlers.https_tls_termination_handler import HttpsTlsTerminationHandler
 from ..handlers.https_tls_termination_handler_ssl import HttpsTlsTerminationHandlerSSL
 from ..certificate.certificate_authority import CertificateAuthority
+
 class Router():
     """
     Determines the processing strategy for incoming client requests.
@@ -19,7 +20,7 @@ class Router():
     (Plain HTTP, HTTPS Tunneling, or TLS Termination).
     """
 
-    def route_request(self, req: Request, client_socket: socket.socket, ca  : CertificateAuthority) -> None:
+    def route_request(self, req: Request, client_socket: socket.socket, ca  : CertificateAuthority, username : str) -> None:
         """
         Hands the request to a specific handler based on the HTTP method
         and configuration settings.
@@ -34,6 +35,10 @@ class Router():
         :param ca: The CA's (singleton) instance for TLS-termination
         related tasks.
         
+        :type username: str
+        :param username: For blacklist blocking. at this point, the client is authorized, in order to check
+        for blacklisted urls/hosts, the proxy queries the DB with a username.
+
         :raises ValueError: If an unsupported or invalid HTTP method is received, but catches the xception.
         """
         try:
@@ -55,7 +60,7 @@ class Router():
                     return 
                 
             if self.handler:
-                self.handler.handle(req, client_socket)
+                self.handler.handle(req, client_socket, username)
             else:
                 raise ValueError("No suitable handler found for the request.")
             

@@ -6,6 +6,7 @@ from .router import Router
 from ...constants import MAX_CLIENTS, SOCKET_BUFFER_SIZE as BUFFER_SIZE
 from ...logs.logging_manager import LoggingManager
 from ...logs.loggers import core_logger
+from ..structures.response import Response
 from ...logs.proxy_context import ProxyContext
 from ..certificate.certificate_authority import CertificateAuthority
 from ..security.auth_validator import AuthValidator
@@ -121,8 +122,12 @@ class ProxyListener:
             parsed_request = self._parser.parse_request(client_request)
             
             # check if request has a valid jwt token
-            if not AuthValidator.is_request_authorized(parsed_request, self.auth_public_key):
-                client_socket.sendall(b"Unauthorized use of the proxy. Please Login/signup using the desktop app.")
+            jwt_valid, username = AuthValidator.is_request_authorized(parsed_request, self.auth_public_key)
+            if not jwt_valid or not username:
+                client_socket.sendall(
+                    b"Unauthorized use of the proxy. Please Login/signup using the desktop app. Follow the installation guide here: https://github.com/ByteArtCoder10/SafeProxy"
+                )
+
                 ProxyContext.set_local("BLOCKED", client_address[0], client_address[1])
                 core_logger.info("Request not authorized. Blocked!")
                 return 
@@ -132,7 +137,7 @@ class ProxyListener:
             core_logger.debug(f"Changed local variables: replaced 'PENDING' with {parsed_request.host}")
 
             # Route based on request
-            self._router.route_request(parsed_request, client_socket, self._ca)
+            self._router.route_request(parsed_request, client_socket, self._ca, username)
 
         except socket.timeout:
             core_logger.warning("conenction timed-out: Client connected, but never sent a request.")
@@ -144,60 +149,11 @@ class ProxyListener:
             #clean thread_vars and gracefully close conn
             ProxyContext.clear_local()
 
-            # remove cleint from client list
-            self._clients.remove((client_socket, client_address))
+            # remove client from client list
+            if (client_socket, client_address) in self._clients:
+                self._clients.remove((client_socket, client_address))
             if client_socket:
                 client_socket.close()
     
 
 
-
-"""
-CLIENT:
-----GUI - SIGN/LOG/HOME
-LOGIN - DONE
-SIGNUP - DONE
-HOME - DONE
-BLACKLIST - NO
-CA - NO
-ACCOUNT - NO
-
-----LOCAL_PROXY_SERVER
-BIND A SERVER ON CLIENT'S MACHINE - NO
-CREATE_THREAD_FOR_USER - NO
-CLOSE SERVER - NO
-FORMAT_REQUEST - NO
-OPEN_CHROME_WITH_PROXY_SETTINGS - NO
-
-----INSTALL_CERT_ON_CLIENT'S_MACHINE
-NO
-
-SERVER:
-PROXY_CORE_LOGIC - YES
-AUTH_SERVER - NO
-JWT - NO
-LOGS - NO
-REFINE PROXY-LOGIC TO CHECK FOR SafeProxy-Auth header in every request - NO
-DB - YES
-UI - YES
-
-
-
-TOMMOROW - 
-1.DISTINCT SPEREATION BETWEEN CLIENT AND SERVER CODE:
--SPEERATE INTO 2 FOLDERS - DONE
--CHECK IF PROXY STILL WORKS  -DONE
-
-2. AUTH SERVER + JWT:
--TRNASFER CODE TO NEW DIRECTORY
--CREATE THE JWT CODE
-
-3. LOGS ON SERVER:
-- CONFIG AND SET THE LOGS FOR DB CHECKS
--CHECK THAT WORKS
-
-4. ON-CLIENT SERVER + FORMAT
--DECIDE ON THE FORMAT (CAN BE SIMPLE)
--REDRIECT TO ACTUAL PROXY (SET THE IP & PORT ON GUI)
-
-"""

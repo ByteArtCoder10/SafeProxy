@@ -1,12 +1,11 @@
 import flet as ft
 from ...controls.custom_controls import CustomTextField, CustomBtn, CustomCard, CardTitle, CustomPageHeader
-
-
+from ....core.inject_server.inject_server import InjectServer
 class ClientHomeView:
     def __init__(self, page: ft.Page):
         self.page = page
         self.username = self.page.session.get("username") or "Client"
-        
+        self.page.inject_server = InjectServer(self.page.session.get("jwt_token"))
 
         # controls
         header = ft.Container(
@@ -34,25 +33,29 @@ class ClientHomeView:
         """Builds and returns the list of dashboard cards."""
         
         # Connection Card
+        self.status_text = ft.Text("DISCONNECTED", color=ft.Colors.GREY, weight="bold")
+        self.toggle_btn = ft.Switch(
+            label="Activate Proxy    ",
+            active_color=ft.Colors.PRIMARY,
+            label_position=ft.LabelPosition.LEFT,
+            on_change=self.handle_toggle_proxy,
+            value=self.page.session.get("is_connected") or False
+        )
+        self.loading_ring = ft.ProgressRing(width=16, height=16, stroke_width=2, visible=False)
+        self.set_status(self.page.session.get("is_connected"))
         conn_controls = ft.Column(
             controls=[
                 CardTitle("Connection Status"),
                 ft.Column(
                     controls=[
-                        ft.Row(controls=[ft.Text("Status:", weight="bold"), ft.Text("disconnected", color=ft.Colors.RED)]),
-                        ft.Switch(
-                            label="Activate Proxy    ",
-                            active_color=ft.Colors.PRIMARY,
-                            label_position=ft.LabelPosition.LEFT,
-                            on_change=self.handle_toggle_proxy
-                        ),
+                        ft.Row(controls=[ft.Text("Status:", weight="bold"), self.status_text, self.loading_ring]),
+                        self.toggle_btn,
                 ], 
                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN
                 ),
             ],
             spacing=15
         )
-        print(1)
         # Protocol Card
         protocol_controls = ft.Column(
             controls=[
@@ -68,7 +71,6 @@ class ClientHomeView:
             ], 
             spacing=15
         )
-        print(2)
 
         # Redirection Card
         redirect_controls = ft.Column(
@@ -84,7 +86,6 @@ class ClientHomeView:
             ], 
             spacing=15
         )
-        print(3)
 
         # Blacklist Card
         blacklist_controls = ft.Column(
@@ -95,10 +96,7 @@ class ClientHomeView:
                         ft.DataColumn(ft.Text("Host", weight="bold")),
                         ft.DataColumn(ft.Text("Expiry", weight="bold")),
                     ],
-                    rows=[
-                        ft.DataRow(cells=[ft.DataCell(ft.Text("fxp.com")), ft.DataCell(ft.Text("2025"))]),
-                        ft.DataRow(cells=[ft.DataCell(ft.Text("data.cyber.co.il")), ft.DataCell(ft.Text("2026"))]),
-                    ],
+                    rows=[],
                     heading_row_height=35,
                     expand=True
                 ),
@@ -107,7 +105,6 @@ class ClientHomeView:
             spacing=15, 
             scroll=ft.ScrollMode.AUTO,
           )
-        print(4)
 
         return [
             CustomCard(conn_controls),
@@ -116,17 +113,48 @@ class ClientHomeView:
             CustomCard(blacklist_controls) 
         ]
     
-    def handle_toggle_proxy(self, e: ft.ControlEvent):    
-        if e.control.value: # client tries to connect
-            pass
-        else:
-            pass
+    def handle_toggle_proxy(self, e: ft.ControlEvent):
+        # change ui to laoding
+        self.status_text.value = "CONNECTING..."
+        self.loading_ring.visible = True
+        self.page.update()
 
+        # connection to iject server -> proxy
+        if e.control.value: # client tries to connect
+            self.page.inject_server.start_inject_server(change_ui_when_finished=self.set_status)
+        else:
+            self.page.inject_server.stop(change_ui_when_finished=self.set_status)
+
+    def set_status(self, status : bool, details: str | None=None):
+        self.status_text.value = details or None
+        if status:
+            # status text
+            if not self.status_text.value:
+                self.status_text.value = "CONNECTED TO PROXY"
+            self.status_text.color = ft.Colors.GREEN
+            self.toggle_btn.value = True
+            self.page.session.set("is_connected", True)
+            # loading bar
+            self.loading_ring.visible = False
+        
+        else:
+            # status text
+            if not self.status_text.value:
+                self.status_text.value = "DISCONNECTED"
+            self.status_text.color = ft.Colors.GREY
+            self.toggle_btn.value = False
+            self.page.session.set("is_connected", False)
+
+            # loading bar
+            self.loading_ring.visible = False
+        
+        self.page.update()
+            
 def main(page: ft.Page):
     ClientHomeView(page)
     page.update()
 
 if __name__ == "__main__":
-    import logging
-    logging.basicConfig(level=logging.WARNING)
+    # import logging
+    # logging.basicConfig(level=logging.WARNING)
     ft.app(target=main)

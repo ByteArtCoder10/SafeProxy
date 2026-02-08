@@ -42,12 +42,12 @@ class BaseHandler(ABC):
             to "fool" the browser thatwe don't suuport HTTPS. The browser will downgrade to HTTP, allowing the proxy to send a custom HTTP response.
             Course of events:
             - Unauthorised client
-            - sending Uncompliant-TLS data for HTTP fallback
+            - sending TLS-uncompliant data for HTTP fallback
             - browser shows "{URI} doesn't support a secure connection with HTTPS"
             - client clicks "Continue to site"
             - HTTP protocol allows sending custom HTML pages.
 
-        From my point of view, option a is caring too much for an unautherised client, and takes resources from authorised clients, so option A is better.  
+        From my point of view, option a is caring too much for an unautherised client, and takes resources from authorised ones, so option b is better.  
 
         2. Host is blacklisted - 
         same 2 options:
@@ -65,10 +65,11 @@ class BaseHandler(ABC):
     def __init__(self):
         self._client_socket = None
         self._server_socket = None
+        self._username : str | None = None
         self.url_manager = UrlManager
 
         
-    def handle(self, req: Request, client_socket: socket):
+    def handle(self, req: Request, client_socket: socket, username : str):
         """
         The primary entry point for the handler. Responsible for handling the request 
         by calling the concrete 'process' implementation.
@@ -78,8 +79,14 @@ class BaseHandler(ABC):
 
         :type client_socket: socket.socket
         :param client_socket: The active communication socket for the client.
+
+        :type username: str
+        :param username: For blacklist blocking. at this point, the client is authorized, in order to check
+        for blacklisted urls/hosts, the proxy queries the DB with a username.
         """
         try:
+            # set username
+            self._username = username
             # self.create_logger(req, client_socket)
             return self.process(req, client_socket)
         except Exception as e:

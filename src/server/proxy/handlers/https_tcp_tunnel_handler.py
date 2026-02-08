@@ -42,14 +42,14 @@ class HttpsTcpTunnelHandler(BaseHandler):
 
         url = req.host + req.path
 
-        if self.url_manager.is_blacklisted(url):
+        if self.url_manager.is_blacklisted(url, self._username):
             core_logger.info("URL requested is blacklisted. TLS-Terminating and sending 403 blacklisted.")
-            HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket)
+            HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket, self._username)
             return
         if self.url_manager.is_malicious(url):
             core_logger.info("URL requested is malicious. TLS-Terminating and sending 403 malicious.")
             # TLS termination -> send 403 malicious
-            HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket)
+            HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket, self._username)
             return
         
         try:
@@ -62,13 +62,13 @@ class HttpsTcpTunnelHandler(BaseHandler):
                 case ConnectionStatus.REDIRECT_REQUIRED:
                     core_logger.debug(f"Connection failed for {req.host}. Redirecting to Google.")
                     # TLS Termination -> Send Redirection repsponse
-                    HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket)
+                    HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket, self._username)
                     pass
 
                 case ConnectionStatus.CONNECT_FAILURE:
                     core_logger.info(f"Connection failed for {req.host}. TLS-Terminating and Sending 502.")
                     # TLS Termination -> Send 502 Bad Request.
-                    HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket)
+                    HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket, self._username)
                     pass
 
         except Exception as e:

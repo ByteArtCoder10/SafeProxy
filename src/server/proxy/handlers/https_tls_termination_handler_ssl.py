@@ -103,12 +103,7 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
             )
             core_logger.debug(f"TIMECHECK4 - {datetime.datetime.now() - before}")
             before=datetime.datetime.now()
-
-            # check SNI for blacklist or malicious    
-            if self.url_manager.is_blacklisted(sni) or \
-            self.url_manager.is_malicious(sni):
-                self._respond_to_client(req, self._tls_client_connection, 403, addBlackListLabelHTML=True)
-
+            
             # resume tls handshake
             raw_request = self._resume_tls_conenction()
             core_logger.debug(f"TIMECHECK5 - {datetime.datetime.now() - before}")
@@ -117,13 +112,24 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
             if not raw_request:
                 return
             
+
+            # check SNI for blacklist or malicious. Note we check two places - The initial CONNECT request, and the first request after TLS termination
+            if self.url_manager.is_blacklisted([req.host + req.path, sni], self._username) or \
+            self.url_manager.is_malicious(sni):
+                self._respond_to_client(req, self._tls_client_connection, 403, addBlackListLabelHTML=True)
+            
             # parse raw request into a Request obj
             client_request = Parser.parse_request(raw_request.decode())
+            
+            # check raw request again
+            if self.url_manager.is_blacklisted([client_request.host + client_request.path, sni], self._username) or \
+            self.url_manager.is_malicious(sni):
+                self._respond_to_client(client_request, self._tls_client_connection, 403, addBlackListLabelHTML=True)
             
             # handshake server
             handshake_success = self._perform_tls_hanshake_with_server(client_request, sni)
             core_logger.debug(f"TIMECHECK6 - {datetime.datetime.now() - before}")
-            before=datetime.datetime.now()
+            before = datetime.datetime.now()
 
             if handshake_success:
                 # send first 'push'
@@ -142,9 +148,8 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
             
             after = datetime.datetime.now()
             core_logger.info(f"TIMECHECK9 - {after-abs_before}")
-        except ConnectionAbortedError:
+        except (ConnectionAbortedError, ConnectionResetError):
             core_logger.info("Client Unexpectedly closed conenction. Handled gracefully.")
-        
         finally:
             self._close_sockets(self._tls_client_connection, self._tls_server_connection)
     
@@ -175,7 +180,7 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
                 core_logger.debug("Client closed TLS connection without sending data")                    
                 return None
             
-            core_logger.debug(f"Cient's request after TLS termination: \n{raw_request.decode()}")
+            core_logger.debug(f"Cient's request after TLS termination: \n{raw_request.decode(encoding="utf-8", errors="replace")}")
             return raw_request
             
         # Client/Proxy closed the connection

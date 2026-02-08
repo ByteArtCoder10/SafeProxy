@@ -23,16 +23,27 @@ class BaseFormattedObj:
     @classmethod
     def from_dict(cls, data: dict):
         return cls(**data)
+    
+    def __repr__(self) -> str:
+        class_name = self.__class__.__name__ + "\n"
+        attrs = ''.join([f"{k}: {v}\n" for k,v in self.__dict__.items()])
+        return class_name + attrs
 
 class ReqCMD(Enum):
+    # Auth proccess
     LOGIN = "LOGIN"
     SIGNUP =  "SIGNUP"
     DELETE = "DELETE"
 
+    # blacklist proccess
+    ADD_BLACKLISTED_HOST = "ADD_BLACKLISTED_HOST"
+    DELETE_BLACKLISTED_HOST = "DELETE_BLACKLISTED_HOST"
+    DELETE_ALL_BLACKLSITED = "DELETE_ALL_BLACKLSITED"
+    GET_BLACKLIST = "GET_BLACKLIST" 
+
 class RspStatus(Enum):
     FAIL = "FAIL"
     SUCCESS =  "SUCCESS"
-
 class FailReason(Enum):
     # sign up
     USER_EXISTS = "Username already exists."
@@ -40,21 +51,24 @@ class FailReason(Enum):
     # login
     USER_DOESNT_EXIST = "Username doesn't exist." 
     WRONG_PW = "Wrong password."
-
     
-    # general
-    DB_ERROR = "Internal Database error."
-    INVALID_FORMAT = "Request's format invalid."
+    # Auth-general
     INVALID_USERNAME_LEN = "Username's length invalid."
-    INVALID_PW_LEN = "Password's length invalid."
     JWT_ERROR = "Failed generating JWT token."
+    INVALID_PW_LEN = "Password's length invalid."
+    
+    # General
+    DB_ERROR = "Database error."
+    INVALID_FORMAT = "Request's format invalid."
     NETWORK_ERROR = "Network communication error."
-
 @dataclass
 class FormattedReq(BaseFormattedObj):
     cmd: ReqCMD
     username: str
     pw: str | None = None
+    blacklisted_host : str | None = None
+    blacklist_host_details : str | None = None
+
     
     @classmethod
     def from_json(cls, json_str: str):
@@ -69,11 +83,11 @@ class FormattedReq(BaseFormattedObj):
             data["cmd"] = ReqCMD(data["cmd"])
             
         return cls.from_dict(data)
-
 @dataclass
 class FormattedRsp(BaseFormattedObj):
     status: RspStatus
     jwt_token: str | None = None
+    blacklist : dict | None = None
     fail_reason: FailReason | None = None
 
     @classmethod
@@ -127,12 +141,12 @@ class AuthServer:
             self._server_socket.bind((self._ip, self._port))
             self._server_socket.listen(MAX_CLIENTS)
             
-            db_logger.info(f"Auth Server running on ({self._ip},{self._port})")
+            db_logger.info(f"Auth Server running on ({self._ip}, {self._port})")
 
             while True:
                 client_sock, addr = self._server_socket.accept()
                 threading.Thread(target=self.handle_client, args=(client_sock, addr), daemon=True).start()
-                db_logger.info(f"Auth Thread started for client - {addr}")
+                db_logger.info(f"Auth Thread started for client - ({addr[0]}, {addr[1]})")
 
         except Exception as e:
             db_logger.critical(f"Auth Server error: {e}", exc_info=True)
@@ -149,22 +163,26 @@ class AuthServer:
             shared_key = self._perform_key_exchange(client_socket)
             aes_key = EncryptionManager.derive_key_from_dh_key(shared_key)
             em = EncryptionManager(aes_key)
-            db_logger.info(f"Established secure connection with client")
+            db_logger.info(f"Established secure connection with ({addr[0]}, {addr[1]})")
             
             while True:
                 # Receive encrypted request
-                encrypted_data = client_socket.recv(SOCKET_BUFFER_SIZE)
-                if not encrypted_data: 
-                    return
+                try:
+                    encrypted_data = client_socket.recv(SOCKET_BUFFER_SIZE)
+                    if not encrypted_data: 
+                        break
+                except (ConnectionResetError, OSError, BrokenPipeError):
+                    db_logger.info(f"Client ({addr[0]}, {addr[1]}) closed connection. Closing gracefully.")
+                    break
                 
                 # decrypt + format request
                 json_req = em.aes_decrypt(encrypted_data)
                 request = FormattedReq.from_json(json_req)
-                db_logger.debug(f"Client Auth request: {request.__dict__}") # REMOVE EVENTUALLY
+                db_logger.debug(f"Client ({addr[0]}, {addr[1]}): {request.__repr__()}") # REMOVE EVENTUALLY
                 
                 # Process request
                 response = self._process_request(request)
-                db_logger.debug(f"Auth server response: {response.__dict__}") # REMOVE EVENTUALLY
+                db_logger.debug(f"Auth server response: {response.__repr__()}") # REMOVE EVENTUALLY
 
                 # encrypt + send
                 encrypted_rsp = em.aes_encrypt(response.to_json())
@@ -172,26 +190,30 @@ class AuthServer:
                 db_logger.info(f"Response sent to {addr}")
 
         except Exception as e:
-            db_logger.error(f"Error handling client {addr}: {e}", exc_info=True)
+            db_logger.error(f"Failed handling client ({addr[0]}, {addr[1]}): {e}", exc_info=True)
         
         finally:
             client_socket.close()
+            db_logger.info(f"Closed connection with {addr}.")
 
-    def _perform_key_exchange(self, client_socket: socket.socket) -> bytes:
+    def _perform_key_exchange(self, client_socket: socket.socket) -> bytes | None:
         """Performs DH exchange: Receives client PK, sends server PK, returns shared secret."""
-        client_pk = client_socket.recv(256)
-        dh, server_pk = EncryptionManager.get_dh_public_key()
-        client_socket.sendall(server_pk)
-        return EncryptionManager.get_dh_shared_key(dh, client_pk)
+        try:
+            client_pk = client_socket.recv(256)
+            dh, server_pk = EncryptionManager.get_dh_public_key()
+            client_socket.sendall(server_pk)
+            return EncryptionManager.get_dh_shared_key(dh, client_pk)
+        except Exception as e:
+            db_logger.error(f"Failed performing DH  with client: {e}", exc_info=True)
+            return None
 
     def _process_request(self, req: FormattedReq) -> FormattedRsp:
-        """Validates credentials and generates JWT if valid."""
+        """Validates credentials and generates JWT/fetch blacklist if valid."""
         try:            
             # length validation - just incase UI failed to check/bypassed.
             if len(req.username) < 3 or len(req.username) > 30:
                 return FormattedRsp(status=RspStatus.FAIL, fail_reason=FailReason.INVALID_USERNAME_LEN)
             
-            # signup
             match req.cmd:
                 
                 # signup
@@ -213,7 +235,38 @@ class AuthServer:
                     if self._db.delete_user(req.username):
                         return FormattedRsp(RspStatus.SUCCESS)
                     return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.DB_ERROR)
-        
+                
+                # add blacklist host
+                case ReqCMD.ADD_BLACKLISTED_HOST:
+                    if self._db.add_host_to_blacklist(
+                    req.username, req.blacklisted_host, req.blacklist_host_details):
+                        return FormattedRsp(RspStatus.SUCCESS)
+                    return FormattedRsp(RspStatus.FAIL,fail_reason=FailReason.DB_ERROR)
+                
+                # delete blacklist host
+                case ReqCMD.DELETE_BLACKLISTED_HOST:
+                    if self._db.delete_host_from_blacklist(
+                    req.username, req.blacklisted_host):
+                        return FormattedRsp(RspStatus.SUCCESS)
+                    return FormattedRsp(RspStatus.FAIL,fail_reason=FailReason.DB_ERROR)
+
+                # delete full blacklist
+                case ReqCMD.DELETE_ALL_BLACKLSITED:
+                    if self._db.delete_blacklist(req.username):
+                        return FormattedRsp(RspStatus.SUCCESS)
+                    return FormattedRsp(RspStatus.FAIL,fail_reason=FailReason.DB_ERROR)
+                
+                # get full blacklist
+                case ReqCMD.GET_BLACKLIST:
+                    bl = self._db.get_blacklist(req.username)
+                    db_logger.debug(bl)
+                    if bl or bl == {}:
+                        return FormattedRsp(RspStatus.SUCCESS, blacklist=bl)
+                    return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.DB_ERROR)
+                
+                case _:
+                    return FormattedRsp(RspStatus.FAIL,fail_reason=FailReason.INVALID_FORMAT)
+                
         except Exception as e:
             print(f"A DB error occured. returning FAIL: {e}")
             return FormattedRsp(status=RspStatus.FAIL, fail_reason=FailReason.DB_ERROR)
@@ -232,12 +285,12 @@ class AuthServer:
             return FormattedRsp(status=RspStatus.FAIL, fail_reason=FailReason.JWT_ERROR)
         
     def _load_priv_key(self) -> str | None:
-        path = os.getenv("AUTH_SERVER_PRIVATE_KEY_FILE_PATH")
         try:
+            path = os.getenv("AUTH_SERVER_PRIVATE_KEY_FILE_PATH")
             with open(path, "r") as f:
                 data = f.read()
             
-            db_logger.info("Loaded private key for sigining")
+            db_logger.info("Successfully Loaded private key for sigining JWT tokens.")
             return data
 
         except Exception:
