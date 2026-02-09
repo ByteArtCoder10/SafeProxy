@@ -3,7 +3,7 @@ import threading
 import logging
 from .parser import Parser
 from .router import Router
-from ...constants import MAX_CLIENTS, SOCKET_BUFFER_SIZE as BUFFER_SIZE
+from ...server_constants import MAX_CLIENTS, SOCKET_BUFFER_SIZE as BUFFER_SIZE
 from ...logs.logging_manager import LoggingManager
 from ...logs.loggers import core_logger
 from ..structures.response import Response

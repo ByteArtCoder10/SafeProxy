@@ -1,5 +1,6 @@
 import flet as ft
 from ...controls.custom_controls import CustomTextField, CustomBtn, CustomCard, CardTitle, CustomPageHeader, CustomAlertDialog
+from ....core.authentication.auth_handler import RspStatus, FailReason
 from ....logs.logger import client_logger
 class AccountView:
     def __init__(self, page: ft.Page):
@@ -40,9 +41,23 @@ class AccountView:
         self.delete_dialog.open = False
         self.page.update()
 
+    def _show_snack_bar(self, msg: str):
+        sb =ft.SnackBar(ft.Text(msg))
+        sb.bgcolor = ft.Colors.RED_ACCENT_700
+        sb.open = True
+        sb.duration = 4000
+
+        self.page.update()
+
     def _delete_account(self, e):
-        client_logger.info("Account deleted")
         self._close_dialog(e)
+        
+        rsp = self.page.auth_handler.delete(self.page.session.get("username"))
+        if rsp.status == RspStatus.FAIL:
+            self._show_snack_bar(rsp.fail_reason.value)
+        
+        self.page.session.clear()
+        self.page.go("/login")
     
     def get_content(self):
         return self.content

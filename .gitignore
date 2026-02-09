@@ -1,6 +1,7 @@
 # .gitignore
 *.log
 src/server/logs/output/
+!src/output/clients.gitkeep
 *.log
 
 __pycache__/

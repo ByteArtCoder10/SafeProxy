@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from enum import Enum
 
 from ...logs.logger import client_logger
-from ...constants import AUTH_SERVER_PORT, SOCKET_BUFFER_SIZE
+from ...client_constants import AUTH_SERVER_PORT, SOCKET_BUFFER_SIZE
 from .encryption_manager import EncryptionManager
 from ..inject_server.inject_server import InjectServer
 
@@ -191,14 +191,14 @@ class AuthHandler:
         req = FormattedReq(cmd=ReqCMD.SIGNUP, username=username, pw=password)
         return self._send_and_get_rsp(req)
 
-    def delete(self, username: str, password: str) -> FormattedRsp:
+    def delete(self, username: str) -> FormattedRsp:
         """
         API function - for UI to call. 
         Handles Delete proccess (send Request -> Return Response)
 
         :return FormattedRsp: Auth server's response
         """
-        req = FormattedReq(cmd=ReqCMD.DELETE, username=username, pw=password)
+        req = FormattedReq(cmd=ReqCMD.DELETE, username=username)
         return self._send_and_get_rsp(req)
     
     def add_blacklist_host(self, username : str, blacklisted_host : str, details: str)-> FormattedRsp:

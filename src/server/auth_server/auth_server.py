@@ -5,7 +5,7 @@ import json
 from dataclasses import dataclass
 from enum import Enum
 
-from ..constants import MAX_CLIENTS, SOCKET_BUFFER_SIZE, AUTH_SERVER_PORT
+from ..server_constants import MAX_CLIENTS, SOCKET_BUFFER_SIZE, AUTH_SERVER_PORT
 from ..logs.loggers import db_logger
 from ..auth_server.encryption_manager import EncryptionManager
 from ..db.sql_auth_manager import SQLAuthManager

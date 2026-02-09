@@ -3,7 +3,7 @@ import os
 from ...logs.loggers import core_logger
 from ...auth_server.jwt_manager import JWTManager
 from ..structures.request import Request
-from ...constants import HTTP_AUTH_HEADER_NAME
+from ...server_constants import HTTP_AUTH_HEADER_NAME
 class AuthValidator:
 
     @staticmethod    

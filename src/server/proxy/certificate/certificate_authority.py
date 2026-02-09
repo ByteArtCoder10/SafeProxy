@@ -1,4 +1,4 @@
-from ...constants import ORGANIZTION_NAME, COUNTRY_NAME, LOCALITY_NAME, \
+from ...server_constants import ORGANIZTION_NAME, COUNTRY_NAME, LOCALITY_NAME, \
 COMMON_NAME, CA_VALIDITY_DAYS, CA_ROOT_VALIDITY_DAYS, CA_KEY_SIZE, CERTS_DIR, MAX_MEMORY_CERTS
 from dotenv import load_dotenv
 import os

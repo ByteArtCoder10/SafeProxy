@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 from src.server.logs.logging_manager import LoggingManager
-from src.server.constants import AUTH_SERVER_PORT
+from src.server.server_constants import AUTH_SERVER_PORT
 import threading
 
 def main():

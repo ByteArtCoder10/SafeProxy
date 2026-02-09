@@ -2,7 +2,7 @@ import logging
 import sys
 import os
 
-from ..constants import LOG_FORMAT, CLIENT_LOG_FILE_PATH
+from ..client_constants import LOG_FORMAT, CLIENT_LOG_FILE_PATH
 
 class LoggingManager:
 

@@ -6,7 +6,7 @@ from typing import Optional, ClassVar
 import socket
 
 from ...logs.loggers import core_logger
-from ...constants import SECURITY_LOCK_BG_PATH
+from ...server_constants import SECURITY_LOCK_BG_PATH
 
 
 @dataclass

@@ -2,7 +2,7 @@ import subprocess
 import os
 
 from ...logs.logger import client_logger
-from ...constants import ROOT_CA_CERT_PATH, CERT_STORE_PATH
+from ...client_constants import ROOT_CA_CERT_PATH, CERT_STORE_PATH
 class CAHandler():
 
     @staticmethod

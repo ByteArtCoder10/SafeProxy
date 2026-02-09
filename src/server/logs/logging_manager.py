@@ -4,8 +4,8 @@ import datetime
 import shutil
 import threading
 import sys
-from ..constants import LOG_FORMAT,CORE_MAIN_LOG_FILE_PATH, \
-DB_MAIN_LOG_FILE_PATH, GUI_MAIN_LOG_FILE_PATH, CORE_CLIENTS_LOG_DIR_PATH
+from ..server_constants import LOG_FORMAT,CORE_MAIN_LOG_FILE_PATH, \
+DB_MAIN_LOG_FILE_PATH, CORE_CLIENTS_LOG_DIR_PATH
 from .proxy_context import ProxyContext
 
 class LoggingManager():
@@ -83,8 +83,7 @@ class LoggingManager():
             
             for path in [
                 CORE_MAIN_LOG_FILE_PATH,
-                DB_MAIN_LOG_FILE_PATH,
-                GUI_MAIN_LOG_FILE_PATH]:
+                DB_MAIN_LOG_FILE_PATH]:
                 if os.path.exists(path):
                     with open(path, 'w') as f:
                         pass # delete the contents of it

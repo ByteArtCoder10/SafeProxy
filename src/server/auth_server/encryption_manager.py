@@ -6,7 +6,7 @@ from cryptography.hazmat.primitives import serialization
 from diffiehellman import DiffieHellman
 import os
 
-from ..constants import AUTH_KEYS_SIZE
+from ..server_constants import AUTH_KEYS_SIZE
 from ..logs.loggers import db_logger
 class EncryptionManager:
     """

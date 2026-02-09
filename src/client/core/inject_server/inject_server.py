@@ -3,7 +3,7 @@ import threading
 import os
 import subprocess
 from ...logs.logger import client_logger
-from ...constants import MAX_CLIENTS, SOCKET_BUFFER_SIZE, HTTP_AUTH_HEADER_NAME, PROXY_SERVER_PORT, INJECT_SERVER_PORT, PROXY_SERVER_IP, CHROME_PROPILE_DATA_PATH, CHROME_EXE_PATH
+from ...client_constants import MAX_CLIENTS, SOCKET_BUFFER_SIZE, HTTP_AUTH_HEADER_NAME, PROXY_SERVER_PORT, INJECT_SERVER_PORT, PROXY_SERVER_IP, CHROME_PROPILE_DATA_PATH, CHROME_EXE_PATH
 from .parser import Parser
 from .request import Request
 class InjectServer:

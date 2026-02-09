@@ -4,7 +4,7 @@ import threading
 import os
 import datetime
 
-from ...constants import CERTS_DIR
+from ...server_constants import CERTS_DIR
 from ..certificate.certificate_authority import CertificateAuthority
 from .base_handler import BaseHandler
 from ..structures.request import Request

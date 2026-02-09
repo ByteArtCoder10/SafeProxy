@@ -3,7 +3,7 @@ import ssl
 import socket
 
 from abc import ABC, abstractmethod
-from ...constants import SOCKET_BUFFER_SIZE
+from ...server_constants import SOCKET_BUFFER_SIZE
 from ..structures.request import Request
 from ..structures.response import Response
 from ..structures.connection_status import ConnectionStatus

@@ -91,13 +91,25 @@ class ClientHomeView:
         blacklist_controls = ft.Column(
             controls=[
                 CardTitle("Blacklisted Hosts/IPs"),
+                ft.Text("The blacklsit feature allows you to block any site you wish!", color=ft.Colors.GREY_500),
                 ft.DataTable(
                     columns=[
-                        ft.DataColumn(ft.Text("Host", weight="bold")),
-                        ft.DataColumn(ft.Text("Expiry", weight="bold")),
+                        ft.DataColumn(ft.Text("Host/URL", weight="bold")),
+                        ft.DataColumn(ft.Text("Status", weight="bold")),
+                        ft.DataColumn(ft.Text("Details", weight="bold")),
+                        ft.DataColumn(ft.Text("Delete", weight="bold")),
                     ],
-                    rows=[],
-                    heading_row_height=35,
+                    rows=[
+                        ft.DataRow(
+                            cells=[
+                                ft.DataCell(ft.Text("(Example) example.com", color=ft.Colors.GREY_600)),
+                                ft.DataCell(ft.Text("BLOCKED", color=ft.Colors.RED)),
+                                ft.DataCell(ft.Text("Blocked for reason A, B, C...", color=ft.Colors.GREY_600)),
+                                ft.DataCell(ft.IconButton(icon=ft.Icons.DELETE, icon_color=ft.Colors.GREY_600, disabled=True)),
+                            ]
+                        )
+                    ],
+                    heading_row_height=50,
                     expand=True
                 ),
                 ft.TextButton("Manage Full Blacklist", icon=ft.Icons.ARROW_FORWARD, icon_color=ft.Colors.PRIMARY, on_click= lambda e: self.page.go("/blacklist")),

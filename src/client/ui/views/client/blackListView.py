@@ -8,7 +8,6 @@ from ....core.authentication.auth_handler import RspStatus, FailReason
 class BlackListView:
     def __init__(self, page: ft.Page):
         self.page = page
-        self.page.snack_bar = ft.SnackBar(ft.Text())
         
         # modals
         self.add_host_modal = CustomPopUpModal(on_submit=self._add_host)
@@ -26,6 +25,21 @@ class BlackListView:
         # controls
         header = CustomPageHeader("BlackList")
         
+        # texp paragrpah
+        bl_para = ft.Column(
+            controls=[
+                ft.Text("SafeProxy can block hosts, URLs, and even IPs!",  color=ft.Colors.SECONDARY ,weight="bold", size=20),
+                ft.Text("The blocking mechanism is as follows:\n " \
+                        "1. Host only - In case of host-only entry (no path) in the blacklist, SafeProxy will block any request, with a path or without.\n" \
+                        "For instance, adding example.com will block example.com and example.com/*\n\n" \
+                        "2. Specific URL - In case of a specific URL entry in the blacklist, SafeProxy will block only this URL, allowing other paths" \
+                        "from this host.\n" \
+                        "For example, blocking example.com/x will block example.com/x but not example.com/y and example.com/"
+                    , color=ft.Colors.GREY_500, size=14),
+                ft.Divider(color=ft.Colors.GREY_200)                
+            ]
+        )
+
         # btns
         btns = ft.Row(
             controls=[
@@ -53,7 +67,7 @@ class BlackListView:
         
         # layout
         layout = ft.Column(
-            controls=[header, btns, self.blacklist_table],
+            controls=[header, bl_para, btns, self.blacklist_table],
             scroll=ft.ScrollMode.AUTO
         )
         self.content = ft.ResponsiveRow(
@@ -218,15 +232,16 @@ class BlackListView:
         self._close_dialog(e)
 
     def show_snackbar(self, msg : str, is_error : bool = True):
-        sb = self.page.snack_bar
+        sb = ft.SnackBar(
+            content=ft.Text(msg),
+            bgcolor=ft.Colors.RED_ACCENT_700 if is_error else ft.Colors.GREEN_ACCENT_700,
+            duration=4000,
+        )
 
-        sb.content = ft.Text(msg)
-        sb.bgcolor = ft.Colors.RED_ACCENT_700 if is_error else ft.Colors.GREEN_ACCENT_700
+        self.page.overlay.append(sb)
         sb.open = True
-        sb.duration = 4000
-
+        
         self.page.update()
-
     
     def get_content(self) -> ft.ResponsiveRow:
         return self.content
