@@ -28,11 +28,19 @@ class ReqCMD(Enum):
     SIGNUP =  "SIGNUP"
     DELETE = "DELETE"
 
-    # blacklist proccess - 
+    # blacklist proccess
     ADD_BLACKLISTED_HOST = "ADD_BLACKLISTED_HOST"
     DELETE_BLACKLISTED_HOST = "DELETE_BLACKLISTED_HOST"
     DELETE_ALL_BLACKLSITED = "DELETE_ALL_BLACKLSITED"
     GET_BLACKLIST = "GET_BLACKLIST" 
+
+    # tls terminate proccess
+    SET_TLS_TERMINATE = "SET_TLS_TERMINATE"
+    GET_TLS_TERMINATE = "GET_TLS_TERMINATE"
+
+    # google redirect proccess
+    SET_GOOGLE_REDIRECT = "SET_GOOGLE_REDIRECT"
+    GET_GOOGLE_REDIRECT = "GET_GOOGLE_REDIRECT"
 
 
 class RspStatus(Enum):
@@ -66,6 +74,8 @@ class FormattedReq(BaseFormattedObj):
     pw: str | None = None
     blacklisted_host : str | None = None
     blacklist_host_details : str | None = None
+    tls_terminate : bool | None = None
+    google_redirect : bool | None = None
     
     @classmethod
     def from_json(cls, json_str: str):
@@ -86,6 +96,8 @@ class FormattedRsp(BaseFormattedObj):
     status: RspStatus
     jwt_token: str | None = None
     blacklist: dict | None = None
+    tls_terminate: bool | None = None
+    google_redirect: bool | None = None
     fail_reason: FailReason | None = None
 
     @classmethod
@@ -246,6 +258,47 @@ class AuthHandler:
         req = FormattedReq(cmd=ReqCMD.GET_BLACKLIST, username=username)
         return self._send_and_get_rsp(req)
     
+        
+    def set_tls_terminate(self, username : str, tls_terminate : bool)-> FormattedRsp:
+        """
+        API function - for UI to call. 
+        Handles setting tls terminate of a user (send Request -> Return Response)
+
+        :return FormattedRsp: Auth server's response
+        """
+        req = FormattedReq(cmd=ReqCMD.SET_TLS_TERMINATE, username=username, tls_terminate=tls_terminate)
+        return self._send_and_get_rsp(req)
+
+    def get_tls_terminate(self, username : str)-> FormattedRsp:
+        """
+        API function - for UI to call. 
+        Handles getting tls terminate of a user (send Request -> Return Response)
+
+        :return FormattedRsp: Auth server's response
+        """
+        req = FormattedReq(cmd=ReqCMD.GET_TLS_TERMINATE, username=username)
+        return self._send_and_get_rsp(req)
+    
+    def set_google_redirect(self, username : str, google_redirect : bool)-> FormattedRsp:
+        """
+        API function - for UI to call. 
+        Handles setting google reidrect of a user (send Request -> Return Response)
+
+        :return FormattedRsp: Auth server's response
+        """
+        req = FormattedReq(cmd=ReqCMD.SET_GOOGLE_REDIRECT, username=username, google_redirect=google_redirect)
+        return self._send_and_get_rsp(req)
+
+    def get_google_redirect(self, username : str)-> FormattedRsp:
+        """
+        API function - for UI to call. 
+        Handles getting google redirect of a user (send Request -> Return Response)
+
+        :return FormattedRsp: Auth server's response
+        """
+        req = FormattedReq(cmd=ReqCMD.GET_GOOGLE_REDIRECT, username=username)
+        return self._send_and_get_rsp(req)
+    
     def _send_and_get_rsp(self, req: FormattedReq) -> FormattedRsp:
         """
 
@@ -278,7 +331,7 @@ class AuthHandler:
             decrypted_rsp = self.em.aes_decrypt(encrypted_rsp)
             response = FormattedRsp.from_json(decrypted_rsp)
             
-            
+            client_logger.info(f"Server's Response: {response}.")
             return response
 
         except Exception as e:

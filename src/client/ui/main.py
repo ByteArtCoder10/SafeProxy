@@ -8,6 +8,7 @@ from ..core.authentication.auth_handler import AuthHandler
 def main(page: ft.Page):
 
     page.title = "SafeProxy Manager"
+    page.window.maximized = True
     page.padding = 0
     page.spacing = 0  
 

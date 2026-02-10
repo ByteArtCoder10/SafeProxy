@@ -1,5 +1,7 @@
 import flet as ft
 from ...controls.custom_controls import CustomTextField, CustomBtn, CustomCard, CardTitle, CustomPageHeader
+from ....core.authentication.auth_handler import RspStatus, FailReason
+from ....core.ca_check.CA_handler import CAHandler
 from ....core.inject_server.inject_server import InjectServer
 class ClientHomeView:
     def __init__(self, page: ft.Page):
@@ -19,15 +21,20 @@ class ClientHomeView:
 
         cards = self.build_home_cards()
 
-        self.content = ft.ResponsiveRow(
+        
+        resp_row = ft.ResponsiveRow(
             controls=[header] + cards,
             height=self.page.height,
             alignment=ft.MainAxisAlignment.CENTER,
-            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER
+
+        )
+        self.content = ft.Column(
+            controls=[resp_row],
+            scroll=ft.ScrollMode.AUTO,
+            expand=True,
         )
         
-    def get_content(self) -> ft.ResponsiveRow:
-        return self.content
     
     def build_home_cards(self):
         """Builds and returns the list of dashboard cards."""
@@ -56,33 +63,27 @@ class ClientHomeView:
             ],
             spacing=15
         )
+        
         # Protocol Card
+        self.initialize_radio_tls_terminate()
         protocol_controls = ft.Column(
             controls=[
                 CardTitle("Tunneling Protocol"),
-                ft.RadioGroup(
-                    content=ft.Column([
-                        ft.Radio(value="TCP", label="TCP Tunnel (Raw)"),
-                        ft.Radio(value="TLS", label="TLS Termination (Secure)"),
-                    ], spacing=10)
-                ),
-                # maybe later add info about choosing and Warningmsgbox 
-                ft.Text("TLS allows data inspection for enhanced security.", size=12, color=ft.Colors.GREY_500)
+                self.radio_tls_terminate,
+                ft.Text("TLS allows data inspection for better security.", size=12, color=ft.Colors.GREY_500),
+                ft.Text("Note: TLS Termination requires SafeProxy CA installed.", size=11, color=ft.Colors.GREY_500)
             ], 
             spacing=15
         )
 
         # Redirection Card
+        self.initialize_radio_google_redirect()
         redirect_controls = ft.Column(
             controls=[
                 CardTitle("Redirection Strategy"),
-                ft.RadioGroup(
-                    content=ft.Column([
-                        ft.Radio(value="redirect", label="Smart Redirect (To Google Search)"),
-                        ft.Radio(value="504_rsp", label="Send a 504 'Bad Request' response"),
-                    ])
-                ),
-                ft.Text("Handles invalid host requests automatically.", size=12, color=ft.Colors.GREY_500)
+                self.radio_google_redirect,
+                ft.Text("Handles invalid host requests automatically.", size=12, color=ft.Colors.GREY_500),
+                ft.Text("Note: Google Redirect requires SafeProxy CA installed.", size=11, color=ft.Colors.GREY_500)
             ], 
             spacing=15
         )
@@ -161,7 +162,174 @@ class ClientHomeView:
             self.loading_ring.visible = False
         
         self.page.update()
+
+    def handle_change_tls_terminate(self, e: ft.ControlEvent):
+        is_tls_terminate = True if e.control.value == "TLS" else False
+        rsp = self.page.auth_handler.set_tls_terminate(self.page.session.get("username"), is_tls_terminate)
+        if rsp.status == RspStatus.SUCCESS and is_tls_terminate:
+            self.show_snackbar("Successfully changed your tunnling preference to TLS Termination", is_error=False)
+            return
+        if rsp.status == RspStatus.SUCCESS:
+            self.show_snackbar("Successfully changed your tunnling preference to TCP tunneling", is_error=False)
+            return
+        
+        self.show_snackbar(f"Failed changeing your tunnling preference - {rsp.fail_Reason.value}")
             
+    def handle_change_google_redirect(self, e: ft.ControlEvent):
+        is_google_redirect = True if e.control.value == "redirect" else False
+        rsp = self.page.auth_handler.set_google_redirect(self.page.session.get("username"), is_google_redirect)
+        if rsp.status == RspStatus.SUCCESS and is_google_redirect:
+            self.show_snackbar("Successfully changed your redirection preference to Google Redirect", is_error=False)
+            return
+        if rsp.status == RspStatus.SUCCESS:
+            self.show_snackbar("Successfully changed your redirection preference to 504 Bad Request", is_error=False)
+            return
+        
+        self.show_snackbar(f"Failed changeing your tunnling preference - {rsp.fail_Reason.value}")
+
+    def initialize_radio_tls_terminate(self):
+        tls_radio = ft.Radio(value="TLS", label="TLS Termination (Secure)", disabled=True)
+        self.radio_tls_terminate = ft.RadioGroup(
+            content=ft.Column([
+                tls_radio,
+                ft.Radio(value="TCP", label="TCP Tunnel (Raw)", ),
+                ], 
+                spacing=10
+            ),
+            on_change=self.handle_change_tls_terminate
+        )
+        
+         # to show selection right away, even if it's goign to be changed ina couple of ms
+        self.radio_tls_terminate.value = "TCP"
+
+        # check CA installed, and DB preference
+        is_ca_installed = self.page.session.get("CA_installed")
+        if is_ca_installed is None:
+            self.page.session.set("CA_installed", CAHandler.is_ca_installed())
+            is_ca_installed = self.page.session.get("CA_installed")
+        rsp = self.page.auth_handler.get_tls_terminate(self.username)
+        
+        # EDGE-CASES:
+        # 1. ca_not_installed and DB-TCP (reasonable)
+        # 2. ca_not_installed and DB-TLS (error - change db to TCP)
+        # 3. ca_installed and DB-TCP (reasonable)
+        # 4. ca_installed and DB-TLS (reasonable)
+        # 5. ca_not_installed DB-ERROR - default to TCP + show error snackbar
+        # 6. ca_installed DB-ERROR - default to TLS + show error snackbar
+
+        match (rsp.status, is_ca_installed):
+            
+            # edge-case 5
+            case (RspStatus.FAIL, False):
+                self.radio_tls_terminate.value = "TCP"
+                self.show_snackbar(f"Failed fetching your saved tunneling preference - {rsp.fail_reason.value}.\nDefaulting to TCP.", duration=10000)
+            
+            # edge-case 6
+            case (RspStatus.FAIL, True):
+                self.radio_tls_terminate.value = "TLS"
+                self.show_snackbar(f"Failed fetching your saved tunneling preference - {rsp.fail_reason.value}.\nDefaulting to TLS.", duration=10000)
+            
+            # edge-cases 1 + 2
+            case (RspStatus.SUCCESS, False):
+                if rsp.tls_terminate:
+                    self.radio_tls_terminate.value = "TCP"
+                    
+                    # *Try* changing DB preference to TCP
+                    self.page.auth_handler.set_tls_terminate(self.username, False)
+                    self.show_snackbar(f"SafeProxy can't TLS terminate if CA is not installed.\nIf you wish to continue with TLS Termination, please install SafeProxy CA.\nAs things stand, defaulting to TCP.", duration=10000)
+       
+                else: # edge case 1
+                    self.radio_tls_terminate.value = "TCP"
+            
+            # edge-cases 3 + 4
+            case (RspStatus.SUCCESS, True):
+                tls_radio.disabled = False
+                if rsp.tls_terminate:
+                    self.radio_tls_terminate.value = "TLS"
+                else:
+                    self.radio_tls_terminate.value = "TCP"
+        
+        self.page.update()
+
+    def initialize_radio_google_redirect(self):
+        redirect_radio = ft.Radio(value="redirect", label="Smart Redirect (To Google Search)", disabled=True)
+        self.radio_google_redirect = ft.RadioGroup(
+            content=ft.Column([
+                redirect_radio,
+                ft.Radio(value="504_rsp", label="Send a 504 'Bad Request' response"),
+                ],
+                spacing=10
+            ),
+            on_change=self.handle_change_google_redirect
+        )
+        
+         # to show selection right away, even if it's goign to be changed ina couple of ms
+        self.radio_google_redirect.value = "504_rsp"
+
+        # check CA installed, and DB preference
+        is_ca_installed = self.page.session.get("CA_installed")
+        if is_ca_installed is None:
+            self.page.session.set("CA_installed", CAHandler.is_ca_installed())
+            is_ca_installed = self.page.session.get("CA_installed")
+        rsp = self.page.auth_handler.get_google_redirect(self.username)
+        
+        # EDGE-CASES:
+        # 1. ca_not_installed and DB-504 (reasonable)
+        # 2. ca_not_installed and DB-REDIRECT (error - change db to 504)
+        # 3. ca_installed and DB-504 (reasonable)
+        # 4. ca_installed and DB-REDIRECT (reasonable)
+        # 5. ca_not_installed DB-ERROR - default to 504 + show error snackbar
+        # 6. ca_installed DB-ERROR - default to REDIRECT + show error snackbar
+
+        match (rsp.status, is_ca_installed):
+            
+            # edge-case 5
+            case (RspStatus.FAIL, False):
+                self.radio_google_redirect.value = "504_rsp"
+                self.show_snackbar(f"Failed fetching your saved redirection preference - {rsp.fail_reason.value}. Defaulting to 504 Bad Request.")
+            
+            # edge-case 6
+            case (RspStatus.FAIL, True):
+                self.radio_google_redirect.value = "redirect"
+                self.show_snackbar(f"Failed fetching your saved redirection preference - {rsp.fail_reason.value}. Defaulting to Google Redirect.")
+            
+            # edge-cases 1 + 2
+            case (RspStatus.SUCCESS, False):
+                if rsp.google_redirect:
+                    self.radio_google_redirect.value = "504_rsp"
+                    # *Try* changing DB preference to 504
+                    self.page.auth_handler.set_google_redirect(self.username, False)
+
+                    self.show_snackbar(f"SafeProxy can't Google Redirect if CA is not installed. If you wish to continue with Google Redirect, please install SafeProxy CA. As things stand, defaulting to 504 Bad Request.")
+       
+                else: # edge case 2
+                    self.radio_google_redirect.value = "504_rsp"
+            
+            # edge-cases 3 + 4
+            case (RspStatus.SUCCESS, True):
+                redirect_radio.disabled = False
+                if rsp.google_redirect:
+                    self.radio_google_redirect.value = "redirect"
+                else:
+                    self.radio_google_redirect.value = "504_rsp"
+        
+        self.page.update()  
+
+    def show_snackbar(self, msg : str, is_error : bool = True, duration : int = 4000):
+        sb = ft.SnackBar(
+            content=ft.Text(msg),
+            bgcolor=ft.Colors.RED_ACCENT_700 if is_error else ft.Colors.GREEN_ACCENT_700,
+            duration=duration,
+        )
+
+        self.page.overlay.append(sb)
+        sb.open = True
+        
+        self.page.update()
+    
+    def get_content(self) -> ft.Column:
+        return self.content
+    
 def main(page: ft.Page):
     ClientHomeView(page)
     page.update()

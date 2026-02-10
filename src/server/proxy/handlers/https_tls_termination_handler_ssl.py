@@ -12,6 +12,7 @@ from ..structures.response import Response
 from ..core.parser import Parser
 from ...logs.loggers import core_logger
 from ...logs.proxy_context import ProxyContext
+from ..security.url_manager import UrlManager
 
 
 class HttpsTlsTerminationHandlerSSL(BaseHandler):
@@ -44,7 +45,7 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
         self._tls_client_connection = None
         self._tls_server_connection = None
 
-    def process(self, req: Request, client_socket: socket):
+    def process(self, req: Request, client_socket: socket, googleSearchRedirect: bool):
         """
         Executes the TLS termination. Responsible for calling various tasks:
         1. Sending a 200 "Connection Established" to the client.
@@ -114,37 +115,49 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
             
 
             # check SNI for blacklist or malicious. Note we check two places - The initial CONNECT request, and the first request after TLS termination
-            if self.url_manager.is_blacklisted([req.host + req.path, sni], self._username) or \
-            self.url_manager.is_malicious(sni):
+            if self.url_manager.is_blacklisted([req.host + req.path, sni], self._username):
                 self._respond_to_client(req, self._tls_client_connection, 403, addBlackListLabelHTML=True)
+                return
+            
+            # if self.url_manager.is_malicious(sni):
+            #     self._respond_to_client(req, self._tls_client_connection, 403, addMaliciousLabelHTML=True)
             
             # parse raw request into a Request obj
             client_request = Parser.parse_request(raw_request.decode())
             
             # check raw request again
-            if self.url_manager.is_blacklisted([client_request.host + client_request.path, sni], self._username) or \
-            self.url_manager.is_malicious(sni):
+            if self.url_manager.is_blacklisted([client_request.host + client_request.path, sni], self._username):
                 self._respond_to_client(client_request, self._tls_client_connection, 403, addBlackListLabelHTML=True)
+                return
+            # if self.url_manager.is_malicious(sni):
+            #     self._respond_to_client(client_request, self._tls_client_connection, 403, addMaliciousLabelHTML=True)
+
             
             # handshake server
             handshake_success = self._perform_tls_hanshake_with_server(client_request, sni)
             core_logger.debug(f"TIMECHECK6 - {datetime.datetime.now() - before}")
             before = datetime.datetime.now()
 
-            if handshake_success:
-                # send first 'push'
-                self._tls_server_connection.sendall(client_request.to_raw())
-                # Only run relay if we actually have a secure connection
-                core_logger.debug(f"TIMECHECK7 - {datetime.datetime.now() - before}")
-                before=datetime.datetime.now()
+            if not handshake_success:
+                if googleSearchRedirect:
+                    core_logger.info(f"Failed connecting to server ({sni}). Redirecting to google search.")
+                    self._respond_to_client(req, self._tls_client_connection, 200, redirectURL=UrlManager.get_google_url(sni))
+                
+                else:
+                    core_logger.info(f"Failed connecting to server ({sni}). Sending 502 Bad Request.")
+                    self._respond_to_client(req, self._tls_client_connection, 502, addBlackListLabelHTML=True)
+                
 
-                self._run_tunnel_relay()
-                core_logger.debug(f"TIMECHECK8 - {datetime.datetime.now() - before}")
-                before=datetime.datetime.now()
+                # self._close_sockets(self._tls_client_connection, self._tls_server_connection)
             
-            else:
-                core_logger.error("Aborting relay due to failed server handshake.")
-                self._close_sockets(self._tls_client_connection, self._tls_server_connection)
+            # send first 'push'
+            self._tls_server_connection.sendall(client_request.to_raw())
+            # Only run relay if we actually have a secure connection
+            core_logger.debug(f"TIMECHECK7 - {datetime.datetime.now() - before}")
+            before=datetime.datetime.now()
+
+            self._run_tunnel_relay()
+            core_logger.debug(f"TIMECHECK8 - {datetime.datetime.now() - before}")
             
             after = datetime.datetime.now()
             core_logger.info(f"TIMECHECK9 - {after-abs_before}")

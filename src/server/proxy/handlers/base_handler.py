@@ -69,7 +69,7 @@ class BaseHandler(ABC):
         self.url_manager = UrlManager
 
         
-    def handle(self, req: Request, client_socket: socket, username : str):
+    def handle(self, req: Request, client_socket: socket, username : str, google_redirect : bool):
         """
         The primary entry point for the handler. Responsible for handling the request 
         by calling the concrete 'process' implementation.
@@ -88,7 +88,7 @@ class BaseHandler(ABC):
             # set username
             self._username = username
             # self.create_logger(req, client_socket)
-            return self.process(req, client_socket)
+            return self.process(req, client_socket, google_redirect)
         except Exception as e:
             core_logger.critical(f"Client's Handler Crashed. {e}", exc_info=True)
         
@@ -106,7 +106,7 @@ class BaseHandler(ABC):
     #         raise ConnectionError(f"Failed to load connection logger. {e}") from e
     
     @abstractmethod
-    def process(self, req : Request, client_socket : socket.socket | ssl.SSLSocket):
+    def process(self, req : Request, client_socket : socket.socket | ssl.SSLSocket, googleSearchRedirect: bool):
         return NotImplemented
     
     def _connect_to_server(self, req: Request, googleSearchRedirect: bool) -> ConnectionStatus:
@@ -135,7 +135,7 @@ class BaseHandler(ABC):
             if googleSearchRedirect:
                 return ConnectionStatus.REDIRECT_REQUIRED # Redirect to google search
             
-        return ConnectionStatus.CONENCT_FAILURE
+        return ConnectionStatus.CONNECT_FAILURE
     
     def _forward_request(self, req: Request):
         """

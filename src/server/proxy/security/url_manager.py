@@ -53,7 +53,7 @@ class UrlManager:
             # not bl - db error occured. assuming it is not blacklisted.
             core_logger.debug(f"Blacklst was empty. Returning False")
             return False
-
+        
         for url in url_list:
             if url.startswith("www."):
                 url = url[4:]

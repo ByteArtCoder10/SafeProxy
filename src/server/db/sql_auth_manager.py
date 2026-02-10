@@ -38,8 +38,8 @@ class SQLAuthManager:
                 password TEXT NOT NULL,
                 salt TEXT NOT NULL,
                 blacklist TEXT,
-                tls_terminate INTEGER DEFAULT 1,
-                google_redirect INTEGER DEFAULT 1                   
+                tls_terminate INTEGER DEFAULT 0,
+                google_redirect INTEGER DEFAULT 0                   
                 )
                 '''
             )
@@ -84,8 +84,6 @@ class SQLAuthManager:
         except Exception as e:
             db_logger.error(f"Failed saving {username} to DB.", exc_info=True)
         
-
-
     def username_exist(self, username : str) -> bool:
         '''
         Checks if the username exists in the sql table
@@ -94,7 +92,7 @@ class SQLAuthManager:
             self.c.execute("SELECT 1 FROM users WHERE username = ? LIMIT 1", (username,))
             # fetchone() and not fetchall() since:
             # 1. In case no username found fetchone returns None while all() return []
-            # 2. In case username found, fetchone returns 'username' while fetchall retruns (username, ) as a tuple.
+            # 2. In case username found, fetchone returns ('username', ) while fetchall retruns [(username, )] as a tuple.
             # we only need to know IF a username exists and it's value. Therefore, fetchone
             # is more suitable for this case. 
             return self.c.fetchone() is not None 
@@ -133,7 +131,6 @@ class SQLAuthManager:
             db_logger.error(f"Falied to delete {username}: {e}", exc_info=True)
             return False
 
-
     def print_table(self):
         '''Prints the table'''
         try:
@@ -148,23 +145,22 @@ class SQLAuthManager:
         except Exception as e:
             db_logger.error(f"Falied printing user's table: {e}", exc_info=True)
 
-
     # --- BLACKLIST FUNCTIONS ---
 
     def get_blacklist(self, username : str) -> dict | None:
         try:
-            db_logger.debug(f"param username passed in get_blacklist: {username}")
             self.c.execute("SELECT blacklist FROM users WHERE username = ?", (username,))
             blacklist = json.loads(self.c.fetchone()[0])
             if blacklist is None:
                 db_logger.warning(f"User '{username}' not found in DB when fetching blacklist. Returning empty.")
                 return {}
+            
+            db_logger.debug(f"CMD: get_blacklist. {username}'s Blacklist fetched: {blacklist}")
             return blacklist
         except Exception as e:
             db_logger.error(f"Failed geting {username}'s blacklist: {e}", exc_info=True)
             return None
 
-    
     def _set_blacklist(self, username: str, bl : dict):
         try:
             json_bl = json.dumps(bl)
@@ -183,7 +179,6 @@ class SQLAuthManager:
             print(f"[DB] Failed updating/adding host to blacklist of a user: {e}")
             return False
 
-    
     def delete_host_from_blacklist(self, username : str, to_delete_host : str) -> bool:
         try:
             bl = self.get_blacklist(username)
@@ -197,7 +192,6 @@ class SQLAuthManager:
             print(f"[DB] Failed deleting host: {e}")
             return False
 
-
     def delete_blacklist(self, username: str) -> bool:
         try:
             self._set_blacklist(username, {})
@@ -206,22 +200,75 @@ class SQLAuthManager:
             print(f"[DB] Failed deleting blacklist: {e}")
             return False     
         
-
     # --- TLS TERMINATE FUNCTIONS ---
 
     def set_tls_terminate(self, username: str, tls_terminate : bool = False) -> bool:
-        pass
+        try:
+            int_value = int(tls_terminate)
+            self.c.execute("UPDATE users SET tls_terminate = ? WHERE username = ?", (int_value, username))
+            self.conn.commit()
+            db_logger.info(f"Successfully set {username}'s tls terminate to {int_value}.")
+            return True
+        except Exception as e:
+            db_logger.error(f"Failed setting {username}'s tls_terminate value to {tls_terminate}: {e}", exc_info=True)
+            return False        
 
-    def is_tls_terminate(self, username: str) -> bool:
-        pass
+    def get_tls_terminate(self, username: str) -> bool | None:
+        """
+        
+        :param username: the usernmae's tls_terminate value to check
+        :type username: str
+
+        :return: bool (the tls_terminate value) if operation successful AND tls_terminate is an integer, otherwise None.
+        :rtype: bool | None
+
+        """
+        try:
+            self.c.execute("SELECT tls_terminate FROM users WHERE username = ? LIMIT 1", (username, ))
+            tls_terminate_tuple = self.c.fetchone()
+            if not tls_terminate_tuple:
+                return None
+            tls_terminate = bool(tls_terminate_tuple[0])
+            db_logger.info(f"Successfully fetched {username}'s is_terminate value: {tls_terminate}.")
+            return tls_terminate
+        except Exception as e:
+            db_logger.error(f"Failed fetching {username}'s is_terminate value: {e}", exc_info=True)
+            return None
 
     # --- GOOGLE REDIRECT FUNCTIONS ---
 
     def set_google_redirect(self, username: str, google_redirect : bool = True) -> bool:
-        pass
+        try:
+            int_value = int(google_redirect)
+            self.c.execute("UPDATE users SET google_redirect = ? WHERE username = ?", (int_value, username))
+            self.conn.commit()
+            db_logger.info(f"Successfully set {username}'s google_redirect to {int_value}.")
+            return True
+        except Exception as e:
+            db_logger.error(f"Failed setting {username}'s google_redirect value to {google_redirect}: {e}", exc_info=True)
+            return False
 
-    def is_google_redirect(self, username: str, ) -> bool:
-        pass
+    def get_google_redirect(self, username: str, ) -> bool | None:
+        """
+        
+        :param username: the usernmae's google_redirect value to check
+        :type username: str
+
+        :return: bool (the google_redirect value) if operation successful AND google_redirect is an integer, otherwise None.
+        :rtype: bool | None
+
+        """
+        try:
+            self.c.execute("SELECT google_redirect FROM users WHERE username = ? LIMIT 1", (username, ))
+            google_redirect_tuple = self.c.fetchone()
+            if not google_redirect_tuple:
+                return None
+            google_redirect = bool(google_redirect_tuple[0])
+            db_logger.info(f"Successfully fetched {username}' google_redirect value: {google_redirect}.")
+            return google_redirect
+        except Exception as e:
+            db_logger.error(f"Failed fetching {username}'s google_redirect value: {e}", exc_info=True)
+            return None
 
 if __name__ == "__main__":
 

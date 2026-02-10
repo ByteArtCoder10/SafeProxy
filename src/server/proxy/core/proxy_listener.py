@@ -1,6 +1,7 @@
 import socket
 import threading
 import logging
+
 from .parser import Parser
 from .router import Router
 from ...server_constants import MAX_CLIENTS, SOCKET_BUFFER_SIZE as BUFFER_SIZE
@@ -40,7 +41,6 @@ class ProxyListener:
         self._parser = Parser
         self._router = Router()
         self._ca = CertificateAuthority()
-
         # set auth public key
         self.auth_public_key = AuthValidator.fetch_auth_public_key()
 

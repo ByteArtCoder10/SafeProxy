@@ -39,7 +39,16 @@ class ReqCMD(Enum):
     ADD_BLACKLISTED_HOST = "ADD_BLACKLISTED_HOST"
     DELETE_BLACKLISTED_HOST = "DELETE_BLACKLISTED_HOST"
     DELETE_ALL_BLACKLSITED = "DELETE_ALL_BLACKLSITED"
-    GET_BLACKLIST = "GET_BLACKLIST" 
+    GET_BLACKLIST = "GET_BLACKLIST"
+
+    
+    # tls terminate proccess
+    SET_TLS_TERMINATE = "SET_TLS_TERMINATE"
+    GET_TLS_TERMINATE = "GET_TLS_TERMINATE"
+
+    # google redirect proccess
+    SET_GOOGLE_REDIRECT = "SET_GOOGLE_REDIRECT"
+    GET_GOOGLE_REDIRECT = "GET_GOOGLE_REDIRECT" 
 
 class RspStatus(Enum):
     FAIL = "FAIL"
@@ -68,7 +77,8 @@ class FormattedReq(BaseFormattedObj):
     pw: str | None = None
     blacklisted_host : str | None = None
     blacklist_host_details : str | None = None
-
+    tls_terminate : bool | None = None
+    google_redirect : bool | None = None
     
     @classmethod
     def from_json(cls, json_str: str):
@@ -88,6 +98,8 @@ class FormattedRsp(BaseFormattedObj):
     status: RspStatus
     jwt_token: str | None = None
     blacklist : dict | None = None
+    tls_terminate: bool | None = None
+    google_redirect: bool | None = None
     fail_reason: FailReason | None = None
 
     @classmethod
@@ -259,9 +271,33 @@ class AuthServer:
                 # get full blacklist
                 case ReqCMD.GET_BLACKLIST:
                     bl = self._db.get_blacklist(req.username)
-                    db_logger.debug(bl)
                     if bl or bl == {}:
                         return FormattedRsp(RspStatus.SUCCESS, blacklist=bl)
+                    return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.DB_ERROR)
+                
+                case ReqCMD.SET_TLS_TERMINATE:
+                    tls_terminate = self._db.set_tls_terminate(req.username, req.tls_terminate)
+                    if tls_terminate:
+                        return FormattedRsp(RspStatus.SUCCESS)
+                    return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.DB_ERROR)
+                
+                case ReqCMD.GET_TLS_TERMINATE:
+                    tls_terminate = self._db.get_tls_terminate(req.username)
+                    if isinstance(tls_terminate, bool):
+                        return FormattedRsp(RspStatus.SUCCESS, tls_terminate=tls_terminate)
+                
+                    return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.DB_ERROR)
+                
+                case ReqCMD.SET_GOOGLE_REDIRECT:
+                    google_redirect = self._db.set_google_redirect(req.username, req.google_redirect)
+                    if google_redirect:
+                        return FormattedRsp(RspStatus.SUCCESS)
+                    return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.DB_ERROR)
+                
+                case ReqCMD.GET_GOOGLE_REDIRECT:
+                    google_redirect = self._db.get_google_redirect(req.username)
+                    if isinstance(google_redirect, bool):
+                        return FormattedRsp(RspStatus.SUCCESS, google_redirect=google_redirect)
                     return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.DB_ERROR)
                 
                 case _:

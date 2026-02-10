@@ -22,7 +22,7 @@ class HttpsTcpTunnelHandler(BaseHandler):
         self.running = False
         self._ca_authority = ca
 
-    def process(self, req, client_socket,*, googleSearchRedirect: bool =True):
+    def process(self, req, client_socket, googleSearchRedirect: bool):
         """
         Respnsible for tunnel creation and maintnence: checks for blacklited URLS, 
         establishes the tinnel, confirms the tunnel to the 
@@ -42,15 +42,15 @@ class HttpsTcpTunnelHandler(BaseHandler):
 
         url = req.host + req.path
 
-        if self.url_manager.is_blacklisted(url, self._username):
+        if self.url_manager.is_blacklisted([url], self._username):
             core_logger.info("URL requested is blacklisted. TLS-Terminating and sending 403 blacklisted.")
-            HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket, self._username)
+            HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket, self._username, googleSearchRedirect)
             return
-        if self.url_manager.is_malicious(url):
-            core_logger.info("URL requested is malicious. TLS-Terminating and sending 403 malicious.")
-            # TLS termination -> send 403 malicious
-            HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket, self._username)
-            return
+        # if self.url_manager.is_malicious(url):
+        #     core_logger.info("URL requested is malicious. TLS-Terminating and sending 403 malicious.")
+        #     # TLS termination -> send 403 malicious
+        #     HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket, self._username)
+        #     return
         
         try:
             conn_status = self._connect_to_server(req, googleSearchRedirect)
@@ -60,15 +60,15 @@ class HttpsTcpTunnelHandler(BaseHandler):
                     self._run_tunnel_relay()
                     return
                 case ConnectionStatus.REDIRECT_REQUIRED:
-                    core_logger.debug(f"Connection failed for {req.host}. Redirecting to Google.")
+                    core_logger.debug(f"Connection failed for {req.host}. TLS terminating and Redirecting to Google.")
                     # TLS Termination -> Send Redirection repsponse
-                    HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket, self._username)
+                    HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket, self._username, googleSearchRedirect)
                     pass
 
                 case ConnectionStatus.CONNECT_FAILURE:
                     core_logger.info(f"Connection failed for {req.host}. TLS-Terminating and Sending 502.")
                     # TLS Termination -> Send 502 Bad Request.
-                    HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket, self._username)
+                    HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket, self._username, googleSearchRedirect)
                     pass
 
         except Exception as e:
