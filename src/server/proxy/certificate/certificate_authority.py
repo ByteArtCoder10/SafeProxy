@@ -441,14 +441,36 @@ class CertificateAuthority:
             pem_key=pem_ca_key, pem_cert= pem_ca_cert
         )
 
-        # Persist CA
+        # Save CA
         try:
             self._save_to_file(self._ca_key_path, bundle.pem_key)
             self._save_to_file(self._ca_cert_path, bundle.pem_cert)
         except OSError as e:
             core_logger.error("Couldn't save CA's cert and priv key to disk", exc_info=True)
         
+        # Delete previous generated made-on-the-fly certifcates
+        self._delete_all_certs()
+        
         return bundle
+
+    def _delete_all_certs(self):
+        """
+        Docstring for _delete_all_certs
+        
+        Deletes all made-on-the-fly certifcates in SafeProxy's local disk storage.
+        This is essantial for cases where a noew self-signed CA cert and private key are generated,
+        Therefore making all previous certs signed by previous CA(s) invalid.
+        """
+        try:
+            certs = os.listdir(CERTS_DIR)
+            for cert_dir in certs:
+                if os.path.isdir(cert_dir):
+                    shutil.rmtree(cert_dir)
+                elif os.path.isfile(cert_dir):
+                    os.remove(cert_dir)
+        
+        except Exception as e:
+            core_logger.error(f"Failed deleting File: {e}", exc_info=True)
 
     def _issue_host_certificate(self, host: str, *, cert_bundle:CertBundle = None, KeepPrivKey=False, ecdsa=True) -> CertBundle:
         """
@@ -753,10 +775,10 @@ class CertificateAuthority:
         Helper func to read bytes from a file.
 
         :type path: str
-        :param path: dst file path.
+        :param path: src file path.
         
-        :type data: bytes
-        :param data: Binary data to write.
+        :rtype: bytes
+        :returns: file's data in bytes.
 
         :raises OSError: If reading failed
         """

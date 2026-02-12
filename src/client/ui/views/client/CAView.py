@@ -53,17 +53,8 @@ class CAView:
 
         if self.page.session.contains_key("CA_installed"):
             self._change_ui_installed() if self.page.session.get("CA_installed") else self._change_ui_not_installed()
-        else:
-            threading.Thread(target=self._handle_check_installed, daemon=True).start()
 
-    def _handle_check_installed(self):
-        
-        if CAHandler.is_ca_installed():
-            self.page.session.set("CA_installed", True)
-            self._change_ui_installed()
-        else:
-            self.page.session.set("CA_installed", False)
-            self._change_ui_not_installed()
+
         
     def _change_ui_installed(self):
         
@@ -97,7 +88,7 @@ class CAView:
         self.page.update()
 
     def _install_ca(self, e: ft.ControlEvent):
-        if CAHandler.install_ca():
+        if CAHandler.install_ca_cert():
             self.page.session.set("CA_installed", True)
             self._change_ui_installed()
         else:

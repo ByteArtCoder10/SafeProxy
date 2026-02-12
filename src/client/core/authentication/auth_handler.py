@@ -41,7 +41,9 @@ class ReqCMD(Enum):
     # google redirect proccess
     SET_GOOGLE_REDIRECT = "SET_GOOGLE_REDIRECT"
     GET_GOOGLE_REDIRECT = "GET_GOOGLE_REDIRECT"
-
+    
+    # CA certificate proccess
+    GET_CA_CERT = "GET_CA_CERT"
 
 class RspStatus(Enum):
     FAIL = "FAIL"
@@ -62,6 +64,7 @@ class FailReason(Enum):
     
 
     # General
+    DISK_ERROR = "Falied fetching the requested file."
     DB_ERROR = "Database error."
     INVALID_FORMAT = "Request's format invalid."
     NETWORK_ERROR = "Network communication error."
@@ -70,7 +73,7 @@ class FailReason(Enum):
 @dataclass
 class FormattedReq(BaseFormattedObj):
     cmd: ReqCMD
-    username: str
+    username: str | None = None
     pw: str | None = None
     blacklisted_host : str | None = None
     blacklist_host_details : str | None = None
@@ -99,6 +102,7 @@ class FormattedRsp(BaseFormattedObj):
     tls_terminate: bool | None = None
     google_redirect: bool | None = None
     fail_reason: FailReason | None = None
+    ca_cert : str | None = None
 
     @classmethod
     def from_json(cls, json_str: str):
@@ -297,6 +301,16 @@ class AuthHandler:
         :return FormattedRsp: Auth server's response
         """
         req = FormattedReq(cmd=ReqCMD.GET_GOOGLE_REDIRECT, username=username)
+        return self._send_and_get_rsp(req)
+    
+    def get_ca_cert(self) -> FormattedReq:
+        """
+        API function - for UI to call. 
+        Handles getting CA cert (send Request -> Return Response)
+
+        :return FormattedRsp: Auth server's response
+        """
+        req = FormattedReq(ReqCMD.GET_CA_CERT)
         return self._send_and_get_rsp(req)
     
     def _send_and_get_rsp(self, req: FormattedReq) -> FormattedRsp:

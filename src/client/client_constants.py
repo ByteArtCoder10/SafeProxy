@@ -28,6 +28,7 @@ HTTP_AUTH_HEADER_NAME = "X-SafeProxy-Auth-Token"
 
 # --- Certs ---
 ROOT_CA_CERT_PATH = str(proj_path / "src" / "client" / "resources" / "root_ca.crt")
+UPDATED_ROOT_CA_CERT_PATH = str(proj_path / "src" / "client" / "resources" / "updated_root_ca.crt")
 
 # --- Chorme Config ---
 CHROME_PROPILE_DATA_PATH = str(temp_dir / "SafeProxyBrowser")

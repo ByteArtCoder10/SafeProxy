@@ -7,7 +7,14 @@ class AccountView:
         self.page = page
 
 
-        self.delete_dialog = CustomAlertDialog("Delete Account", "Are you sure? This cannot be undone.", "Delete", "Cancel", on_click_yes=self._delete_account, on_click_no=self._close_dialog)
+        self.delete_dialog = CustomAlertDialog(
+            "Delete Account",
+            "Are you sure? This cannot be undone.",
+            yes_value="Delete",
+            no_value="Cancel",
+            on_click_yes=self._delete_account, 
+            on_click_no=self._close_dialog
+        )
         self.page.overlay.append(self.delete_dialog)
 
         # controls

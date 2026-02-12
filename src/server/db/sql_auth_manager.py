@@ -155,7 +155,7 @@ class SQLAuthManager:
                 db_logger.warning(f"User '{username}' not found in DB when fetching blacklist. Returning empty.")
                 return {}
             
-            db_logger.debug(f"CMD: get_blacklist. {username}'s Blacklist fetched: {blacklist}")
+            # db_logger.debug(f"CMD: get_blacklist. {username}'s Blacklist fetched: {blacklist}")
             return blacklist
         except Exception as e:
             db_logger.error(f"Failed geting {username}'s blacklist: {e}", exc_info=True)
@@ -229,7 +229,7 @@ class SQLAuthManager:
             if not tls_terminate_tuple:
                 return None
             tls_terminate = bool(tls_terminate_tuple[0])
-            db_logger.info(f"Successfully fetched {username}'s is_terminate value: {tls_terminate}.")
+            # db_logger.info(f"Successfully fetched {username}'s is_terminate value: {tls_terminate}.")
             return tls_terminate
         except Exception as e:
             db_logger.error(f"Failed fetching {username}'s is_terminate value: {e}", exc_info=True)
@@ -264,7 +264,7 @@ class SQLAuthManager:
             if not google_redirect_tuple:
                 return None
             google_redirect = bool(google_redirect_tuple[0])
-            db_logger.info(f"Successfully fetched {username}' google_redirect value: {google_redirect}.")
+            # db_logger.info(f"Successfully fetched {username}' google_redirect value: {google_redirect}.")
             return google_redirect
         except Exception as e:
             db_logger.error(f"Failed fetching {username}'s google_redirect value: {e}", exc_info=True)

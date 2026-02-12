@@ -15,7 +15,7 @@ class HttpHandler(BaseHandler):
         - URI blacklisted/malicious -> sends back to client 
         403 "Forbbiden" response, with customized HTML.
         - URI unresolved (DNS failure)  -> sends back a 200
-        redirect response or 502 "Bad Response". 
+        redirect response or 502 "Bad Gateaway". 
         
         :type req: Request
         :param req: containing host and port's server to connect to.
@@ -56,7 +56,7 @@ class HttpHandler(BaseHandler):
             core_logger.info("Connection timed-out. handled gracefully.")
         except Exception as e:
             core_logger.critical(f"Handler crashed: {e}", exc_info=True)
-            # Safe fallback - try to send to client 502 "Bad Request"
+            # Safe fallback - try to send to client 502 "Bad Gateaway"
             try:
                 self._respond_to_client(req, self._client_socket, 502, addBlackListLabelHTML=True)
             except:

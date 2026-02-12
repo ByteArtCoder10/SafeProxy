@@ -67,13 +67,13 @@ class HttpsTcpTunnelHandler(BaseHandler):
 
                 case ConnectionStatus.CONNECT_FAILURE:
                     core_logger.info(f"Connection failed for {req.host}. TLS-Terminating and Sending 502.")
-                    # TLS Termination -> Send 502 Bad Request.
+                    # TLS Termination -> Send 502 Bad Gateaway.
                     HttpsTlsTerminationHandlerSSL(self._ca_authority).handle(req, client_socket, self._username, googleSearchRedirect)
                     pass
 
         except Exception as e:
             core_logger.critical(f"Handler Error: {e}", exc_info=True)
-            # Safe fallback - try to send to client 502 "Bad Request"
+            # Safe fallback - try to send to client 502 "Bad Gateaway"
             try:
                 # TLS Termination -> send 502
                 pass

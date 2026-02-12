@@ -167,16 +167,21 @@ class SideBar(ft.NavigationRail):
 
 class CustomAlertDialog(ft.AlertDialog):
 
-    def __init__(self, title: str, content : str, yes_value : str, no_value : str, on_click_yes, on_click_no=None, modal=True,):
+    def __init__(self, title: str, content : str, yes_value : str, on_click_yes, no_value : str | None = None, on_click_no=None, modal=True, only_yes=False):
         super().__init__(modal=modal)
 
-        self.title = ft.Text(title)
+        self.title = ft.Text(title, weight="bold")
         self.content=ft.Text(content)
 
-        self.actions=[
-            ft.TextButton(yes_value, on_click=on_click_yes),
-            ft.TextButton(no_value, on_click=on_click_no),
-        ]
+        if only_yes:
+            self.actions=[
+                ft.TextButton(yes_value, on_click=on_click_yes),
+            ]
+        else:    
+            self.actions=[
+                ft.TextButton(yes_value, on_click=on_click_yes),
+                ft.TextButton(no_value, on_click=on_click_no),
+            ]
 
 
 class CustomPopUpModal(ft.Container):

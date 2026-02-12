@@ -5,11 +5,12 @@ import json
 from dataclasses import dataclass
 from enum import Enum
 
-from ..server_constants import MAX_CLIENTS, SOCKET_BUFFER_SIZE, AUTH_SERVER_PORT
+from ..server_constants import MAX_CLIENTS, SOCKET_BUFFER_SIZE, AUTH_SERVER_PORT, CA_CERT_AND_KEY_DIR
 from ..logs.loggers import db_logger
 from ..auth_server.encryption_manager import EncryptionManager
 from ..db.sql_auth_manager import SQLAuthManager
 from ..auth_server.jwt_manager import JWTManager
+from ..proxy.certificate.certificate_authority import CertificateAuthority
 
 class BaseFormattedObj:
     def to_json(self) -> str:
@@ -48,7 +49,10 @@ class ReqCMD(Enum):
 
     # google redirect proccess
     SET_GOOGLE_REDIRECT = "SET_GOOGLE_REDIRECT"
-    GET_GOOGLE_REDIRECT = "GET_GOOGLE_REDIRECT" 
+    GET_GOOGLE_REDIRECT = "GET_GOOGLE_REDIRECT"
+
+    # CA certificate proccess
+    GET_CA_CERT = "GET_CA_CERT"
 
 class RspStatus(Enum):
     FAIL = "FAIL"
@@ -67,18 +71,20 @@ class FailReason(Enum):
     INVALID_PW_LEN = "Password's length invalid."
     
     # General
+    DISK_ERROR = "Falied fetching the requested file."
     DB_ERROR = "Database error."
     INVALID_FORMAT = "Request's format invalid."
     NETWORK_ERROR = "Network communication error."
 @dataclass
 class FormattedReq(BaseFormattedObj):
     cmd: ReqCMD
-    username: str
+    username: str | None = None
     pw: str | None = None
     blacklisted_host : str | None = None
     blacklist_host_details : str | None = None
     tls_terminate : bool | None = None
     google_redirect : bool | None = None
+
     
     @classmethod
     def from_json(cls, json_str: str):
@@ -101,6 +107,7 @@ class FormattedRsp(BaseFormattedObj):
     tls_terminate: bool | None = None
     google_redirect: bool | None = None
     fail_reason: FailReason | None = None
+    ca_cert : str | None = None
 
     @classmethod
     def from_json(cls, json_str: str):
@@ -223,8 +230,9 @@ class AuthServer:
         """Validates credentials and generates JWT/fetch blacklist if valid."""
         try:            
             # length validation - just incase UI failed to check/bypassed.
-            if len(req.username) < 3 or len(req.username) > 30:
-                return FormattedRsp(status=RspStatus.FAIL, fail_reason=FailReason.INVALID_USERNAME_LEN)
+            if req.username:
+                if len(req.username) < 3 or len(req.username) > 30:
+                    return FormattedRsp(status=RspStatus.FAIL, fail_reason=FailReason.INVALID_USERNAME_LEN)
             
             match req.cmd:
                 
@@ -300,6 +308,13 @@ class AuthServer:
                         return FormattedRsp(RspStatus.SUCCESS, google_redirect=google_redirect)
                     return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.DB_ERROR)
                 
+                case ReqCMD.GET_CA_CERT:
+                    ca_cert = self._read_from_file(os.path.join(CA_CERT_AND_KEY_DIR, "root_ca.crt"))
+                    db_logger.debug(f"Passed CA cert reading. Value: {ca_cert}")
+                    if ca_cert:
+                        return FormattedRsp(RspStatus.SUCCESS, ca_cert=ca_cert)
+                    return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.DISK_ERROR)
+                
                 case _:
                     return FormattedRsp(RspStatus.FAIL,fail_reason=FailReason.INVALID_FORMAT)
                 
@@ -331,6 +346,25 @@ class AuthServer:
 
         except Exception:
             db_logger.critical("Could not load Auth Private Key! JWT generation will fail: {e}.", exc_info=True)
+            return None
+
+    def _read_from_file(self, path: str) -> str | None:
+        """
+        Helper func to read string from a file.
+
+        :type path: str
+        :param path: file path to read from.
+        
+        :rtype: bytes | None
+        :returns: file's content in str, or None if files doesnt exists, or  content couldnt be decoded.
+
+        """
+        try:
+            with open(path, encoding="utf-8", errors="ignore") as f:
+                data = f.read()
+                return data
+        except OSError as e:
+            db_logger.warning(f"Failed to read {path}: {e}", exc_info=True)
             return None
 
 if __name__ == "__main__":

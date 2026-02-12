@@ -123,7 +123,7 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
             #     self._respond_to_client(req, self._tls_client_connection, 403, addMaliciousLabelHTML=True)
             
             # parse raw request into a Request obj
-            client_request = Parser.parse_request(raw_request.decode())
+            client_request = Parser.parse_request(raw_request.decode(encoding="utf-8", errors="ignore"))
             
             # check raw request again
             if self.url_manager.is_blacklisted([client_request.host + client_request.path, sni], self._username):
@@ -144,7 +144,7 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
                     self._respond_to_client(req, self._tls_client_connection, 200, redirectURL=UrlManager.get_google_url(sni))
                 
                 else:
-                    core_logger.info(f"Failed connecting to server ({sni}). Sending 502 Bad Request.")
+                    core_logger.info(f"Failed connecting to server ({sni}). Sending 502 Bad Gateaway.")
                     self._respond_to_client(req, self._tls_client_connection, 502, addBlackListLabelHTML=True)
                 
 
