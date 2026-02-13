@@ -1,11 +1,14 @@
 # Logs and Dynamic Output
 *.log
 src/server/logs/output/*
+
 !src/server/logs/output/.gitkeep
 
 # Client specific output
-src/output/clients/*
-!src/output/clients/.gitkeep
+src/server/logs/output/clients/*
+!src/server/logs/output/clients/
+!src/server/logs/output/clients/.gitkeep
+
 
 # Python artifacts
 __pycache__/
