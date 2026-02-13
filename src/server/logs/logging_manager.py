@@ -26,7 +26,8 @@ class LoggingManager():
         UI logs, and DB logs. 
         """
         try:
-
+            
+            LoggingManager.create_log_files_if_not()
             LoggingManager.cleanup_client_and_main_logs()
             
             # set root logger level
@@ -90,6 +91,16 @@ class LoggingManager():
     
         except OSError as e:
             print(f"NON-CRITICAL ERROR: Failed to cleanup client logs: {e}", file=sys.stderr)
+    @staticmethod
+    def create_log_files_if_not(self, ):
+        try:
+            # check that all log files exist
+            for log_file in [CORE_MAIN_LOG_FILE_PATH, DB_MAIN_LOG_FILE_PATH]:
+                if not os.path.exists(log_file):
+                    with open(log_file, "w"):
+                        pass
+        except Exception as e:
+            print(f"CRITICAL ERROR: Failed to create log files: {e}", file=sys.stderr)
 
             
 word_list = ["200 Connection established","get SNI","get Cert","Load client's cert to SSL","Wrap socket with SSLSocket","Resume TLS connection and get request","connect to server - TLS handsake","send request to server","Relay data", "OVERALL TIME"]
