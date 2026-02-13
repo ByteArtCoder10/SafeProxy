@@ -92,7 +92,7 @@ class LoggingManager():
         except OSError as e:
             print(f"NON-CRITICAL ERROR: Failed to cleanup client logs: {e}", file=sys.stderr)
     @staticmethod
-    def create_log_files_if_not(self, ):
+    def create_log_files_if_not():
         try:
             # check that all log files exist
             for log_file in [CORE_MAIN_LOG_FILE_PATH, DB_MAIN_LOG_FILE_PATH]:
