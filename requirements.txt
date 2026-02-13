@@ -3,3 +3,4 @@ cryptography
 py-diffie-hellman
 pyjwt
 yarl
+dotenv

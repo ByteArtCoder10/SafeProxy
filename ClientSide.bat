@@ -9,6 +9,6 @@ echo Starting Client side...
 : flet run -m -r -d src.client.ui.main
 
 : without hot reload:
-flet run -m src.client.ui.main 
+flet run -w -m src.client.ui.main 
 
 pause

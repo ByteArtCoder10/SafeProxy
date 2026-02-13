@@ -1,28 +1,46 @@
-# .gitignore
+# Logs and Dynamic Output
 *.log
-src/server/logs/output/
-!src/output/clients.gitkeep
-*.log
+src/server/logs/output/*
+!src/server/logs/output/.gitkeep
 
+# Client specific output
+src/output/clients/*
+!src/output/clients/.gitkeep
+
+# Python artifacts
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
+# Environment and Secrets
 .env
-
 .safeproxy/*
+!.safeproxy/.gitkeep
 
-certs/
-.certs/
+# Certificates and Keys
+# We keep the folder structure but ignore the actual generated creds
+certs/*
+!certs/.gitkeep
 *.crt
 *.key
 *.pem
 
+# Virtual Environments
 venv/
 .venv/
 env/
 
+# Databases
+# Ignore all DB files but keep the directory via gitkeep
 *.db
+*.db-journal
 *.sqlite3
+*.db-wal
 
+!src/server/db/.db/
+src/server/db/.db/*
+!src/server/db/.db/.gitkeep
 
-.vscode/
+# Editor Settings
+.vscode/*
