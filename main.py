@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 from src.server.server_constants import AUTH_SERVER_PORT
 from src.server.logs.logging_manager import LoggingManager
-from src.server.file_ensure_util import EnsureDirsExistsUtil
+from src.file_ensure_util import EnsureDirsExistsUtil
 from src.server.auth_server.encryption_manager import EncryptionManager
 
 def main():

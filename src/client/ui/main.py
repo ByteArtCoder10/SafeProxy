@@ -5,6 +5,7 @@ from src.client.ui.utils.viewRouter import ViewRouter
 from ..logs.logging_manager import LoggingManager
 from ..core.authentication.auth_handler import AuthHandler
 from ..client_constants import PROXY_SERVER_IP
+from ...file_ensure_util import EnsureDirsExistsUtil
 def main(page: ft.Page):
 
     page.title = "SafeProxy Manager"
@@ -67,6 +68,8 @@ def main(page: ft.Page):
     page.go("/")
 
 def set_backend(page : ft.Page):
+    # create essentail folders if not already created
+
     if not hasattr(page, "auth_handler"):
     # connect to auth-server
         page.auth_handler =  AuthHandler(PROXY_SERVER_IP)
