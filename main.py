@@ -10,7 +10,7 @@ from src.server.auth_server.encryption_manager import EncryptionManager
 
 def main():
     # gets absolute path of project directory
-    proj_path = BASE_DIR = Path(__file__).resolve().parent // ".env.example"
+    proj_path = BASE_DIR = Path(__file__).resolve().parent / ".env.example"
     load_dotenv(proj_path)
     
     # make sure essentail folders exist
