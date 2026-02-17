@@ -13,7 +13,7 @@ MAX_CLIENTS = 1000
 # -- Servers & proxy details ---
 AUTH_SERVER_PORT = 2985
 INJECT_SERVER_PORT = 5860
-PROXY_SERVER_IP = "127.0.0.1"
+PROXY_SERVER_IP = "127.0.0.1" # CRITCIAL - CHANGE TO THE PROXY SERVER IP
 PROXY_SERVER_PORT = 2153
 
 # --- Logging details ---
@@ -28,13 +28,14 @@ HTTP_AUTH_HEADER_NAME = "X-SafeProxy-Auth-Token"
 
 # --- Certs ---
 ROOT_CA_CERT_PATH = str(proj_path / "src" / "client" / "resources" / "root_ca.crt")
-UPDATED_ROOT_CA_CERT_PATH = str(proj_path / "src" / "client" / "resources" / "updated_root_ca.crt")
+ROOT_CA_CERT_DIR = str(proj_path / "src" / "client" / "resources")
 
 # --- Chorme Config ---
 CHROME_PROPILE_DATA_PATH = str(temp_dir / "SafeProxyBrowser")
 CHROME_EXE_PATH = str(program_files_dir / "Google" / "Chrome" / "Application" / "chrome.exe")
 CERT_STORE_PATH = r"cert:\LocalMachine\Root"
 
+FOLDERS_EXISTS_CHECK = [ROOT_CA_CERT_DIR]
 
 # # --- Logging details ---
 # LOG_FORMAT = "%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s \n"

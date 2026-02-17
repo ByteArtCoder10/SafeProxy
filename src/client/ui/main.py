@@ -4,7 +4,7 @@ import logging
 from src.client.ui.utils.viewRouter import ViewRouter
 from ..logs.logging_manager import LoggingManager
 from ..core.authentication.auth_handler import AuthHandler
-
+from ..client_constants import PROXY_SERVER_IP
 def main(page: ft.Page):
 
     page.title = "SafeProxy Manager"
@@ -69,7 +69,7 @@ def main(page: ft.Page):
 def set_backend(page : ft.Page):
     if not hasattr(page, "auth_handler"):
     # connect to auth-server
-        page.auth_handler =  AuthHandler("127.0.0.1")
+        page.auth_handler =  AuthHandler(PROXY_SERVER_IP)
         page.auth_handler.connect()
 
     # if rsp status is SUCCESS and jwt provided, Start inject server

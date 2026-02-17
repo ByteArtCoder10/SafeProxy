@@ -164,7 +164,7 @@ class AuthHandler:
             return True
         
         except Exception as e:
-            client_logger.error(f"[Auth] Secure connection with Auth server failed: {e}")
+            client_logger.error(f"[Auth] Secure connection with Auth server failed: {e}", exc_info=True)
             return False
         
 
