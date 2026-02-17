@@ -159,9 +159,14 @@ class EncryptionManager:
         NOTE:
         A one-time use only function, to create a pair of RSA/ECDSA private-key and public key for sigining.
         The private_key will be used by the auth server for signing JWT tokens.
-        The public_key will be used by the proxy-server for verifing JWT tokens.
+        The public_key will be used by it's proxy-server for verifing JWT tokens.
         """
-
+        private_key_path = os.getenv("AUTH_SERVER_PRIVATE_KEY_FILE_PATH")
+        public_key_path = os.getenv("PROXY_SERVER_PUBLIC_KEY_FILE_PATH")
+        # ESGE-CASE: if only one file exists the function will create and override the existing file
+        # and will genretae a new cryptographic assymetric key pair.
+        if os.path.exists(private_key_path) and os.path.exists(public_key_path):
+            return 
         # create the pair - since these keys are the base for the verifcation of a client and are highly vital,
         # 4096-bit RSA keys will be used (although, generally 2048-bit is ok too)
         if isECDSA:
@@ -170,8 +175,6 @@ class EncryptionManager:
             private_key = rsa.generate_private_key(public_exponent=65537, key_size=AUTH_KEYS_SIZE)
 
         public_key = private_key.public_key()
-        private_key_path = os.getenv("AUTH_SERVER_PRIVATE_KEY_FILE_PATH")
-        public_key_path = os.getenv("PROXY_SERVER_PUBLIC_KEY_FILE_PATH")
 
         # to pem
         priv_pem = private_key.private_bytes(

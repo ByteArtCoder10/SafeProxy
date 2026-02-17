@@ -39,7 +39,12 @@ SECURITY_LOCK_BG_PATH = str(proj_path / "assests" / "security_lock_bg.txt")
 AUTH_SERVER_PORT = 2985
 AUTH_KEYS_SIZE = 2048
 HTTP_AUTH_HEADER_NAME = "X-SafeProxy-Auth-Token"
+JWT_AUTH_KEYS_DIR = str(proj_path / ".safeproxy" / "jwt_keys")
 
+# --- DB ---
+DB_DIR_PATH = str(proj_path / "src" / "server" / "db" / ".db")
+# --- Folders to make sure exists ---
+FOLDERS_EXISTS_CHECK = [CA_CERT_AND_KEY_DIR, CORE_CLIENTS_LOG_DIR_PATH, DB_DIR_PATH, CERTS_DIR, JWT_AUTH_KEYS_DIR]
 
 # CA_CERT_AND_KEY_DIR = r"D:\SafeProxy\.safeproxy\root_ca"
 # CERTS_DIR = r"D:\SafeProxy\certs"
