@@ -9,30 +9,32 @@ from ...client_constants import AUTH_SERVER_PORT, SOCKET_BUFFER_SIZE
 from .encryption_manager import EncryptionManager
 from ..inject_server.inject_server import InjectServer
 
+
 class BaseFormattedObj:
     def to_json(self) -> str:
         return json.dumps(self.__dict__, default=lambda x: x.value if isinstance(x, Enum) else x)
-    
+
     @classmethod
     def from_json(cls):
         "virtual method. should be overriden."
         return NotImplemented
-    
+
     @classmethod
     def from_dict(cls, data: dict):
         return cls(**data)
 
+
 class ReqCMD(Enum):
     # Auth proccess
     LOGIN = "LOGIN"
-    SIGNUP =  "SIGNUP"
+    SIGNUP = "SIGNUP"
     DELETE = "DELETE"
 
     # blacklist proccess
     ADD_BLACKLISTED_HOST = "ADD_BLACKLISTED_HOST"
     DELETE_BLACKLISTED_HOST = "DELETE_BLACKLISTED_HOST"
     DELETE_ALL_BLACKLSITED = "DELETE_ALL_BLACKLSITED"
-    GET_BLACKLIST = "GET_BLACKLIST" 
+    GET_BLACKLIST = "GET_BLACKLIST"
 
     # tls terminate proccess
     SET_TLS_TERMINATE = "SET_TLS_TERMINATE"
@@ -41,27 +43,28 @@ class ReqCMD(Enum):
     # google redirect proccess
     SET_GOOGLE_REDIRECT = "SET_GOOGLE_REDIRECT"
     GET_GOOGLE_REDIRECT = "GET_GOOGLE_REDIRECT"
-    
+
     # CA certificate proccess
     GET_CA_CERT = "GET_CA_CERT"
 
+
 class RspStatus(Enum):
     FAIL = "FAIL"
-    SUCCESS =  "SUCCESS"
+    SUCCESS = "SUCCESS"
+
 
 class FailReason(Enum):
     # sign up
     USER_EXISTS = "Username already exists."
 
     # login
-    USER_DOESNT_EXIST = "Username doesn't exist." 
+    USER_DOESNT_EXIST = "Username doesn't exist."
     WRONG_PW = "Wrong password."
-    
+
     # Auth-general
     INVALID_USERNAME_LEN = "Username's length invalid."
     JWT_ERROR = "Failed generating JWT token."
     INVALID_PW_LEN = "Password's length invalid."
-    
 
     # General
     DISK_ERROR = "Falied fetching the requested file."
@@ -75,11 +78,11 @@ class FormattedReq(BaseFormattedObj):
     cmd: ReqCMD
     username: str | None = None
     pw: str | None = None
-    blacklisted_host : str | None = None
-    blacklist_host_details : str | None = None
-    tls_terminate : bool | None = None
-    google_redirect : bool | None = None
-    
+    blacklisted_host: str | None = None
+    blacklist_host_details: str | None = None
+    tls_terminate: bool | None = None
+    google_redirect: bool | None = None
+
     @classmethod
     def from_json(cls, json_str: str):
         """
@@ -88,11 +91,13 @@ class FormattedReq(BaseFormattedObj):
         Function searches for key "cmd" after loading a dict from a json.
         """
         data = json.loads(json_str)
-        
-        if "cmd" in data and data["cmd"]: # data["cmd"] a safety measure for accidently None passed as cmd
+
+        # data["cmd"] a safety measure for accidently None passed as cmd
+        if "cmd" in data and data["cmd"]:
             data["cmd"] = ReqCMD(data["cmd"])
-            
+
         return cls.from_dict(data)
+
 
 @dataclass
 class FormattedRsp(BaseFormattedObj):
@@ -102,7 +107,7 @@ class FormattedRsp(BaseFormattedObj):
     tls_terminate: bool | None = None
     google_redirect: bool | None = None
     fail_reason: FailReason | None = None
-    ca_cert : str | None = None
+    ca_cert: str | None = None
 
     @classmethod
     def from_json(cls, json_str: str):
@@ -115,30 +120,31 @@ class FormattedRsp(BaseFormattedObj):
         try:
             data = json.loads(json_str)
 
-            # status 
+            # status
             if "status" in data and data["status"]:
                 data["status"] = RspStatus(data["status"])
-            
+
             # fail reason
             if "fail_reason" in data and data["fail_reason"]:
                 data["fail_reason"] = FailReason(data["fail_reason"])
-            
+
             return cls.from_dict(data)
-        
+
         except Exception as e:
             client_logger.error(e, exc_info=True)
             return cls(status=RspStatus.FAIL, fail_reason=FailReason.INVALID_FORMAT)
 
+
 class AuthHandler:
     """
     Handles the authentication proccess between the Client and the Auth Server.
-    
+
     Responsible fore:
     - Establishing secure socket connection (DH Key Exchange).
     - Sending formatted Login/Signup/Delete requests.
     - Handling the response and starting the InjectServer upon success.
     """
-    
+
     def __init__(self, ip: str):
         """
         :param ip: Auth server's IP address.
@@ -152,21 +158,23 @@ class AuthHandler:
     def connect(self) -> bool:
         """
         Connects to Auth server securely.        
-        
+
         :return bool: True if successful, False otherwise.
         """
         try:
-            self._client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._client_socket = socket.socket(
+                socket.AF_INET, socket.SOCK_STREAM)
             self._client_socket.connect((self._server_ip, self._server_port))
-            client_logger.info(f"[Auth] Connected to Auth server at ({self._server_ip},{self._server_port})")
+            client_logger.info(
+                f"[Auth] Connected to Auth server at ({self._server_ip},{self._server_port})")
 
             self._establish_secure_connection()
             return True
-        
+
         except Exception as e:
-            client_logger.error(f"[Auth] Secure connection with Auth server failed: {e}", exc_info=True)
+            client_logger.error(
+                f"[Auth] Secure connection with Auth server failed: {e}", exc_info=True)
             return False
-        
 
     def _establish_secure_connection(self):
         """
@@ -174,15 +182,16 @@ class AuthHandler:
         """
         # local DH keys
         dh_self, self_pk = EncryptionManager.get_dh_public_key()
-        
+
         # Exchange public keys
         self._client_socket.sendall(self_pk)
-        server_pk = self._client_socket.recv(256) # DH public key set to 256-bytes intially
-        
+        # DH public key set to 256-bytes intially
+        server_pk = self._client_socket.recv(256)
+
         # Calc shared secret and AES key
         shared_secret = EncryptionManager.get_dh_shared_key(dh_self, server_pk)
         aes_key = EncryptionManager.derive_key_from_dh_key(shared_secret)
-        
+
         # Create EncryptonManager instance for AES-encrpyt/decrpyt.
         self.em = EncryptionManager(aes_key)
         client_logger.info("[Auth] Secure connection established.")
@@ -216,8 +225,8 @@ class AuthHandler:
         """
         req = FormattedReq(cmd=ReqCMD.DELETE, username=username)
         return self._send_and_get_rsp(req)
-    
-    def add_blacklist_host(self, username : str, blacklisted_host : str, details: str)-> FormattedRsp:
+
+    def add_blacklist_host(self, username: str, blacklisted_host: str, details: str) -> FormattedRsp:
         """
         API function - for UI to call. 
         Handles dding/updating a given host to a user's blacklist. (send Request -> Return Response)
@@ -232,27 +241,29 @@ class AuthHandler:
         )
         return self._send_and_get_rsp(req)
 
-    def delete_blacklist_host(self, username : str, blacklisted_host : str)-> FormattedRsp:
+    def delete_blacklist_host(self, username: str, blacklisted_host: str) -> FormattedRsp:
         """
         API function - for UI to call. 
         Handles deleting a given host froma user's blacklist (send Request -> Return Response)
 
         :return FormattedRsp: Auth server's response
         """
-        req = FormattedReq(cmd=ReqCMD.DELETE_BLACKLISTED_HOST, username=username, blacklisted_host=blacklisted_host, )
+        req = FormattedReq(cmd=ReqCMD.DELETE_BLACKLISTED_HOST,
+                           username=username, blacklisted_host=blacklisted_host, )
         return self._send_and_get_rsp(req)
-    
-    def delete_full_blacklist(self, username : str,)-> FormattedRsp:
+
+    def delete_full_blacklist(self, username: str,) -> FormattedRsp:
         """
         API function - for UI to call. 
         Handles deleting full blacklist of a user (send Request -> Return Response)
 
         :return FormattedRsp: Auth server's response
         """
-        req = FormattedReq(cmd=ReqCMD.DELETE_ALL_BLACKLSITED, username=username)
+        req = FormattedReq(
+            cmd=ReqCMD.DELETE_ALL_BLACKLSITED, username=username)
         return self._send_and_get_rsp(req)
-    
-    def get_blacklist(self, username : str,)-> FormattedRsp:
+
+    def get_blacklist(self, username: str,) -> FormattedRsp:
         """
         API function - for UI to call. 
         Handles getting full blacklist of a user (send Request -> Return Response)
@@ -261,19 +272,19 @@ class AuthHandler:
         """
         req = FormattedReq(cmd=ReqCMD.GET_BLACKLIST, username=username)
         return self._send_and_get_rsp(req)
-    
-        
-    def set_tls_terminate(self, username : str, tls_terminate : bool)-> FormattedRsp:
+
+    def set_tls_terminate(self, username: str, tls_terminate: bool) -> FormattedRsp:
         """
         API function - for UI to call. 
         Handles setting tls terminate of a user (send Request -> Return Response)
 
         :return FormattedRsp: Auth server's response
         """
-        req = FormattedReq(cmd=ReqCMD.SET_TLS_TERMINATE, username=username, tls_terminate=tls_terminate)
+        req = FormattedReq(cmd=ReqCMD.SET_TLS_TERMINATE,
+                           username=username, tls_terminate=tls_terminate)
         return self._send_and_get_rsp(req)
 
-    def get_tls_terminate(self, username : str)-> FormattedRsp:
+    def get_tls_terminate(self, username: str) -> FormattedRsp:
         """
         API function - for UI to call. 
         Handles getting tls terminate of a user (send Request -> Return Response)
@@ -282,18 +293,19 @@ class AuthHandler:
         """
         req = FormattedReq(cmd=ReqCMD.GET_TLS_TERMINATE, username=username)
         return self._send_and_get_rsp(req)
-    
-    def set_google_redirect(self, username : str, google_redirect : bool)-> FormattedRsp:
+
+    def set_google_redirect(self, username: str, google_redirect: bool) -> FormattedRsp:
         """
         API function - for UI to call. 
         Handles setting google reidrect of a user (send Request -> Return Response)
 
         :return FormattedRsp: Auth server's response
         """
-        req = FormattedReq(cmd=ReqCMD.SET_GOOGLE_REDIRECT, username=username, google_redirect=google_redirect)
+        req = FormattedReq(cmd=ReqCMD.SET_GOOGLE_REDIRECT,
+                           username=username, google_redirect=google_redirect)
         return self._send_and_get_rsp(req)
 
-    def get_google_redirect(self, username : str)-> FormattedRsp:
+    def get_google_redirect(self, username: str) -> FormattedRsp:
         """
         API function - for UI to call. 
         Handles getting google redirect of a user (send Request -> Return Response)
@@ -302,7 +314,7 @@ class AuthHandler:
         """
         req = FormattedReq(cmd=ReqCMD.GET_GOOGLE_REDIRECT, username=username)
         return self._send_and_get_rsp(req)
-    
+
     def get_ca_cert(self) -> FormattedReq:
         """
         API function - for UI to call. 
@@ -312,7 +324,7 @@ class AuthHandler:
         """
         req = FormattedReq(ReqCMD.GET_CA_CERT)
         return self._send_and_get_rsp(req)
-    
+
     def _send_and_get_rsp(self, req: FormattedReq) -> FormattedRsp:
         """
 
@@ -327,7 +339,7 @@ class AuthHandler:
 
         :return FormattedRsp: The server's response.
 
-        
+
         """
         client_logger.info(f"Client's request: {req.__dict__}")
         if not self._client_socket:
@@ -344,19 +356,20 @@ class AuthHandler:
             encrypted_rsp = self._client_socket.recv(SOCKET_BUFFER_SIZE)
             decrypted_rsp = self.em.aes_decrypt(encrypted_rsp)
             response = FormattedRsp.from_json(decrypted_rsp)
-            
+
             client_logger.info(f"Server's Response: {response}.")
             return response
 
         except Exception as e:
-            client_logger.warning(f"[Auth] Sending request/recieving response failed: {e}", exc_info=True)
+            client_logger.warning(
+                f"[Auth] Sending request/recieving response failed: {e}", exc_info=True)
             return FormattedRsp(status=RspStatus.FAIL, fail_reason=FailReason.NETWORK_ERROR)
 
-    
 
 if __name__ == "__main__":
     ah = AuthHandler("127.0.0.1", AUTH_SERVER_PORT)
     ah.connect_to_auth_server()
     ah._establish_secure_connection()
-    ah.send_request_to_server(FormattedReq(ReqCMD.LOGIN, username="23ws42", pw="4545232332"))
+    ah.send_request_to_server(FormattedReq(
+        ReqCMD.LOGIN, username="23ws42", pw="4545232332"))
     ah.handle_server_response()

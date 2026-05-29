@@ -1,19 +1,21 @@
 import subprocess
-import os        
-from cryptography import x509 
+import os
+from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 import base64
 
 from ...logs.logger import client_logger
 from ...client_constants import ROOT_CA_CERT_PATH, CERT_STORE_PATH
+
+
 class CAHandler():
 
     @staticmethod
     def is_ca_cert_installed(cert: str) -> bool:
-        
+
         # First, neeed to fetch Trusted Root CA's on the local machine, using powershell.
         '''
-        
+
         Command explaination:
         This is a powershell command, allowing the proxy to view all trusted root CA's on a machine,
         and filter them by wildcard, for example - all root CA certs that ther common name has Safeproxy {"*SafeProxy*"}
@@ -33,26 +35,31 @@ class CAHandler():
         try:
             # get unique fingerprint from given cert
             cert_thumbprint_hex = CAHandler.get_thumbprint(cert)
-            client_logger.debug(f"Given certificate thumbprint: {cert_thumbprint_hex}")
+            client_logger.debug(
+                f"Given certificate thumbprint: {cert_thumbprint_hex}")
 
             powershell_script = f"Get-ChildItem -Path {CERT_STORE_PATH} | Where-Object {{ $_.Thumbprint -eq '{cert_thumbprint_hex}' }}"
 
-            result = subprocess.run(["powershell", "-NoProfile", "-Command", powershell_script], timeout=60, capture_output=True, text=True, check=True)
+            result = subprocess.run(["powershell", "-NoProfile", "-Command", powershell_script],
+                                    timeout=60, capture_output=True, text=True, check=True)
 
             client_logger.info(
-                f"Args:{result.args}" \
-                f"RetrunCode: {result.returncode}" \
-                f"stdout: {result.stdout}" \
-                f"stderr: {result.stderr}" \
+                f"Args:{result.args}"
+                f"RetrunCode: {result.returncode}"
+                f"stdout: {result.stdout}"
+                f"stderr: {result.stderr}"
             )
             is_found = cert_thumbprint_hex in result.stdout.upper()
             if is_found:
-                client_logger.info(f"Match found! CA certifcate installed is up to date.")
+                client_logger.info(
+                    f"Match found! CA certifcate installed is up to date.")
             else:
-                client_logger.info(f"No match found. Most recent CA cert is not installed - will need to be installed.")
+                client_logger.info(
+                    f"No match found. Most recent CA cert is not installed - will need to be installed.")
             return is_found
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
-            client_logger.error(f"Failed to check if SafeProxy root CA cert is installed: {e}", exc_info=True)
+            client_logger.error(
+                f"Failed to check if SafeProxy root CA cert is installed: {e}", exc_info=True)
             return False
 
 # ... other imports ...
@@ -88,9 +95,7 @@ class CAHandler():
             encoded_bytes = base64.b64encode(inner_script.encode('utf-16-le'))
             encoded_str = encoded_bytes.decode('utf-8')
 
-
             args_for_powershell = f"-NoProfile -EncodedCommand {encoded_str}"
-
 
             outer_command = [
                 "powershell",
@@ -106,43 +111,45 @@ class CAHandler():
                 check=True
             )
             client_logger.info(
-                "--- REMOVE AND INSTALL CERTIFICATE PROCCESS ---\n" \
-                f"Args:{result.args}" \
-                f"RetrunCode: {result.returncode}" \
-                f"stdout: {result.stdout}" \
-                f"stderr: {result.stderr}" \
+                "--- REMOVE AND INSTALL CERTIFICATE PROCCESS ---\n"
+                f"Args:{result.args}"
+                f"RetrunCode: {result.returncode}"
+                f"stdout: {result.stdout}"
+                f"stderr: {result.stderr}"
             )
 
             # Check if installation actually worked by verifying the cert exists now
             # (Start-Process returns returncode 0 even if the inner script failed, so this is a good safety measure)
             verify_cmd = [
-                "powershell", 
-                "-Command", 
+                "powershell",
+                "-Command",
                 f"Get-ChildItem -Path {CERT_STORE_PATH} | Where-Object {{ $_.Subject -like '*SafeProxy*' }}"
             ]
-            verify_result = subprocess.run(verify_cmd, capture_output=True, text=True)
+            verify_result = subprocess.run(
+                verify_cmd, capture_output=True, text=True)
             client_logger.info(
-                "--- VERIFY ACTUALLY INSTALLED ---\n" \
-                f"Args:{verify_result.args}" \
-                f"RetrunCode: {verify_result.returncode}" \
-                f"stdout: {verify_result.stdout}" \
-                f"stderr: {verify_result.stderr}" \
+                "--- VERIFY ACTUALLY INSTALLED ---\n"
+                f"Args:{verify_result.args}"
+                f"RetrunCode: {verify_result.returncode}"
+                f"stdout: {verify_result.stdout}"
+                f"stderr: {verify_result.stderr}"
             )
             if "SafeProxy" in verify_result.stdout:
                 client_logger.info("CA Certificate installed successfully.")
                 return True
             else:
-                client_logger.error("Installation command finished, but certificate was not found in store - fail.")
+                client_logger.error(
+                    "Installation command finished, but certificate was not found in store - fail.")
                 return False
 
         except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as e:
             # Note: e.stderr might be empty if the error happened inside the elevated window (which closes on error)
-            client_logger.error(f"Failed to install certificate : {e}", exc_info=True)
+            client_logger.error(
+                f"Failed to install certificate : {e}", exc_info=True)
             return False
-          
-       
+
     @staticmethod
-    def update_local_file(cert_pem : str) -> bool:
+    def update_local_file(cert_pem: str) -> bool:
         try:
             raw_cert = cert_pem.encode("utf-8")
             with open(ROOT_CA_CERT_PATH, "wb") as f:
@@ -150,10 +157,12 @@ class CAHandler():
             client_logger.info("Successfully Updated local root CA cert file.")
             return True
         except Exception as e:
-            client_logger.error(f"Falied updating local root CA cert: {e}", exc_info=True)
+            client_logger.error(
+                f"Falied updating local root CA cert: {e}", exc_info=True)
             return False
 
     @staticmethod
     def get_thumbprint(cert_pem: str) -> str:
-        cert_obj = x509.load_pem_x509_certificate(cert_pem.encode("utf-8", errors="ignore"))
+        cert_obj = x509.load_pem_x509_certificate(
+            cert_pem.encode("utf-8", errors="ignore"))
         return cert_obj.fingerprint(hashes.SHA1()).hex().upper()

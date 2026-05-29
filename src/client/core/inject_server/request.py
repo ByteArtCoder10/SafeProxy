@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
+
 @dataclass
 class Request():
     """
@@ -42,7 +43,7 @@ class Request():
         during instantiation.
         """
         self.add_header("Host", self.host)
-    
+
     def add_path(self, path: str):
         """
         Assigns a path to the request if one does not already exist.
@@ -53,7 +54,7 @@ class Request():
         if self.path is None:
             self.path = path
 
-    def add_header(self, header: str, value: str):      
+    def add_header(self, header: str, value: str):
         """
         Adds a single header key-value pair to the internal headers dictionary.
 
@@ -62,7 +63,7 @@ class Request():
 
         :type value: str
         :param value: The value to associate with the header.
-        """      
+        """
         if header not in self.headers:
             self.headers[header] = value
 
@@ -75,7 +76,7 @@ class Request():
         """
         if self.body is None:
             self.body = body
-    
+
     def to_raw(self) -> bytes:
         """
         Arranges the Request object into a raw bytes object compliant with the 
@@ -90,7 +91,7 @@ class Request():
         body = f"\r\n\r\n{self.body or ""}"
 
         return (first_line + headers + body).encode()
-    
+
     def prettify(self) -> str:
         """
         Generates a human-readable, formatted string representation of the 
@@ -103,10 +104,12 @@ class Request():
             "\n------REQUEST------"
             f"\n--Method: {self.method}, \n--Host: {self.host}, \n--Port: {self.port},"
             f"\n--Path: {self.path}, \n--Http version: {self.http_version},"
-            f"\n--Headers: \t{"".join(f"\n{h}: {v}" for h, v in self.headers.items())}"
+            f"\n--Headers: \t{"".join(f"\n{h}: {v}" for h,
+                                      v in self.headers.items())}"
             f"\n--Body: \n{self.body}\n"
             "-------------------"
         )
+
 
 if __name__ == "__main__":
     req = Request(

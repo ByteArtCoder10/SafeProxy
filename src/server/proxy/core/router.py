@@ -10,18 +10,21 @@ from ..handlers.https_tcp_tunnel_handler import HttpsTcpTunnelHandler
 from ..handlers.https_tls_termination_handler_ssl import HttpsTlsTerminationHandlerSSL
 from ..certificate.certificate_authority import CertificateAuthority
 from ...db.sql_auth_manager import SQLAuthManager
+
+
 class Router():
     """
     Determines the processing strategy for incoming client requests.
-    
+
     The Router analyzes the HTTP method and configuration preferences 
     to dispatch the request to the appropriate protocol handler 
     (Plain HTTP, HTTPS Tunneling, or TLS Termination).
     """
+
     def __init__(self):
         self._db = SQLAuthManager()
 
-    def route_request(self, req: Request, client_socket: socket.socket, ca  : CertificateAuthority, username : str):
+    def route_request(self, req: Request, client_socket: socket.socket, ca: CertificateAuthority, username: str):
         """
         Hands the request to a specific handler based on the HTTP method
         and configuration settings.
@@ -35,7 +38,7 @@ class Router():
         :type ca: CertifcateAuthority()
         :param ca: The CA's (singleton) instance for TLS-termination
         related tasks.
-        
+
         :type username: str
         :param username: For blacklist blocking. at this point, the client is authorized, in order to check
         for blacklisted urls/hosts, the proxy queries the DB with a username.
@@ -45,25 +48,26 @@ class Router():
         try:
             is_tls, is_redirect = self._fetch_user_prefrences(username)
             match req.method:
-            
-                case "CONNECT":                        
+
+                case "CONNECT":
                     if is_tls:
                         self.handler = HttpsTlsTerminationHandlerSSL(ca)
                     else:
                         self.handler = HttpsTcpTunnelHandler(ca)
-                    
+
                 case req.method if self.is_valid_http_method(req.method):
                     self.handler = HttpHandler()
 
                 case _:
-                    core_logger.warning(f"Unsupported method in the request: {req.method}")
-                    return 
-                
+                    core_logger.warning(
+                        f"Unsupported method in the request: {req.method}")
+                    return
+
             if self.handler:
                 self.handler.handle(req, client_socket, username, is_redirect)
             else:
                 raise ValueError("No suitable handler found for the request.")
-            
+
         except socket.timeout:
             core_logger.info("Routing failed: socket timed-out.")
         except (ConnectionResetError, ConnectionAbortedError):
@@ -74,7 +78,7 @@ class Router():
     def _fetch_user_prefrences(self, username: str) -> tuple[bool, bool]:
         tls_terminate_rsp = self._db.get_tls_terminate(username)
         google_redirect_rsp = self._db.get_google_redirect(username)
-        
+
         is_tls = False
         is_redirect = False
         if tls_terminate_rsp is not None:
@@ -82,11 +86,11 @@ class Router():
         if google_redirect_rsp is not None:
             is_redirect = google_redirect_rsp
         return is_tls, is_redirect
-    
+
     def is_valid_http_method(self, method: str) -> bool:
         """
         Validates if a string is a recognized standard HTTP method.
-        
+
         Note: CONNECT is ignored here as it is handled by specific 
         tunneling logic in route_request.
         """
@@ -97,5 +101,3 @@ class Router():
             return True
         except Exception:
             return False
-         
-        

@@ -59,15 +59,15 @@ class Response:
                 self.reason = HTTPStatus(self.status_code).phrase
             except ValueError:
                 self.reason = ""
-        
+
         # In case of 200 ok response with url redirection in html body
         if self.redirect_url and self.status_code == 200:
             self._add_redirect_html_body()
-        
+
         # Connection Established isn't usually sent with additional headers
         if self.reason != 'Connection Established':
             self._add_proxy_fixed_headers()
-    
+
     def _add_redirect_html_body(self):
         """
         Constructs a simple HTML code that performs a client-side redirect 
@@ -83,10 +83,10 @@ class Response:
                 Redirecting to search...
             </body>
             </html> """
-        
+
         self.body = html_body
         self.headers['Content-length'] = len(self.body.encode())
-        
+
     def _add_dynamic_body(self, addMaliciousLabel=False):
         """
         Generates a 'SafeProxy' landing page for errors or blocked sites.
@@ -305,15 +305,16 @@ class Response:
 
         self.body = html_body
         self.headers['Content-length'] = len(self.body.encode('utf-8'))
-    
+
     def _load_lock_image(self):
         try:
             with open(SECURITY_LOCK_BG_PATH, "r") as f:
                 base64_img = f.read()
             return base64_img
         except Exception as e:
-            core_logger.warning(f"Couldn't load lock image for custom proxy response. proceeding without. {e}", exc_info=True)
-    
+            core_logger.warning(
+                f"Couldn't load lock image for custom proxy response. proceeding without. {e}", exc_info=True)
+
     def _add_proxy_fixed_headers(self):
         """
         adds proxy required and preffered headers. The proxy's job is 
@@ -324,7 +325,7 @@ class Response:
         - Date: Dynamic.
         - Server: proxy's name.
         - Connection: Closed.
-        
+
         distiction: 
         - Required: Content-Type, Content-Length.
         - Not required, but Preffered: Date, Server, Connection.
@@ -337,12 +338,12 @@ class Response:
             "Content-length": f"{len(self.body.encode('utf-8'))}",
             "Proxy-Agent": "SafeProxy",
             "Date": f"{datetime.now(timezone.utc).strftime('%a, %d %b %Y %H:%M:%S GMT')}",
-            "Connection": "Closed"            
+            "Connection": "Closed"
         }
         for header, value in required_preffered_headers.items():
             if header not in self.headers:
                 self.headers[header] = value
-    
+
     def to_raw(self) -> bytes:
         """
         Arranges the Response object into a raw bytes object compliant with the 
@@ -351,18 +352,18 @@ class Response:
         :rtype: bytes
         :returns: The raw bytes-like object ready to be sent over a socket.
         """
-        
+
         # Only the minimal 200 "Connection Etablished" response
         if self.raw_connect:
             response = f"{self.http_version} {self.status_code} {self.reason}\r\nProxy-Agent: SafeProxy\r\n\r\n"
             return response.encode()
-        
+
         first_line = f"{self.http_version} {self.status_code} {self.reason}\r\n"
         headers = "".join(f"{h}: {v}\r\n" for h, v in self.headers.items())
         body = f"\r\n\r\n{self.body or ""}"
-        
+
         return (first_line + headers + body).encode()
-    
+
     def prettify(self) -> str:
         """
         Generates a human-readable, formatted string representation of the 
@@ -374,9 +375,11 @@ class Response:
         return (
             "\n------RESPONSE------"
             f"\n--Http version: {self.http_version}, \n--Status code: {self.status_code}, \n--Reason: {self.reason},"
-            f"\n--Headers: \t{"".join(f"\n{h}: {v}" for h, v in self.headers.items())},"
+            f"\n--Headers: \t{"".join(f"\n{h}: {v}" for h,
+                                      v in self.headers.items())},"
             f"\n--Body: \n{self.body}\n"
-            "----------------------" )
+            "----------------------")
+
 
 if __name__ == "__main__":
     pr = Response("HTTP/1.1", 404, "Not Found")

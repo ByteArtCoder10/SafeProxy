@@ -1,6 +1,7 @@
 import jwt
 import datetime
 
+
 class JWTManager:
     """
     Static utility for creating and verifying JWT.
@@ -20,14 +21,14 @@ class JWTManager:
                 "iat": now,
                 "exp": now + datetime.timedelta(minutes=30)
             }
-            
+
             alg = "ES256" if isECDSA else "RS256"
-            
+
             # sign
             return jwt.encode(payload=payload, key=jwt_auth_private_key, algorithm=alg)
         except Exception:
             return None
-    
+
     @staticmethod
     def verify_token(jwt_auth_public_key: str, jwt_token: str, isECDSA=True) -> tuple[bool, str | None]:
         """
@@ -38,13 +39,12 @@ class JWTManager:
         """
         try:
             payload = jwt.decode(
-                    jwt=jwt_token,
-                    key=jwt_auth_public_key,
-                    algorithms="ES256" if isECDSA else "RS256",
-                    options={"verify_signature": True}
+                jwt=jwt_token,
+                key=jwt_auth_public_key,
+                algorithms="ES256" if isECDSA else "RS256",
+                options={"verify_signature": True}
             )
             print
             return True, payload.get("sub", None)
         except Exception:
             return False, None
-        

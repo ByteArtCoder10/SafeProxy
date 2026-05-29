@@ -8,6 +8,8 @@ import os
 
 from ..server_constants import AUTH_KEYS_SIZE
 from ..logs.loggers import db_logger
+
+
 class EncryptionManager:
     """
     Uses AES-GCM-256 mode for symetric encryption and DH for assymetric encrpytion
@@ -30,7 +32,7 @@ class EncryptionManager:
 
     However, this opens a door for a cryptographic attack and is a vulnreablity. Using the same key for different
     cryptographic porpuses (Encrpytion, Authentication) is dangerous. 
-    
+
     Luckily, there is a better solution - the DH 2048-bit key. In order to establish a secure communication,
     we first use the DH algorithm to create a mutual 2048-bit key, and from that key we derive the AES-256 key using HKDF and
     SHA-256.
@@ -56,14 +58,15 @@ class EncryptionManager:
     he will not be able to genreate new tokens, because the private key is on the auth server. 
     """
 
-    def __init__(self, key : bytes):
+    def __init__(self, key: bytes):
         """
         Initialize with a symmetric key.
 
         :param key: 32-byte AES key.
         """
-        self.key = key # 32-bytes key
-        self.aesgcm = AESGCM(self.key) # the aes-gcm object used to encryt/decrypt
+        self.key = key  # 32-bytes key
+        # the aes-gcm object used to encryt/decrypt
+        self.aesgcm = AESGCM(self.key)
 
     def aes_encrypt(self, txt: str) -> bytes:
         """
@@ -79,7 +82,8 @@ class EncryptionManager:
         nonce = os.urandom(12)
 
         raw_data = txt.encode()
-        ct = self.aesgcm.encrypt(nonce=nonce, data=raw_data, associated_data=None)        
+        ct = self.aesgcm.encrypt(
+            nonce=nonce, data=raw_data, associated_data=None)
         return nonce + ct
 
     def aes_decrypt(self, cipher_text: bytes) -> str:
@@ -91,16 +95,17 @@ class EncryptionManager:
 
         :rtype: str
         :return: The decrypted plaintext.
-        
+
         :raises cryptography.exceptions.InvalidTag: if ciphertext 
         was tamperd, or key/nonce/tag are wrong.
         """
         nonce = cipher_text[:12]
         actual_ciphertext = cipher_text[12:]
 
-        msg = self.aesgcm.decrypt(nonce=nonce, data=actual_ciphertext, associated_data=None).decode()
+        msg = self.aesgcm.decrypt(
+            nonce=nonce, data=actual_ciphertext, associated_data=None).decode()
         return msg
-    
+
     @staticmethod
     def derive_key_from_dh_key(shared_dh_key: bytes, salt: bytes | None = None) -> bytes:
         """
@@ -111,13 +116,13 @@ class EncryptionManager:
 
         :type salt: bytes | None = None
         :param salt: Optional salt for HKDF.
-        
+
         :rtype: bytes
         :return: A 32-byte derived key.
         """
         hkdf = HKDF(
             algorithm=hashes.SHA256(),
-            length=32, # AES-256-bits master key is 32 bytes long
+            length=32,  # AES-256-bits master key is 32 bytes long
             salt=salt,
             info=None
         )
@@ -166,13 +171,14 @@ class EncryptionManager:
         # ESGE-CASE: if only one file exists the function will create and override the existing file
         # and will genretae a new cryptographic assymetric key pair.
         if os.path.exists(private_key_path) and os.path.exists(public_key_path):
-            return 
+            return
         # create the pair - since these keys are the base for the verifcation of a client and are highly vital,
         # 4096-bit RSA keys will be used (although, generally 2048-bit is ok too)
         if isECDSA:
             private_key = ec.generate_private_key(curve=ec.SECP256R1())
         else:
-            private_key = rsa.generate_private_key(public_exponent=65537, key_size=AUTH_KEYS_SIZE)
+            private_key = rsa.generate_private_key(
+                public_exponent=65537, key_size=AUTH_KEYS_SIZE)
 
         public_key = private_key.public_key()
 
@@ -182,22 +188,22 @@ class EncryptionManager:
             format=serialization.PrivateFormat.PKCS8,
             encryption_algorithm=serialization.NoEncryption()
         )
-        
+
         public_pem = public_key.public_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PublicFormat.SubjectPublicKeyInfo,
         )
 
-
-        #save both
+        # save both
         try:
             with open(private_key_path, "wb") as f1:
                 f1.write(priv_pem)
-            
+
             with open(public_key_path, "wb") as f2:
                 f2.write(public_pem)
         except Exception as e:
-           db_logger.critical(f"Couldn't save Auth key pair to disk: {e}", exc_info=True)
+            db_logger.critical(
+                f"Couldn't save Auth key pair to disk: {e}", exc_info=True)
 
 
 if __name__ == "__main__":
@@ -220,7 +226,7 @@ if __name__ == "__main__":
     # sk2 = EncryptionManager.get_dh_shared_key(dh2, dh1_public)
     # print("shared key 1: ", sk1)
     # print("shared key 2: ", sk2)
-    
+
     # """
     # should output:
     # hello world 1234567

@@ -4,6 +4,7 @@ from cryptography import x509
 from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric import ec
 
+
 @dataclass
 class CertBundle:
     """
@@ -15,7 +16,7 @@ class CertBundle:
 
     :var cryptography.x509.Certificate certificate: 
     The certifcate object
-    
+
     :var bytes pem_key:
     The PEM formatted private key.
 

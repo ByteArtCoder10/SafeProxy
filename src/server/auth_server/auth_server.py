@@ -10,28 +10,31 @@ from ..logs.loggers import db_logger
 from ..auth_server.encryption_manager import EncryptionManager
 from ..db.sql_auth_manager import SQLAuthManager
 from ..auth_server.jwt_manager import JWTManager
+
+
 class BaseFormattedObj:
     def to_json(self) -> str:
         return json.dumps(self.__dict__, default=lambda x: x.value if isinstance(x, Enum) else x)
-    
+
     @classmethod
     def from_json(cls):
         "virtual method. should be overriden."
         return NotImplemented
-    
+
     @classmethod
     def from_dict(cls, data: dict):
         return cls(**data)
-    
+
     def __repr__(self) -> str:
         class_name = self.__class__.__name__ + "\n"
-        attrs = ''.join([f"{k}: {v}\n" for k,v in self.__dict__.items()])
+        attrs = ''.join([f"{k}: {v}\n" for k, v in self.__dict__.items()])
         return class_name + attrs
+
 
 class ReqCMD(Enum):
     # Auth proccess
     LOGIN = "LOGIN"
-    SIGNUP =  "SIGNUP"
+    SIGNUP = "SIGNUP"
     DELETE = "DELETE"
 
     # blacklist proccess
@@ -40,7 +43,6 @@ class ReqCMD(Enum):
     DELETE_ALL_BLACKLSITED = "DELETE_ALL_BLACKLSITED"
     GET_BLACKLIST = "GET_BLACKLIST"
 
-    
     # tls terminate proccess
     SET_TLS_TERMINATE = "SET_TLS_TERMINATE"
     GET_TLS_TERMINATE = "GET_TLS_TERMINATE"
@@ -52,38 +54,42 @@ class ReqCMD(Enum):
     # CA certificate proccess
     GET_CA_CERT = "GET_CA_CERT"
 
+
 class RspStatus(Enum):
     FAIL = "FAIL"
-    SUCCESS =  "SUCCESS"
+    SUCCESS = "SUCCESS"
+
+
 class FailReason(Enum):
     # sign up
     USER_EXISTS = "Username already exists."
 
     # login
-    USER_DOESNT_EXIST = "Username doesn't exist." 
+    USER_DOESNT_EXIST = "Username doesn't exist."
     WRONG_PW = "Wrong password."
-    
+
     # Auth-general
     INVALID_USERNAME_LEN = "Username's length invalid."
     JWT_ERROR = "Failed generating JWT token."
     INVALID_PW_LEN = "Password's length invalid."
-    
+
     # General
     DISK_ERROR = "Falied fetching the requested file."
     DB_ERROR = "Database error."
     INVALID_FORMAT = "Request's format invalid."
     NETWORK_ERROR = "Network communication error."
+
+
 @dataclass
 class FormattedReq(BaseFormattedObj):
     cmd: ReqCMD
     username: str | None = None
     pw: str | None = None
-    blacklisted_host : str | None = None
-    blacklist_host_details : str | None = None
-    tls_terminate : bool | None = None
-    google_redirect : bool | None = None
+    blacklisted_host: str | None = None
+    blacklist_host_details: str | None = None
+    tls_terminate: bool | None = None
+    google_redirect: bool | None = None
 
-    
     @classmethod
     def from_json(cls, json_str: str):
         """
@@ -92,20 +98,23 @@ class FormattedReq(BaseFormattedObj):
         Function searches for key "cmd" after loading a dict from a json.
         """
         data = json.loads(json_str)
-        
-        if "cmd" in data and data["cmd"]: # data["cmd"] a safety measure for accidently None passed as cmd
+
+        # data["cmd"] a safety measure for accidently None passed as cmd
+        if "cmd" in data and data["cmd"]:
             data["cmd"] = ReqCMD(data["cmd"])
-            
+
         return cls.from_dict(data)
+
+
 @dataclass
 class FormattedRsp(BaseFormattedObj):
     status: RspStatus
     jwt_token: str | None = None
-    blacklist : dict | None = None
+    blacklist: dict | None = None
     tls_terminate: bool | None = None
     google_redirect: bool | None = None
     fail_reason: FailReason | None = None
-    ca_cert : str | None = None
+    ca_cert: str | None = None
 
     @classmethod
     def from_json(cls, json_str: str):
@@ -118,23 +127,24 @@ class FormattedRsp(BaseFormattedObj):
         try:
             data = json.loads(json_str)
 
-            # status 
+            # status
             if "status" in data and data["status"]:
                 data["status"] = RspStatus(data["status"])
-            
+
             # fail reason
             if "fail_reason" in data and data["fail_reason"]:
                 data["fail_reason"] = FailReason(data["fail_reason"])
-            
+
             return cls.from_dict(data)
-        
+
         except Exception:
             return cls(status=RspStatus.FAIL, fail_reason=FailReason.INVALID_FORMAT)
+
 
 class AuthServer:
     """
     The Authentication Server.
-    
+
     Responsible for:
     - Listeing for incoming connections.
     - Perforing Diffie-Hellman Key Exchange with clients.
@@ -154,16 +164,20 @@ class AuthServer:
         Starts the server listener loop.
         """
         try:
-            self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self._server_socket = socket.socket(
+                socket.AF_INET, socket.SOCK_STREAM)
             self._server_socket.bind((self._ip, self._port))
             self._server_socket.listen(MAX_CLIENTS)
-            
-            db_logger.info(f"Auth Server running on ({self._ip}, {self._port})")
+
+            db_logger.info(
+                f"Auth Server running on ({self._ip}, {self._port})")
 
             while True:
                 client_sock, addr = self._server_socket.accept()
-                threading.Thread(target=self.handle_client, args=(client_sock, addr), daemon=True).start()
-                db_logger.info(f"Auth Thread started for client - ({addr[0]}, {addr[1]})")
+                threading.Thread(target=self.handle_client, args=(
+                    client_sock, addr), daemon=True).start()
+                db_logger.info(
+                    f"Auth Thread started for client - ({addr[0]}, {addr[1]})")
 
         except Exception as e:
             db_logger.critical(f"Auth Server error: {e}", exc_info=True)
@@ -180,28 +194,36 @@ class AuthServer:
             shared_key = self._perform_key_exchange(client_socket)
             aes_key = EncryptionManager.derive_key_from_dh_key(shared_key)
             em = EncryptionManager(aes_key)
-            db_logger.info(f"Established secure connection with ({addr[0]}, {addr[1]})")
-            
+            db_logger.info(
+                f"Established secure connection with ({addr[0]}, {addr[1]})")
+
             while True:
                 # Receive encrypted request
                 try:
                     encrypted_data = client_socket.recv(SOCKET_BUFFER_SIZE)
-                    if not encrypted_data: 
+                    if not encrypted_data:
                         break
                 except (ConnectionResetError, OSError, BrokenPipeError):
-                    db_logger.info(f"Client ({addr[0]}, {addr[1]}) closed connection. Closing gracefully.")
+                    db_logger.info(
+                        f"Client ({addr[0]}, {addr[1]}) closed connection. Closing gracefully.")
                     break
-                
+
                 # decrypt + format request
                 json_req = em.aes_decrypt(encrypted_data)
-                db_logger.debug(f"Client json: {json_req}") # REMOVE EVENTUALLY
+                # REMOVE EVENTUALLY
+                db_logger.debug(f"Client json: {json_req}")
                 request = FormattedReq.from_json(json_req)
-                db_logger.debug(f"Client ({addr[0]}, {addr[1]}): {request.__repr__()}") # REMOVE EVENTUALLY
-                
+                # REMOVE EVENTUALLY
+                db_logger.debug(
+                    f"Client ({addr[0]}, {addr[1]}): {request.__repr__()}")
+
                 # Process request
                 response = self._process_request(request)
-                db_logger.debug(f"Auth server response: {response.__repr__()}") # REMOVE EVENTUALLY
-                db_logger.debug(f"Auth server response JSON: {response.to_json()}") # REMOVE EVENTUALLY
+                # REMOVE EVENTUALLY
+                db_logger.debug(f"Auth server response: {response.__repr__()}")
+                # REMOVE EVENTUALLY
+                db_logger.debug(
+                    f"Auth server response JSON: {response.to_json()}")
 
                 # encrypt + send
                 encrypted_rsp = em.aes_encrypt(response.to_json())
@@ -209,8 +231,9 @@ class AuthServer:
                 db_logger.info(f"Response sent to {addr}")
 
         except Exception as e:
-            db_logger.error(f"Failed handling client ({addr[0]}, {addr[1]}): {e}", exc_info=True)
-        
+            db_logger.error(
+                f"Failed handling client ({addr[0]}, {addr[1]}): {e}", exc_info=True)
+
         finally:
             client_socket.close()
             db_logger.info(f"Closed connection with {addr}.")
@@ -223,19 +246,20 @@ class AuthServer:
             client_socket.sendall(server_pk)
             return EncryptionManager.get_dh_shared_key(dh, client_pk)
         except Exception as e:
-            db_logger.error(f"Failed performing DH  with client: {e}", exc_info=True)
+            db_logger.error(
+                f"Failed performing DH  with client: {e}", exc_info=True)
             return None
 
     def _process_request(self, req: FormattedReq) -> FormattedRsp:
         """Validates credentials and generates JWT/fetch blacklist if valid."""
-        try:            
+        try:
             # length validation - just incase UI failed to check/bypassed.
             if req.username:
                 if len(req.username) < 3 or len(req.username) > 30:
                     return FormattedRsp(status=RspStatus.FAIL, fail_reason=FailReason.INVALID_USERNAME_LEN)
-            
+
             match req.cmd:
-                
+
                 # signup
                 case ReqCMD.SIGNUP:
                     if self._db.username_exist(req.username):
@@ -246,7 +270,7 @@ class AuthServer:
                 case ReqCMD.LOGIN:
                     if not self._db.username_exist(req.username):
                         return FormattedRsp(status=RspStatus.FAIL, fail_reason=FailReason.USER_DOESNT_EXIST)
-                
+
                     if not self._db.check_psssword(req.username, req.pw):
                         return FormattedRsp(status=RspStatus.FAIL, fail_reason=FailReason.WRONG_PW)
 
@@ -255,97 +279,103 @@ class AuthServer:
                     if self._db.delete_user(req.username):
                         return FormattedRsp(RspStatus.SUCCESS)
                     return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.DB_ERROR)
-                
+
                 # add blacklist host
                 case ReqCMD.ADD_BLACKLISTED_HOST:
                     if self._db.add_host_to_blacklist(
-                    req.username, req.blacklisted_host, req.blacklist_host_details):
+                            req.username, req.blacklisted_host, req.blacklist_host_details):
                         return FormattedRsp(RspStatus.SUCCESS)
-                    return FormattedRsp(RspStatus.FAIL,fail_reason=FailReason.DB_ERROR)
-                
+                    return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.DB_ERROR)
+
                 # delete blacklist host
                 case ReqCMD.DELETE_BLACKLISTED_HOST:
                     if self._db.delete_host_from_blacklist(
-                    req.username, req.blacklisted_host):
+                            req.username, req.blacklisted_host):
                         return FormattedRsp(RspStatus.SUCCESS)
-                    return FormattedRsp(RspStatus.FAIL,fail_reason=FailReason.DB_ERROR)
+                    return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.DB_ERROR)
 
                 # delete full blacklist
                 case ReqCMD.DELETE_ALL_BLACKLSITED:
                     if self._db.delete_blacklist(req.username):
                         return FormattedRsp(RspStatus.SUCCESS)
-                    return FormattedRsp(RspStatus.FAIL,fail_reason=FailReason.DB_ERROR)
-                
+                    return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.DB_ERROR)
+
                 # get full blacklist
                 case ReqCMD.GET_BLACKLIST:
                     bl = self._db.get_blacklist(req.username)
                     if bl or bl == {}:
                         return FormattedRsp(RspStatus.SUCCESS, blacklist=bl)
                     return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.DB_ERROR)
-                
+
                 case ReqCMD.SET_TLS_TERMINATE:
-                    tls_terminate = self._db.set_tls_terminate(req.username, req.tls_terminate)
+                    tls_terminate = self._db.set_tls_terminate(
+                        req.username, req.tls_terminate)
                     if tls_terminate:
                         return FormattedRsp(RspStatus.SUCCESS)
                     return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.DB_ERROR)
-                
+
                 case ReqCMD.GET_TLS_TERMINATE:
                     tls_terminate = self._db.get_tls_terminate(req.username)
                     if isinstance(tls_terminate, bool):
                         return FormattedRsp(RspStatus.SUCCESS, tls_terminate=tls_terminate)
-                
+
                     return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.DB_ERROR)
-                
+
                 case ReqCMD.SET_GOOGLE_REDIRECT:
-                    google_redirect = self._db.set_google_redirect(req.username, req.google_redirect)
+                    google_redirect = self._db.set_google_redirect(
+                        req.username, req.google_redirect)
                     if google_redirect:
                         return FormattedRsp(RspStatus.SUCCESS)
                     return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.DB_ERROR)
-                
+
                 case ReqCMD.GET_GOOGLE_REDIRECT:
-                    google_redirect = self._db.get_google_redirect(req.username)
+                    google_redirect = self._db.get_google_redirect(
+                        req.username)
                     if isinstance(google_redirect, bool):
                         return FormattedRsp(RspStatus.SUCCESS, google_redirect=google_redirect)
                     return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.DB_ERROR)
-                
+
                 case ReqCMD.GET_CA_CERT:
-                    ca_cert = self._read_from_file(os.path.join(CA_CERT_AND_KEY_DIR, "root_ca.crt"))
-                    db_logger.debug(f"Passed CA cert reading. Value: {ca_cert}")
+                    ca_cert = self._read_from_file(
+                        os.path.join(CA_CERT_AND_KEY_DIR, "root_ca.crt"))
+                    db_logger.debug(
+                        f"Passed CA cert reading. Value: {ca_cert}")
                     if ca_cert:
                         return FormattedRsp(RspStatus.SUCCESS, ca_cert=ca_cert)
                     return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.DISK_ERROR)
-                
+
                 case _:
-                    return FormattedRsp(RspStatus.FAIL,fail_reason=FailReason.INVALID_FORMAT)
-                
+                    return FormattedRsp(RspStatus.FAIL, fail_reason=FailReason.INVALID_FORMAT)
+
         except Exception as e:
             print(f"A DB error occured. returning FAIL: {e}")
             return FormattedRsp(status=RspStatus.FAIL, fail_reason=FailReason.DB_ERROR)
 
-        
         # Token creation
-        try: 
+        try:
             token = JWTManager.create_token(self._auth_priv_key, req.username)
             if not token:
                 return FormattedRsp(status=RspStatus.FAIL, fail_reason=FailReason.JWT_ERROR)
 
             return FormattedRsp(status=RspStatus.SUCCESS, jwt_token=token)
-        
+
         except Exception as e:
             print(f"A JWT error occured. returning FAIL: {e}")
             return FormattedRsp(status=RspStatus.FAIL, fail_reason=FailReason.JWT_ERROR)
-        
+
     def _load_priv_key(self) -> str | None:
         try:
             path = os.getenv("AUTH_SERVER_PRIVATE_KEY_FILE_PATH")
             with open(path, "r") as f:
                 data = f.read()
-            
-            db_logger.info("Successfully Loaded private key for sigining JWT tokens.")
+
+            db_logger.info(
+                "Successfully Loaded private key for sigining JWT tokens.")
             return data
 
         except Exception:
-            db_logger.critical("Could not load Auth Private Key! JWT generation will fail: {e}.", exc_info=True)
+            db_logger.critical(
+                "Could not load Auth Private Key! JWT generation will fail: {e}.", exc_info=True)
             return None
 
     def _read_from_file(self, path: str) -> str | None:
@@ -354,7 +384,7 @@ class AuthServer:
 
         :type path: str
         :param path: file path to read from.
-        
+
         :rtype: bytes | None
         :returns: file's content in str, or None if files doesnt exists, or  content couldnt be decoded.
 
@@ -366,6 +396,7 @@ class AuthServer:
         except OSError as e:
             db_logger.warning(f"Failed to read {path}: {e}", exc_info=True)
             return None
+
 
 if __name__ == "__main__":
     server = AuthServer(os.getenv("PROXY_BIND"), AUTH_SERVER_PORT)

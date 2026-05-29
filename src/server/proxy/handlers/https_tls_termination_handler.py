@@ -1,7 +1,6 @@
 # DEPARCHED - Use HttpsTlsTerminationSSL instead.
 
 
-
 import socket
 import threading
 import datetime
@@ -23,7 +22,7 @@ class HttpsTlsTerminationHandler(BaseHandler):
     """
     Implements TLS Termination. A handler to preform TLS termination
     on a given client. 
-    
+
     Acts as a Transparent Proxy.
     Intercepting the ClientHello to identify the target host (SNI).
     After that, Generating a made-on-the-fly certificate for that host using the CA.
@@ -31,8 +30,8 @@ class HttpsTlsTerminationHandler(BaseHandler):
     secure connection to the destination server. After secure tunnel with both peers,
     Relaying decrypted traffic for inspection and filtering.
     """
-    
-    def __init__(self, ca : CertificateAuthority):
+
+    def __init__(self, ca: CertificateAuthority):
         """
         Initializes the termination handler with a Certificate Authority.
 
@@ -43,6 +42,7 @@ class HttpsTlsTerminationHandler(BaseHandler):
         self._ca_authority = ca
 
     '''handles the process by routing and calling methods by order.'''
+
     def process(self, req: Request, client_socket: socket):
         """
         Executes the TLS termination. Responsible for calling various tasks:
@@ -54,7 +54,7 @@ class HttpsTlsTerminationHandler(BaseHandler):
         6. Getting Client's request
         7. Establishing a secure connection with server
         8. Relaying data bidrectionally.
-        
+
         :type req: Request
         :param req: Initial CONNECT request.
 
@@ -66,34 +66,39 @@ class HttpsTlsTerminationHandler(BaseHandler):
             self._client_socket = client_socket
             # send a 200 Connection Established response to client
             self._respond_to_client(req, 200, isConnectionEstablished=True)
-            
+
             # get ClientHello SNI
             client_hello_length = self._get_record_length()
-            client_hello_data = self._recvall(client_hello_length, msg_peek=True) # msg_peek?
+            client_hello_data = self._recvall(
+                client_hello_length, msg_peek=True)  # msg_peek?
             sni = self._extract_sni_from_client_hello(client_hello_data)
 
-            # check SNI for blacklist or malicious    
+            # check SNI for blacklist or malicious
             if self.url_manager.is_blacklisted(sni, self._username) or \
-            self.url_manager.is_malicious(sni):
+                    self.url_manager.is_malicious(sni):
                 self._respond_to_client(req, 403, addBlackListHTML=True)
-            
-            # 
+
+            #
             else:
                 # Create a 'on-the-fly' cert
-                cert_pem, priv_key_pem, root_ca_cert_pem = self._ca_authority.get_certificate_for_host(sni)
+                cert_pem, priv_key_pem, root_ca_cert_pem = self._ca_authority.get_certificate_for_host(
+                    sni)
 
                 # create a tlslite.ng object with cert and private key
-                tlslite_cert_chain, tlslite_priv_key =self._set_client_tlslite_object(cert_pem, priv_key_pem, root_ca_cert_pem)
+                tlslite_cert_chain, tlslite_priv_key = self._set_client_tlslite_object(
+                    cert_pem, priv_key_pem, root_ca_cert_pem)
 
                 # resume tls handshake
-                raw_request = self._resume_tls_conenction(tlslite_cert_chain, tlslite_priv_key)
+                raw_request = self._resume_tls_conenction(
+                    tlslite_cert_chain, tlslite_priv_key)
                 core_logger.info(raw_request)
 
                 # parse raw request into a Request obj
                 client_request = Parser.parse_request(raw_request.decode())
-                
+
                 # handshake server
-                handshake_success = self._perform_tls_hanshake_with_server(client_request)
+                handshake_success = self._perform_tls_hanshake_with_server(
+                    client_request)
 
                 if handshake_success:
                     # send first 'push'
@@ -101,42 +106,46 @@ class HttpsTlsTerminationHandler(BaseHandler):
                     # Only run relay if we actually have a secure connection
                     self._run_relay_data()
                 else:
-                    core_logger.error("Aborting relay due to failed server handshake.")
-                    self._close_sockets(self._tls_client_connection, self._tls_server_connection)
+                    core_logger.error(
+                        "Aborting relay due to failed server handshake.")
+                    self._close_sockets(
+                        self._tls_client_connection, self._tls_server_connection)
             after = datetime.datetime.now()
             core_logger.info(f"TIME IT TOOK TLS_TLSLITE-NG - {after}-{before}")
-        
-        except (ConnectionAbortedError, ConnectionResetError):
-            core_logger.info("Client Unexpectedly closed conenction. Handled gracefully.")
-        
-        finally:
-            self._close_sockets(self._tls_client_connection, self._tls_server_connection)
 
-        
-    
+        except (ConnectionAbortedError, ConnectionResetError):
+            core_logger.info(
+                "Client Unexpectedly closed conenction. Handled gracefully.")
+
+        finally:
+            self._close_sockets(self._tls_client_connection,
+                                self._tls_server_connection)
+
     # PROXY-CLIENT FUNCTIONS
-  
+
     def _resume_tls_conenction(self, tlslite_cert_chain: X509CertChain, tlslite_priv_key: Python_RSAKey):
         self._tls_client_connection = TLSConnection(self._client_socket)
         core_logger.info("past connection")
         try:
             # explicitly tell the client proxy support http/1.1
             self._tls_client_connection.handshakeServer(
-                certChain=tlslite_cert_chain, 
-                privateKey=tlslite_priv_key, 
+                certChain=tlslite_cert_chain,
+                privateKey=tlslite_priv_key,
                 alpn=[b'http/1.1']
             )
-            core_logger.info("Handshake Success! Secure TLS connection is enabled.")
+            core_logger.info(
+                "Handshake Success! Secure TLS connection is enabled.")
             # Read decrypted data
             request = self._tls_client_connection.read(self.BUFFER_SIZE)
-            core_logger.info(f"client's request after tls termination: {request}")
+            core_logger.info(
+                f"client's request after tls termination: {request}")
             return request
         except Exception as e:
-            core_logger.error(f'TLS connection failed: {e}', exc_info=True) 
-    
+            core_logger.error(f'TLS connection failed: {e}', exc_info=True)
+
     def _set_client_tlslite_object(self, cert: bytes, private_key: bytes, root_ca_cert: bytes):
         # Create tlslite-objects for storing private key and cert
-        
+
         # host certifcate
         x509_host_cert = X509()
         x509_host_cert.parse(cert.decode())
@@ -151,7 +160,6 @@ class HttpsTlsTerminationHandler(BaseHandler):
 
     # PROXY-SERVER FUNCTIONS
 
-
     def _perform_tls_hanshake_with_server(self, req: Request):
         # create socket obj
         self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -159,19 +167,21 @@ class HttpsTlsTerminationHandler(BaseHandler):
         self._server_socket.connect((req.host, 443))
         # tlslit-ng connection object
         self._tls_server_connection = TLSConnection(self._server_socket)
-        
+
         try:
             # securely hahndshake server
-            self._tls_server_connection.handshakeClientCert(serverName=req.host)
+            self._tls_server_connection.handshakeClientCert(
+                serverName=req.host)
             core_logger.info("TLS handshake with server was successful!")
             return True
         except TLSAuthenticationError:
-            core_logger.error("TLS hanshake with server failed. Server requires authentication.")
+            core_logger.error(
+                "TLS hanshake with server failed. Server requires authentication.")
             return False
         except Exception as e:
-            core_logger.error(f"TLS connection with server failed: {e}", exc_info=True)
+            core_logger.error(
+                f"TLS connection with server failed: {e}", exc_info=True)
             return False
-        
 
     # PROXY-CLIENT-SERVER FUCNTIONS
 
@@ -180,7 +190,7 @@ class HttpsTlsTerminationHandler(BaseHandler):
         Starts two concurrent threads to handle bidirectional data flow:
         - Thread 1: Client to Serve
         - Thread 2: Server to Client
-        
+
         Joins the threads and ensures sockets are cleaned up upon disconnection.
         """
         # recv from client -> send to server
@@ -204,8 +214,9 @@ class HttpsTlsTerminationHandler(BaseHandler):
         t1.join()
         t2.join()
 
-        self._close_sockets(self._tls_client_connection, self._tls_server_connection)
-    
+        self._close_sockets(self._tls_client_connection,
+                            self._tls_server_connection)
+
     def _relay_data(self, recv_socket: TLSConnection, send_socket: TLSConnection):
         """
         The worker method for relay threads. Continuously receives raw bytes 
@@ -224,13 +235,11 @@ class HttpsTlsTerminationHandler(BaseHandler):
             try:
                 data = recv_socket.read(self.BUFFER_SIZE)
                 if not data:
-                    break #connection was closed
+                    break  # connection was closed
                 send_socket.write(data)
-
 
             except Exception as e:
                 core_logger.debug(f"Neglible relay error.")
-    
 
     # -- HELPERS ---
 
@@ -238,7 +247,7 @@ class HttpsTlsTerminationHandler(BaseHandler):
         """
         Get record length of the ClientHello, without removing the
         data from the buffer.
-        
+
         :rtype: int | None
         :return: The length of the TLS record if found, otherwise None.
         """
@@ -246,7 +255,7 @@ class HttpsTlsTerminationHandler(BaseHandler):
             record_header = self._recvall(5, msg_peek=True)
             record_len = int.from_bytes(record_header[3:5], "big")
             return record_len + 5
-        
+
         except Exception as e:
             core_logger.warning("Couldn't get length ClientHello, TLS record.")
             return None
@@ -280,14 +289,14 @@ class HttpsTlsTerminationHandler(BaseHandler):
         # --Compression Methods - (dynamic) - skipped
         # --Extensions (SNI included) - (dynamic) - SNI
 
-        # Notes: 
+        # Notes:
         # --the client version part is crucial since it represnets the protcol version
         #   that the following ClientHello will be structured by (and all protocol connection from that point on).
         # --every field marked as 'dynamic' has a 1/2 bytes of length field containing length
         #   of following field data ahead in bytes
         # --basically SSl 1.0 - 3.0 and TLS 1.0-1.1 are dead and
         #  webservers reject them so this function handling structure of TLS 1.2/1.3 is completely fine.
-        
+
         # TLS record header must start with handshake type
         try:
             if len(data) < 5 or data[0] != 0x16:
@@ -299,7 +308,7 @@ class HttpsTlsTerminationHandler(BaseHandler):
             # Handshake header must be ClientHello (0x01)
             if data[pos] != 0x01:
                 return None
-            
+
             pos += 4  # Skip handshake header (type + length)
 
             # Skip: version (2), random (32)
@@ -336,20 +345,22 @@ class HttpsTlsTerminationHandler(BaseHandler):
                     offset = 2
 
                     # Parse first (usually only) server name entry
-                    name_type = ext_data[offset] # always DNS host_name
-                    name_len = int.from_bytes(ext_data[offset+1:offset+3], "big")
+                    name_type = ext_data[offset]  # always DNS host_name
+                    name_len = int.from_bytes(
+                        ext_data[offset+1:offset+3], "big")
                     hostname = ext_data[offset+3:offset+3+name_len]
                     core_logger.debug(f"SNI :{hostname.decode()}")
                     return hostname.decode()
 
                 pos += 4 + ext_len
-        
+
         except Exception as e:
-            core_logger.warning(f"Failed extracting SNI from Client Hello: {e}", exc_info=True)
-        
+            core_logger.warning(
+                f"Failed extracting SNI from Client Hello: {e}", exc_info=True)
+
         return None
-    
-    def _recvall(self, length: int, *, msg_peek = False) -> bytes:
+
+    def _recvall(self, length: int, *, msg_peek=False) -> bytes:
         """
         A helper function that ensures recieving exactly 'length' bytes from the socket.
 
@@ -365,7 +376,8 @@ class HttpsTlsTerminationHandler(BaseHandler):
         remaining_bytes = length
         while remaining_bytes > 0:
             if msg_peek:
-                chunk = self._client_socket.recv(remaining_bytes, socket.MSG_PEEK)
+                chunk = self._client_socket.recv(
+                    remaining_bytes, socket.MSG_PEEK)
             else:
                 chunk = self._client_socket.recv(remaining_bytes)
 

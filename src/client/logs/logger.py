@@ -1,2 +1,2 @@
 import logging
-client_logger =  logging.getLogger("client")
+client_logger = logging.getLogger("client")

@@ -4,6 +4,8 @@ from yarl import URL
 import urllib.parse
 from ...db.sql_auth_manager import SQLAuthManager
 from ...logs.loggers import core_logger
+
+
 class UrlManager:
     """
     Manages URL-related safety logic for the proxy, including blacklist 
@@ -12,9 +14,9 @@ class UrlManager:
     """
 
     db = SQLAuthManager()
-    
+
     @staticmethod
-    def is_blacklisted(url_list: list[str] , username: str) -> bool:
+    def is_blacklisted(url_list: list[str], username: str) -> bool:
         """
         Checks if a given URL matches any host in the proxy's blacklist, using a db query for 
         the blacklist of a specific user.
@@ -53,7 +55,7 @@ class UrlManager:
             # not bl - db error occured. assuming it is not blacklisted.
             core_logger.debug(f"Blacklst was empty. Returning False")
             return False
-        
+
         for url in url_list:
             if url.startswith("www."):
                 url = url[4:]
@@ -61,7 +63,7 @@ class UrlManager:
             core_logger.debug(f"Current URL checked: {url}")
             for bl in blacklist.keys():
                 core_logger.debug(f"BL -> {bl} URL -> {url}")
-                
+
                 if url.startswith(bl):
                     # 5 possible edge-cases:
                     # 1. BL= x.com, URL = x.com => returns blacklisted
@@ -70,10 +72,10 @@ class UrlManager:
                     # 4. BL= x.com/*, URL = x.com/* => returns blacklisted
                     # 5. BL= x.com/hello (long), URL = x.com/yes (short) => returns NOT blacklisted
                     if len(url) == len(bl) or url[len(bl)] in ['/', '\\', '?', '#']:
-                        core_logger.debug(f"BL -> {bl} URL -> {url} matched. Returning blacklisted")
+                        core_logger.debug(
+                            f"BL -> {bl} URL -> {url} matched. Returning blacklisted")
                         return True
             return False
-    
 
     @staticmethod
     def is_malicious(url: str) -> bool:
@@ -88,7 +90,7 @@ class UrlManager:
         :returns: True if the URL is classifed dangerous, False otherwise.
         """
         return False
-    
+
     @staticmethod
     def get_google_url(search_str: str) -> str:
         """
@@ -109,12 +111,14 @@ class UrlManager:
             if decoded_str.startswith("xn--"):
                 # remove any spaces encoded
                 search_str.replace("%20", "")
-                
+
                 # Decode with punycode
                 search_str = search_str.encode().decode("idna")
-                search_query = URL("https://www.google.com/search").with_query(q=search_str)
+                search_query = URL(
+                    "https://www.google.com/search").with_query(q=search_str)
                 logging.info(f"final - {search_query.query_string}")
                 return str(search_query)
-            return 
+            return
         except Exception as e:
-            raise Exception(f"Failed generating google search URL for {search_str} - {e}") from e
+            raise Exception(
+                f"Failed generating google search URL for {search_str} - {e}") from e

@@ -6,17 +6,18 @@ from ..structures.response import Response
 from ..structures.connection_status import ConnectionStatus
 from ...logs.loggers import core_logger
 
+
 class HttpHandler(BaseHandler):
     '''Handles HTTP requests'''
 
-    def process(self, req: Request, client_socket : socket, googleSearchRedirect: bool):
+    def process(self, req: Request, client_socket: socket, googleSearchRedirect: bool):
         """
         Handles a client request based on URI requested.
         - URI blacklisted/malicious -> sends back to client 
         403 "Forbbiden" response, with customized HTML.
         - URI unresolved (DNS failure)  -> sends back a 200
         redirect response or 502 "Bad Gateaway". 
-        
+
         :type req: Request
         :param req: containing host and port's server to connect to.
 
@@ -29,42 +30,48 @@ class HttpHandler(BaseHandler):
 
             # Blacklist and malice checks
             if self.url_manager.is_blacklisted([url], self._username):
-                self._respond_to_client(req, self._client_socket, 403, addBlackListLabelHTML=True)
+                self._respond_to_client(
+                    req, self._client_socket, 403, addBlackListLabelHTML=True)
                 return
-            
+
             # if self.url_manager.is_malicious(url):
             #     self._respond_to_client(req, self._client_socket, 403, addMaliciousLabelHTML=True)
             #     return
 
             # Connection status management
-            conn_status = self._connect_to_server(req, googleSearchRedirect=googleSearchRedirect)
+            conn_status = self._connect_to_server(
+                req, googleSearchRedirect=googleSearchRedirect)
 
             match conn_status:
                 case ConnectionStatus.SUCCESS:
                     self._forward_request(req)
                     self.forward_response()
-                
+
                 case ConnectionStatus.REDIRECT_REQUIRED:
-                    core_logger.debug(f"Connection failed for {req.host}. Redirecting to Google.")
-                    google_search_url = self.url_manager.get_google_url(req.host)
-                    self._respond_to_client(req, self._client_socket, 200, redirectURL=google_search_url)
-                
+                    core_logger.debug(
+                        f"Connection failed for {req.host}. Redirecting to Google.")
+                    google_search_url = self.url_manager.get_google_url(
+                        req.host)
+                    self._respond_to_client(
+                        req, self._client_socket, 200, redirectURL=google_search_url)
+
                 case ConnectionStatus.CONNECT_FAILURE:
-                    core_logger.info(f"Connection failed for {req.host}. Sending 502.")
-                    self._respond_to_client(req, self._client_socket, 502, addBlackListLabelHTML=True)
+                    core_logger.info(
+                        f"Connection failed for {req.host}. Sending 502.")
+                    self._respond_to_client(
+                        req, self._client_socket, 502, addBlackListLabelHTML=True)
         except socket.timeout:
             core_logger.info("Connection timed-out. handled gracefully.")
         except Exception as e:
             core_logger.critical(f"Handler crashed: {e}", exc_info=True)
             # Safe fallback - try to send to client 502 "Bad Gateaway"
             try:
-                self._respond_to_client(req, self._client_socket, 502, addBlackListLabelHTML=True)
+                self._respond_to_client(
+                    req, self._client_socket, 502, addBlackListLabelHTML=True)
             except:
-                self._close_sockets(self._client_socket, self._server_socket) # Close connection
+                self._close_sockets(self._client_socket,
+                                    self._server_socket)  # Close connection
 
-
- 
-          
     def forward_response(self):
         '''
         forwards raw data (response) from the server back to the client.

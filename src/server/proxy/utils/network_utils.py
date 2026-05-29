@@ -1,9 +1,10 @@
-import socket 
+import socket
 import logging
 import ipaddress
 
+
 class NetworkUtils:
-    
+
     @staticmethod
     def is_valid_ip(ip_addr: str) -> bool:
         """
@@ -19,7 +20,7 @@ class NetworkUtils:
             return False
 
     @staticmethod
-    def get_hostname_from_ip(ip_addr : str) -> str | None:
+    def get_hostname_from_ip(ip_addr: str) -> str | None:
         '''
         Attempts to find an IP's matching hostname.
 
@@ -40,15 +41,17 @@ class NetworkUtils:
             logging.debug(f"No matches found for {ip_addr}")
             return None
         except Exception as e:
-            logging.warning(f"DNS hostname lookup failed for {ip_addr}" ,exc_info=True)
+            logging.warning(
+                f"DNS hostname lookup failed for {ip_addr}", exc_info=True)
         return None
 
     @staticmethod
-    def get_ip_obj(ip : str) -> ipaddress.IPv4Address | ipaddress.IPv6Address | ipaddress.IPv4Network | ipaddress.IPv6Network | None:
+    def get_ip_obj(ip: str) -> ipaddress.IPv4Address | ipaddress.IPv6Address | ipaddress.IPv4Network | ipaddress.IPv6Network | None:
         try:
             return ipaddress.ip_address(ip)
         except:
             return None
+
 
 if __name__ == "__main__":
     print(NetworkUtils.get_hostname_from_ip('8.8.8.8'))

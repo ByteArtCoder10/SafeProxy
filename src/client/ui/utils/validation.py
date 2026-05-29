@@ -4,7 +4,7 @@ import flet as ft
 class AuthValidatior:
 
     @staticmethod
-    def _validate_fields_length(u : str, p : str, user_input: str, pw_input: str) -> bool:
+    def _validate_fields_length(u: str, p: str, user_input: str, pw_input: str) -> bool:
         """
         :param u: username
         :param p: password
@@ -15,7 +15,7 @@ class AuthValidatior:
             user_input.error_text = "Must be minimum 3 chars"
             valid = False
         elif len(u) > 30:
-            user_input.error_text = "Must be maximum 30 chars" 
+            user_input.error_text = "Must be maximum 30 chars"
             valid = False
 
         if len(p) < 5:

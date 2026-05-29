@@ -6,10 +6,12 @@ import threading
 from ..logs.loggers import db_logger
 from .password_hasher import PassswordHasher
 
+
 class SQLAuthManager:
     """
 
     """
+
     def __init__(self):
         '''
         Defines where to save the data
@@ -19,8 +21,9 @@ class SQLAuthManager:
 
             db_path = os.getenv("DB_AUTH_TABLE_PATH")
             self.conn = sqlite3.connect(db_path, check_same_thread=False)
-            self.conn.execute("PRAGMA journal_mode=WAL;") # lets reading and writing ewithout locking the file
-            self._thread_local= threading.local()
+            # lets reading and writing ewithout locking the file
+            self.conn.execute("PRAGMA journal_mode=WAL;")
+            self._thread_local = threading.local()
             # each handler (HTTPHandler, HttpsTlsTerminationHnalder, TcpHandler) uses the DB
             # to decide what to do => TLS terminate/TCP handler, blacklist fetching from DB, and 504 vs redirect
             # This creates an error - differnet handlers (on different threads) use the same cursor
@@ -29,7 +32,6 @@ class SQLAuthManager:
             # 1. Lock threading the DB - makes the proxy really slow and one-threaded instead of a concurrent one
             # 2. creating a differnet cursor (not connection!) for each thread - This might be a good solution
             # as it allows DB access conncurrenty for differnet threads.
-            
 
             self.c.execute('''
                 CREATE TABLE IF NOT EXISTS users (
@@ -42,12 +44,13 @@ class SQLAuthManager:
                 google_redirect INTEGER DEFAULT 0                   
                 )
                 '''
-            )
+                           )
 
             self.conn.commit()
             db_logger.info(f"DB initalized successfully.")
         except Exception as e:
-            db_logger.critical(f"Couldn't intialize/access table: {e}", exc_info=True)
+            db_logger.critical(
+                f"Couldn't intialize/access table: {e}", exc_info=True)
 
     @property
     def c(self) -> sqlite3.Cursor:
@@ -55,10 +58,10 @@ class SQLAuthManager:
         if not hasattr(self._thread_local, "cursor"):
             self._thread_local.cursor = self.conn.cursor()
         return self._thread_local.cursor
-    
+
     # --- AUTH FUNCTIONS ---
 
-    def save_user(self, username  : str, password : str):
+    def save_user(self, username: str, password: str):
         '''
         Saves a new user in the DB
         '''
@@ -67,48 +70,51 @@ class SQLAuthManager:
             if self.username_exist(username):
                 db_logger.info('Username already exists.')
                 return
-            
+
             salt, pw_hash = PassswordHasher.hash_new_password(password)
             db_logger.debug(f'Hashed {username}\'s password.')
-            
+
             # Along with the pw, salt etc.. insert default prefrences (blacklist, tls_terminate, google_redirect)
             self.c.execute(
-            "INSERT INTO users \
+                "INSERT INTO users \
             (username, password, salt, blacklist, tls_terminate, google_redirect) \
             VALUES (?, ?, ?, ?, ?, ?)",
-            (username, pw_hash, salt, json.dumps({}), 1, 1)
+                (username, pw_hash, salt, json.dumps({}), 1, 1)
             )
 
             self.conn.commit()
             db_logger.info(f"Added {username} to DB.")
         except Exception as e:
             db_logger.error(f"Failed saving {username} to DB.", exc_info=True)
-        
-    def username_exist(self, username : str) -> bool:
+
+    def username_exist(self, username: str) -> bool:
         '''
         Checks if the username exists in the sql table
         '''
         try:
-            self.c.execute("SELECT 1 FROM users WHERE username = ? LIMIT 1", (username,))
+            self.c.execute(
+                "SELECT 1 FROM users WHERE username = ? LIMIT 1", (username,))
             # fetchone() and not fetchall() since:
             # 1. In case no username found fetchone returns None while all() return []
             # 2. In case username found, fetchone returns ('username', ) while fetchall retruns [(username, )] as a tuple.
             # we only need to know IF a username exists and it's value. Therefore, fetchone
-            # is more suitable for this case. 
-            return self.c.fetchone() is not None 
-        
+            # is more suitable for this case.
+            return self.c.fetchone() is not None
+
         except Exception as e:
-            db_logger.error(f"Falied to check if {username} exists: {e}", exc_info=True)
+            db_logger.error(
+                f"Falied to check if {username} exists: {e}", exc_info=True)
             return False
 
-    def check_psssword(self, username : str, password : str) -> bool:
+    def check_psssword(self, username: str, password: str) -> bool:
         """
         Checks if the password is correct.
         """
         try:
             self.print_table()
             # fetch password
-            self.c.execute("SELECT password,salt FROM users WHERE username = ? LIMIT 1", (username,))
+            self.c.execute(
+                "SELECT password,salt FROM users WHERE username = ? LIMIT 1", (username,))
             resp = self.c.fetchone()
 
             if resp is None:
@@ -116,18 +122,20 @@ class SQLAuthManager:
 
             hashed_password, salt = resp
             return PassswordHasher.is_correct_password(salt, password, hashed_password)
-        
+
         except Exception as e:
-            db_logger.error(f"Falied to check {username}'s password: {e}", exc_info=True)
+            db_logger.error(
+                f"Falied to check {username}'s password: {e}", exc_info=True)
             return False
 
-    def delete_user(self, username : str) -> bool:
+    def delete_user(self, username: str) -> bool:
         try:
-            self.c.execute("DELETE FROM users where username = ?", (username, ))
+            self.c.execute(
+                "DELETE FROM users where username = ?", (username, ))
             self.conn.commit()
             db_logger.info(f"Deleted {username} successfully.")
             return True
-        
+
         except Exception as e:
             db_logger.error(f"Falied to delete {username}: {e}", exc_info=True)
             return False
@@ -143,54 +151,62 @@ class SQLAuthManager:
                 row_str = ' | '.join(str(col) for col in user)
                 table_str += row_str + '\n'
             table_str += "----------END TABLE------------"
-        
+
             db_logger.debug(table_str)
         except Exception as e:
-            db_logger.error(f"Falied printing user's table: {e}", exc_info=True)
+            db_logger.error(
+                f"Falied printing user's table: {e}", exc_info=True)
 
     # --- BLACKLIST FUNCTIONS ---
 
-    def get_blacklist(self, username : str) -> dict | None:
+    def get_blacklist(self, username: str) -> dict | None:
         try:
-            self.c.execute("SELECT blacklist FROM users WHERE username = ?", (username,))
+            self.c.execute(
+                "SELECT blacklist FROM users WHERE username = ?", (username,))
             blacklist = json.loads(self.c.fetchone()[0])
             if blacklist is None:
-                db_logger.warning(f"User '{username}' not found in DB when fetching blacklist. Returning empty.")
+                db_logger.warning(
+                    f"User '{username}' not found in DB when fetching blacklist. Returning empty.")
                 return {}
-            
+
             # db_logger.debug(f"CMD: get_blacklist. {username}'s Blacklist fetched: {blacklist}")
             return blacklist
         except Exception as e:
-            db_logger.error(f"Failed geting {username}'s blacklist: {e}", exc_info=True)
+            db_logger.error(
+                f"Failed geting {username}'s blacklist: {e}", exc_info=True)
             return None
 
-    def _set_blacklist(self, username: str, bl : dict):
+    def _set_blacklist(self, username: str, bl: dict):
         try:
             json_bl = json.dumps(bl)
-            self.c.execute("UPDATE users SET blacklist = ? WHERE username = ?", (json_bl, username))
+            self.c.execute(
+                "UPDATE users SET blacklist = ? WHERE username = ?", (json_bl, username))
             self.conn.commit()
         except Exception:
             raise
-  
-    def add_host_to_blacklist(self, username :str, blacklisted_host: str, details: str) -> bool:
+
+    def add_host_to_blacklist(self, username: str, blacklisted_host: str, details: str) -> bool:
         try:
             bl = self.get_blacklist(username)
-            bl[blacklisted_host] = details # if host already in there -> update reason, else adds new key and value to the dict
+            # if host already in there -> update reason, else adds new key and value to the dict
+            bl[blacklisted_host] = details
             self._set_blacklist(username, bl)
             return True
         except Exception as e:
-            print(f"[DB] Failed updating/adding host to blacklist of a user: {e}")
+            print(
+                f"[DB] Failed updating/adding host to blacklist of a user: {e}")
             return False
 
-    def delete_host_from_blacklist(self, username : str, to_delete_host : str) -> bool:
+    def delete_host_from_blacklist(self, username: str, to_delete_host: str) -> bool:
         try:
             bl = self.get_blacklist(username)
             bl.pop(to_delete_host)
             self._set_blacklist(username, bl)
             return True
         except KeyError as e:
-            print(f"[DB] Failed deleting host, since it doesnt exist in the the DB: {e}")
-            return True # allegedly removed
+            print(
+                f"[DB] Failed deleting host, since it doesnt exist in the the DB: {e}")
+            return True  # allegedly removed
         except Exception as e:
             print(f"[DB] Failed deleting host: {e}")
             return False
@@ -201,24 +217,27 @@ class SQLAuthManager:
             return True
         except Exception as e:
             print(f"[DB] Failed deleting blacklist: {e}")
-            return False     
-        
+            return False
+
     # --- TLS TERMINATE FUNCTIONS ---
 
-    def set_tls_terminate(self, username: str, tls_terminate : bool = False) -> bool:
+    def set_tls_terminate(self, username: str, tls_terminate: bool = False) -> bool:
         try:
             int_value = int(tls_terminate)
-            self.c.execute("UPDATE users SET tls_terminate = ? WHERE username = ?", (int_value, username))
+            self.c.execute(
+                "UPDATE users SET tls_terminate = ? WHERE username = ?", (int_value, username))
             self.conn.commit()
-            db_logger.info(f"Successfully set {username}'s tls terminate to {int_value}.")
+            db_logger.info(
+                f"Successfully set {username}'s tls terminate to {int_value}.")
             return True
         except Exception as e:
-            db_logger.error(f"Failed setting {username}'s tls_terminate value to {tls_terminate}: {e}", exc_info=True)
-            return False        
+            db_logger.error(
+                f"Failed setting {username}'s tls_terminate value to {tls_terminate}: {e}", exc_info=True)
+            return False
 
     def get_tls_terminate(self, username: str) -> bool | None:
         """
-        
+
         :param username: the usernmae's tls_terminate value to check
         :type username: str
 
@@ -227,7 +246,8 @@ class SQLAuthManager:
 
         """
         try:
-            self.c.execute("SELECT tls_terminate FROM users WHERE username = ? LIMIT 1", (username, ))
+            self.c.execute(
+                "SELECT tls_terminate FROM users WHERE username = ? LIMIT 1", (username, ))
             tls_terminate_tuple = self.c.fetchone()
             if not tls_terminate_tuple:
                 return None
@@ -235,25 +255,29 @@ class SQLAuthManager:
             # db_logger.info(f"Successfully fetched {username}'s is_terminate value: {tls_terminate}.")
             return tls_terminate
         except Exception as e:
-            db_logger.error(f"Failed fetching {username}'s is_terminate value: {e}", exc_info=True)
+            db_logger.error(
+                f"Failed fetching {username}'s is_terminate value: {e}", exc_info=True)
             return None
 
     # --- GOOGLE REDIRECT FUNCTIONS ---
 
-    def set_google_redirect(self, username: str, google_redirect : bool = True) -> bool:
+    def set_google_redirect(self, username: str, google_redirect: bool = True) -> bool:
         try:
             int_value = int(google_redirect)
-            self.c.execute("UPDATE users SET google_redirect = ? WHERE username = ?", (int_value, username))
+            self.c.execute(
+                "UPDATE users SET google_redirect = ? WHERE username = ?", (int_value, username))
             self.conn.commit()
-            db_logger.info(f"Successfully set {username}'s google_redirect to {int_value}.")
+            db_logger.info(
+                f"Successfully set {username}'s google_redirect to {int_value}.")
             return True
         except Exception as e:
-            db_logger.error(f"Failed setting {username}'s google_redirect value to {google_redirect}: {e}", exc_info=True)
+            db_logger.error(
+                f"Failed setting {username}'s google_redirect value to {google_redirect}: {e}", exc_info=True)
             return False
 
     def get_google_redirect(self, username: str, ) -> bool | None:
         """
-        
+
         :param username: the usernmae's google_redirect value to check
         :type username: str
 
@@ -262,7 +286,8 @@ class SQLAuthManager:
 
         """
         try:
-            self.c.execute("SELECT google_redirect FROM users WHERE username = ? LIMIT 1", (username, ))
+            self.c.execute(
+                "SELECT google_redirect FROM users WHERE username = ? LIMIT 1", (username, ))
             google_redirect_tuple = self.c.fetchone()
             if not google_redirect_tuple:
                 return None
@@ -270,8 +295,10 @@ class SQLAuthManager:
             # db_logger.info(f"Successfully fetched {username}' google_redirect value: {google_redirect}.")
             return google_redirect
         except Exception as e:
-            db_logger.error(f"Failed fetching {username}'s google_redirect value: {e}", exc_info=True)
+            db_logger.error(
+                f"Failed fetching {username}'s google_redirect value: {e}", exc_info=True)
             return None
+
 
 if __name__ == "__main__":
 
@@ -293,7 +320,7 @@ if __name__ == "__main__":
     # db.print_table()
 
     # test blacklist funcs
-    db= SQLAuthManager()
+    db = SQLAuthManager()
     db.delete_user("aaaaa")
     db.print_table()
     db.save_user("aaaaa", "aaaaa")

@@ -9,7 +9,8 @@ from ..structures.response import Response
 from ..structures.connection_status import ConnectionStatus
 from ..security.url_manager import UrlManager
 from ...logs.loggers import core_logger
-        
+
+
 class BaseHandler(ABC):
     """
     An abstract base class that defines the core interface and shared utility 
@@ -18,10 +19,10 @@ class BaseHandler(ABC):
 
     :var Optional[socket] client_socket: 
     Socket that will be used to communicate with the client.
-    
+
     :var Optional[socket] server_socket: 
     Socket that will be used to communicate with the server.
-    
+
     :var UrlManager url_manager: 
     Helper field used for URL Blacklist and malice checks, as well as redirect URLS creations.
 
@@ -29,10 +30,10 @@ class BaseHandler(ABC):
     Explaination of edge-cases of the HTTPS handlers:
     HttpTcpTunnel - 
         Situation: client x sends a CONNECT request to te proxy
-        
+
         1. Client unauthorized - in order to use the proxy, a client must verify themselves in every request sent.
         this is done using JWT tokens, sent as the content of a header in the HTTP request.
-        
+
         if the client is unauthorized  - the proxy has 2 options:
             a. Continue With TLS termination - in order to show a custom "Unautherized use of the proxy. pls login/signup via the desktop app".
             b. Wait for HTTP Fallback - many browsers, i assume (chrome for sure) use a fallback mechanisem - if a proxy/webserver
@@ -65,11 +66,10 @@ class BaseHandler(ABC):
     def __init__(self):
         self._client_socket = None
         self._server_socket = None
-        self._username : str | None = None
+        self._username: str | None = None
         self.url_manager = UrlManager
 
-        
-    def handle(self, req: Request, client_socket: socket, username : str, google_redirect : bool):
+    def handle(self, req: Request, client_socket: socket, username: str, google_redirect: bool):
         """
         The primary entry point for the handler. Responsible for handling the request 
         by calling the concrete 'process' implementation.
@@ -90,8 +90,8 @@ class BaseHandler(ABC):
             # self.create_logger(req, client_socket)
             return self.process(req, client_socket, google_redirect)
         except Exception as e:
-            core_logger.critical(f"Client's Handler Crashed. {e}", exc_info=True)
-        
+            core_logger.critical(
+                f"Client's Handler Crashed. {e}", exc_info=True)
 
     # def create_logger(self, req, client_socket):
     #     # 1. Identify the user
@@ -104,11 +104,11 @@ class BaseHandler(ABC):
     #         core_logger.info(f"New request to {req.host} from {addr}:{port}")
     #     except Exception as e:
     #         raise ConnectionError(f"Failed to load connection logger. {e}") from e
-    
+
     @abstractmethod
-    def process(self, req : Request, client_socket : socket.socket | ssl.SSLSocket, googleSearchRedirect: bool):
+    def process(self, req: Request, client_socket: socket.socket | ssl.SSLSocket, googleSearchRedirect: bool):
         return NotImplemented
-    
+
     def _connect_to_server(self, req: Request, googleSearchRedirect: bool) -> ConnectionStatus:
         """
         Tries to establish an un-encrypted connection with server.
@@ -124,26 +124,28 @@ class BaseHandler(ABC):
 
         """
         try:
-            self._server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self._server_socket.settimeout(5) # if server doesn't respond in 5s, terminate conenction
+            self._server_socket = socket.socket(
+                socket.AF_INET, socket.SOCK_STREAM)
+            # if server doesn't respond in 5s, terminate conenction
+            self._server_socket.settimeout(5)
             self._server_socket.connect((req.host, req.port))
 
             return ConnectionStatus.SUCCESS
-        
+
         # DNS resolution failed / other Errors -> redirect/send 502
         except Exception:
             if googleSearchRedirect:
-                return ConnectionStatus.REDIRECT_REQUIRED # Redirect to google search
-            
+                return ConnectionStatus.REDIRECT_REQUIRED  # Redirect to google search
+
         return ConnectionStatus.CONNECT_FAILURE
-    
+
     def _forward_request(self, req: Request):
         """
         Arranges and transmits an HTTP request to the server.
 
         :type req: Request
         :param req: The request object to be forwarded.
-        
+
         :raises TimeoutError: If the server socket times out during transmission.
         :raises Exception: For general transmission failures.
         """
@@ -151,21 +153,21 @@ class BaseHandler(ABC):
             raw_req = req.to_raw()
             self._server_socket.sendall(raw_req)
         except socket.timeout as e:
-            raise TimeoutError(f"Connection timed-out while trying to forward request: {e}") from e
+            raise TimeoutError(
+                f"Connection timed-out while trying to forward request: {e}") from e
         except Exception as e:
             raise Exception(f"Forwarding request failed: {e}") from e
 
     def _respond_to_client(
-        self,
-        req: Request,
-        client_socket : socket.socket | ssl.SSLSocket,
-        status_code: int,
-        *,
-        isConnectionEstablished : bool=False,
-        redirectURL : str | None =None,
-        addBlackListLabelHTML : bool =False,
-        addMaliciousLabelHTML: bool =False):
-
+            self,
+            req: Request,
+            client_socket: socket.socket | ssl.SSLSocket,
+            status_code: int,
+            *,
+            isConnectionEstablished: bool = False,
+            redirectURL: str | None = None,
+            addBlackListLabelHTML: bool = False,
+            addMaliciousLabelHTML: bool = False):
         """
         Constructs and sends an HTTP response back to the client. This method 
         handles various proxy scenarios including tunnel confirmation, 
@@ -206,7 +208,7 @@ class BaseHandler(ABC):
                 reason="Connection Established",
                 raw_connect=True
             )
-        
+
         elif redirectURL and status_code == 200:
             response = Response(
                 req.http_version,
@@ -226,7 +228,6 @@ class BaseHandler(ABC):
         except Exception as e:
             raise ConnectionError(f"Responding to client failed: {e}") from e
 
-    
     def _close_sockets(self, sock1: socket.socket | ssl.SSLSocket, sock2: socket.socket | ssl.SSLSocket):
         """
         Safely closes both the client and server sockets to release system 

@@ -6,12 +6,14 @@ from ..logs.logging_manager import LoggingManager
 from ..core.authentication.auth_handler import AuthHandler
 from ..client_constants import PROXY_SERVER_IP
 from ...file_ensure_util import EnsureDirsExistsUtil
+
+
 def main(page: ft.Page):
 
     page.title = "SafeProxy Manager"
     page.window.maximized = True
     page.padding = 0
-    page.spacing = 0  
+    page.spacing = 0
 
     page.theme = ft.Theme(
         # AI color scheme
@@ -19,25 +21,25 @@ def main(page: ft.Page):
             # Main Branding
             primary="#3c49f2",
             on_primary="#ffffff",
-            primary_container="#e0e2fe", # Very light blue for active states/hover
+            primary_container="#e0e2fe",  # Very light blue for active states/hover
             on_primary_container="#000d61",
 
             # Secondary (Used for less prominent actions/chips)
-            secondary="#565fe4", 
+            secondary="#565fe4",
             on_secondary="#ffffff",
             secondary_container="#dbe0ff",
             on_secondary_container="#001257",
 
             # Tertiary (Accents like 'Success' or 'Gold' highlights)
-            tertiary="#006a6a", 
+            tertiary="#006a6a",
             on_tertiary="#ffffff",
 
             # Background & Surfaces (The Dribbble Look)
             surface="#F4F5F7",       # Page Background
             on_surface="#1a1c1e",    # Main Text
-            surface_variant="#ffffff", # Card/Container Backgrounds
-            on_surface_variant="#44474e", # Dimmed text / labels
-            
+            surface_variant="#ffffff",  # Card/Container Backgrounds
+            on_surface_variant="#44474e",  # Dimmed text / labels
+
             # Outlines & Borders
             outline="#dfdde9",       # Borders for TextFields and Cards
             outline_variant="#c4c6d0",
@@ -50,34 +52,32 @@ def main(page: ft.Page):
             surface_tint="#dfe1f7",
         ),
         visual_density=ft.VisualDensity.COMFORTABLE,
-        )
+    )
 
     page.theme_mode = ft.ThemeMode.LIGHT
 
-    
     # logging
     LoggingManager.setup_logging()
-    
+
     # auth handler
     set_backend(page)
-    
 
     router = ViewRouter(page)
-    
+
     # Start login page
     page.go("/")
 
-def set_backend(page : ft.Page):
+
+def set_backend(page: ft.Page):
     # create essentail folders if not already created
     EnsureDirsExistsUtil.handle_dirs_exist()
     if not hasattr(page, "auth_handler"):
-    # connect to auth-server
-        page.auth_handler =  AuthHandler(PROXY_SERVER_IP)
+        # connect to auth-server
+        page.auth_handler = AuthHandler(PROXY_SERVER_IP)
         page.auth_handler.connect()
-
 
 
 if __name__ == "__main__":
 
-    logging.basicConfig(level=logging.INFO) # flet logging system
+    logging.basicConfig(level=logging.INFO)  # flet logging system
     ft.app(target=main)

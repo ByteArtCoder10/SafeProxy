@@ -1,11 +1,12 @@
 import logging
-import os 
+import os
 import datetime
 import shutil
 import sys
-from ..server_constants import LOG_FORMAT,CORE_MAIN_LOG_FILE_PATH, \
-DB_MAIN_LOG_FILE_PATH, CORE_CLIENTS_LOG_DIR_PATH
+from ..server_constants import LOG_FORMAT, CORE_MAIN_LOG_FILE_PATH, \
+    DB_MAIN_LOG_FILE_PATH, CORE_CLIENTS_LOG_DIR_PATH
 from .proxy_context import ProxyContext
+
 
 class LoggingManager():
     """
@@ -25,31 +26,31 @@ class LoggingManager():
         UI logs, and DB logs. 
         """
         try:
-            
+
             LoggingManager.create_log_files_if_not()
             LoggingManager.cleanup_client_and_main_logs()
-            
+
             # set root logger level
             root_logger = logging.getLogger()
             root_logger.setLevel(logging.DEBUG)
-            formatter = logging.Formatter(LOG_FORMAT) # global formatter
+            formatter = logging.Formatter(LOG_FORMAT)  # global formatter
 
             # Create Loggers
             core_logger = logging.getLogger("proxy.core")
             db_logger = logging.getLogger("proxy.db")
 
-            # !propogate 
+            # !propogate
             core_logger.propagate = False
             db_logger.propagate = False
-
 
             # Console (sys.stdout)
             console_handler = logging.StreamHandler(sys.stdout)
             console_handler.setFormatter(formatter)
-            core_logger.addHandler(console_handler) # REQUIRES CHNAGE
+            core_logger.addHandler(console_handler)  # REQUIRES CHNAGE
 
             # Main core log file - (core.log)
-            core_handler = logging.FileHandler(CORE_MAIN_LOG_FILE_PATH, mode="w")
+            core_handler = logging.FileHandler(
+                CORE_MAIN_LOG_FILE_PATH, mode="w")
             core_handler.setFormatter(formatter)
             core_handler.addFilter(MainFilter())
             core_logger.addHandler(core_handler)
@@ -64,10 +65,11 @@ class LoggingManager():
             db_handler = logging.FileHandler(DB_MAIN_LOG_FILE_PATH)
             db_handler.setFormatter(formatter)
             db_logger.addHandler(db_handler)
-        
+
         except Exception as e:
-            print(f"CRITICAL ERROR: could not intalize logging system: {e}", file=sys.stderr)
-    
+            print(
+                f"CRITICAL ERROR: could not intalize logging system: {e}", file=sys.stderr)
+
     @staticmethod
     def cleanup_client_and_main_logs():
         """
@@ -77,19 +79,21 @@ class LoggingManager():
         try:
 
             if os.path.exists(CORE_CLIENTS_LOG_DIR_PATH):
-                    for dirname in os.listdir(CORE_CLIENTS_LOG_DIR_PATH):
-                        dir_path = os.path.join(CORE_CLIENTS_LOG_DIR_PATH, dirname)
-                        shutil.rmtree(dir_path)
-            
+                for dirname in os.listdir(CORE_CLIENTS_LOG_DIR_PATH):
+                    dir_path = os.path.join(CORE_CLIENTS_LOG_DIR_PATH, dirname)
+                    shutil.rmtree(dir_path)
+
             for path in [
-                CORE_MAIN_LOG_FILE_PATH,
-                DB_MAIN_LOG_FILE_PATH]:
+                    CORE_MAIN_LOG_FILE_PATH,
+                    DB_MAIN_LOG_FILE_PATH]:
                 if os.path.exists(path):
                     with open(path, 'w') as f:
-                        pass # delete the contents of it
-    
+                        pass  # delete the contents of it
+
         except OSError as e:
-            print(f"NON-CRITICAL ERROR: Failed to cleanup client logs: {e}", file=sys.stderr)
+            print(
+                f"NON-CRITICAL ERROR: Failed to cleanup client logs: {e}", file=sys.stderr)
+
     @staticmethod
     def create_log_files_if_not():
         try:
@@ -99,18 +103,22 @@ class LoggingManager():
                     with open(log_file, "w"):
                         pass
         except Exception as e:
-            print(f"CRITICAL ERROR: Failed to create log files: {e}", file=sys.stderr)
+            print(
+                f"CRITICAL ERROR: Failed to create log files: {e}", file=sys.stderr)
 
-            
-word_list = ["200 Connection established","get SNI","get Cert","Load client's cert to SSL","Wrap socket with SSLSocket","Resume TLS connection and get request","connect to server - TLS handsake","send request to server","Relay data", "OVERALL TIME"]
-time_list = [datetime.timedelta(), datetime.timedelta(), datetime.timedelta(), datetime.timedelta(), datetime.timedelta(), datetime.timedelta(), datetime.timedelta(), datetime.timedelta(), datetime.timedelta(), datetime.timedelta()]
-count_list : list[int] = [0,0,0,0,0,0,0,0,0, 0]
+
+word_list = ["200 Connection established", "get SNI", "get Cert", "Load client's cert to SSL", "Wrap socket with SSLSocket",
+             "Resume TLS connection and get request", "connect to server - TLS handsake", "send request to server", "Relay data", "OVERALL TIME"]
+time_list = [datetime.timedelta(), datetime.timedelta(), datetime.timedelta(), datetime.timedelta(), datetime.timedelta(
+), datetime.timedelta(), datetime.timedelta(), datetime.timedelta(), datetime.timedelta(), datetime.timedelta()]
+count_list: list[int] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
 
 class DynamicPerClientFileHandler(logging.Handler):
     """
     A specialized logging handler that routes log records to files based on 
     the active thread's vars (ProxyContext -> host, IP, Port).
-    
+
     The handlers captures logs from a thread before the host could be determined - 
     no request proccessed and parsed. Such file recieves the prefix "PENDING", and
     after a host is accoiated with the client, host's attribute of thread_vars is
@@ -122,7 +130,8 @@ class DynamicPerClientFileHandler(logging.Handler):
         try:
             os.makedirs(CORE_CLIENTS_LOG_DIR_PATH, exist_ok=True)
         except OSError as e:
-            print(f"CRITICAL ERROR: per-client initialization failed: {e}", file=sys.stderr)
+            print(
+                f"CRITICAL ERROR: per-client initialization failed: {e}", file=sys.stderr)
 
     def emit(self, record: logging.LogRecord):
         """
@@ -137,8 +146,8 @@ class DynamicPerClientFileHandler(logging.Handler):
             if isinstance(record.msg, str) and record.msg.startswith("TIMECHECK"):
                 self._process_metrics(record.msg)
                 return
-            
-            # Thread vars context 
+
+            # Thread vars context
             host = getattr(ProxyContext.thread_local, "host", None)
             ip = getattr(ProxyContext.thread_local, "ip", None)
             port = getattr(ProxyContext.thread_local, "port", None)
@@ -152,20 +161,20 @@ class DynamicPerClientFileHandler(logging.Handler):
             pending_log_path = os.path.join(ip_dir_path, pending_name)
             formatted_msg = self.format(record)
 
-
             if host is None:
                 self._write_to_file(formatted_msg, pending_log_path)
             else:
                 final_name = f"{host}_{ip}_{port}.log"
                 final_path = os.path.join(ip_dir_path, final_name)
-                
+
                 if os.path.exists(pending_log_path):
                     self._merge_files(pending_log_path, final_path)
-                
+
                 self._write_to_file(formatted_msg, final_path)
 
         except Exception as e:
-            print(f"NON-CRITICAL ERROR: logg emission failed: {e}", file=sys.stderr)
+            print(
+                f"NON-CRITICAL ERROR: logg emission failed: {e}", file=sys.stderr)
 
     def _process_metrics(self, msg: str):
         """Parses "TIMECHECK" messages and adds time metrics to analytics objects."""
@@ -173,7 +182,8 @@ class DynamicPerClientFileHandler(logging.Handler):
             parts = msg.split(" ")
             index = int(parts[0][-1])
             h, m, s = parts[2].split(':')
-            duration = datetime.timedelta(hours=int(h), minutes=int(m), seconds=float(s))
+            duration = datetime.timedelta(
+                hours=int(h), minutes=int(m), seconds=float(s))
             time_list[index] += duration
             count_list[index] += 1
         except (ValueError, IndexError) as e:
@@ -196,7 +206,9 @@ class DynamicPerClientFileHandler(logging.Handler):
             with open(path, mode="a", encoding="utf-8") as f:
                 f.write(msg + "\n")
         except (OSError, IOError) as e:
-            print(f"NON-CRITICAL ERROR: Writing failed to {path}: {e}", file=sys.stderr)
+            print(
+                f"NON-CRITICAL ERROR: Writing failed to {path}: {e}", file=sys.stderr)
+
 
 class MainFilter(logging.Filter):
     """
@@ -204,20 +216,14 @@ class MainFilter(logging.Filter):
     Ensures that main-thread logs stay in the core log file, while client-traffic 
     logs are seperated.
     """
-    def filter(self, record : logging.LogRecord):
-        
+
+    def filter(self, record: logging.LogRecord):
+
         if record.levelno >= logging.WARNING:
             return True
-        
+
         # If any client-specific context exists, it's not a 'record from the main thread.
         if any(hasattr(ProxyContext.thread_local, attr) for attr in ["ip", "port", "host"]):
-            return False # not the main Thread
-        
-        return True # Main thread
+            return False  # not the main Thread
 
-
-
-        
-
-
-        
+        return True  # Main thread

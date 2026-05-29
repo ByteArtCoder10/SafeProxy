@@ -1,6 +1,7 @@
 import flet as ft
 from ..controls.custom_controls import SideBar
 
+
 class LayoutBuilder:
     """
     This class defines the structure of the application.
@@ -16,7 +17,7 @@ class LayoutBuilder:
         Wraps the specific view content with the app structure.
         view_type: 'public' (Login/Signup) or 'prviate' (Home/Dashboard/Logs/Certs...)
         """
-        
+
         # if public, just return the content centered
         if view_type == "public":
             return ft.Container(
@@ -27,7 +28,7 @@ class LayoutBuilder:
 
         # If private, return Row[Sidebar, Content]
         sidebar = SideBar(route=title)
-        
+
         return ft.Row(
             controls=[
                 sidebar,
@@ -36,8 +37,8 @@ class LayoutBuilder:
                     content=content_control,
                     expand=True,
                     padding=30,
-                    alignment=ft.alignment.top_left, 
-                    bgcolor= ft.Colors.SURFACE,
+                    alignment=ft.alignment.top_left,
+                    bgcolor=ft.Colors.SURFACE,
                 ),
             ],
             expand=True,
