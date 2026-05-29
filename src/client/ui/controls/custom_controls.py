@@ -1,5 +1,5 @@
 import flet as ft
-from enum import Enum
+
 class CustomTextField(ft.TextField):
     def __init__(self, 
                 *,

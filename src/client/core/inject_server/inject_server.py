@@ -76,7 +76,7 @@ class InjectServer:
                 self.stop()
                 return
             
-            # If connection successfull, open a new chrome windowthat set in advance to connect to proxy.
+            # If connection successfull, open a new chrome window that's configured in advance to connect to proxy.
             self._run_new_chrome_proccess()
             
             while self._running:
@@ -101,7 +101,7 @@ class InjectServer:
         try:
             profile_path = r"C:\Temp\SafeProxyBrowser"
 
-            subprocess.Popen([ # popen in bacjgorund
+            subprocess.Popen([ # popen - in bacjgorund
                 CHROME_EXE_PATH,
                 f"--proxy-server=127.0.0.1:{INJECT_SERVER_PORT}",
                 f"--user-data-dir={CHROME_PROPILE_DATA_PATH}"

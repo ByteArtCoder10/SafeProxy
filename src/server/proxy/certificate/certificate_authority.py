@@ -9,7 +9,6 @@ from dataclasses import dataclass
 from typing import Tuple, Optional
 from collections import OrderedDict
 import threading
-import ipaddress
 
 # Cryptography imports
 from cryptography import x509
@@ -36,7 +35,7 @@ class CertificateAuthority:
     * automatic cleanup of expired certificates.
 
     :var OrderedDict active_certs: 
-    An a LRU-style dict containing max 100 certs in run-time. 
+    An a LRU-style dict containing max 100 certs in run-time. ב
 
     :var list[str] _known_on_disk: 
     A container of known valid certificates's names in the disk storage
@@ -93,8 +92,8 @@ class CertificateAuthority:
         :type ECDSA: bool
         :param ECDSA: If True, uses Elliptic Curve keys. otherwise, defaults to RSA.
 
-        :rtype: Tuple[bytes, bytes, bytes]
-        :returns: A tuple containing (path_to_PEM_encoded_cert, path_to_PEM_encoded_privkey).
+        :rtype: Tuple[str, str]
+        :returns: A tuple containing path to certificate and private key.
         """
 
         # Check memory
@@ -455,8 +454,6 @@ class CertificateAuthority:
 
     def _delete_all_certs(self):
         """
-        Docstring for _delete_all_certs
-        
         Deletes all made-on-the-fly certifcates in SafeProxy's local disk storage.
         This is essantial for cases where a noew self-signed CA cert and private key are generated,
         Therefore making all previous certs signed by previous CA(s) invalid.
@@ -472,7 +469,7 @@ class CertificateAuthority:
         except Exception as e:
             core_logger.error(f"Failed deleting File: {e}", exc_info=True)
 
-    def _issue_host_certificate(self, host: str, *, cert_bundle:CertBundle = None, KeepPrivKey=False, ecdsa=True) -> CertBundle:
+    def _issue_host_certificate(self, host: str, *, cert_bundle:CertBundle = None, KeepPrivKey=True, ecdsa=True) -> CertBundle:
         """
         Issues a new end-entity certificate for a specific host/IP, signed by Root CA.
         Correctly handles IP SANs vs DNS SANs for browser compatibility.
@@ -532,16 +529,30 @@ class CertificateAuthority:
             
             core_logger.debug(f"san_list for cert: {san_list}")
             
-            builder = builder.add_extension(
-                x509.SubjectAlternativeName([
-                x509.IPAddress(NetworkUtils.get_ip_obj(host))
-                ]),
+            # for invalid hosts such as 'google', _wildcard_san_optimazition()
+            # might return ['google']. that way, the if condition is not
+            # a good indication for a host being an IP. therfore, trying to add an IP
+            # field to the SAN list. but if that fails (beacuse the host isnt an IP), 
+            # catch and only add the san_list as a DNS name.
+            try:
+                builder = builder.add_extension(
+                    x509.SubjectAlternativeName([
+                    x509.IPAddress(NetworkUtils.get_ip_obj(host))
+                    ]),
+                    critical=False
+                )
+            except:
+                builder = builder.add_extension(
+                    x509.SubjectAlternativeName(
+                    [x509.DNSName(san_host) for san_host in san_list]
+                    ),
                 critical=False
-            )
+                )
 
         else:
             
             core_logger.debug(f"SAN list for  {host}: {san_list}.")
+
 
             builder = builder.add_extension(
                 x509.SubjectAlternativeName(
@@ -549,6 +560,7 @@ class CertificateAuthority:
                 ),
             critical=False
             )
+
         
         # Basic constraints -> not a CA
         builder = builder.add_extension(

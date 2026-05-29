@@ -1,5 +1,5 @@
 import flet as ft
-from ...controls.custom_controls import CustomTextField, CustomBtn, CustomCard, CardTitle, CustomPageHeader
+from ...controls.custom_controls import CustomBtn, CustomCard, CustomPageHeader
 from ....core.ca_check.CA_handler import CAHandler
 import threading
 

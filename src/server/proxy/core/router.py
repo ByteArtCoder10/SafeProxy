@@ -4,7 +4,6 @@ from http import HTTPMethod
 
 from ...logs.loggers import core_logger
 from ..structures.request import Request
-from ..structures.response import Response
 from ..handlers.http_handler import HttpHandler
 from ..handlers.https_tcp_tunnel_handler import HttpsTcpTunnelHandler
 # from ..handlers.https_tls_termination_handler import HttpsTlsTerminationHandler

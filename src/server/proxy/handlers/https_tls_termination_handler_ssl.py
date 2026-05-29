@@ -142,11 +142,11 @@ class HttpsTlsTerminationHandlerSSL(BaseHandler):
                 if googleSearchRedirect:
                     core_logger.info(f"Failed connecting to server ({sni}). Redirecting to google search.")
                     self._respond_to_client(req, self._tls_client_connection, 200, redirectURL=UrlManager.get_google_url(sni))
-                
+                    return
                 else:
                     core_logger.info(f"Failed connecting to server ({sni}). Sending 502 Bad Gateaway.")
                     self._respond_to_client(req, self._tls_client_connection, 502, addBlackListLabelHTML=True)
-                
+                    return
 
                 # self._close_sockets(self._tls_client_connection, self._tls_server_connection)
             

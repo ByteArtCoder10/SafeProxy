@@ -1,7 +1,7 @@
 import flet as ft
 
 from ....logs.logger import client_logger
-from src.client.ui.controls.custom_controls import CustomTextField, CustomBtn, CustomCard, CardTitle, CustomPageHeader, CustomAlertDialog, CustomPopUpModal
+from src.client.ui.controls.custom_controls import CustomBtn, CustomPageHeader, CustomAlertDialog, CustomPopUpModal
 # --Backend imports--
 from ....core.authentication.auth_handler import RspStatus, FailReason
 
@@ -86,10 +86,6 @@ class BlackListView:
     def _close_dialog(self, e):
         self._delete_all_alert_modal.open = False
         self.page.update()
-    def _edit(self):
-        pass
-    def _delete(self):
-        pass
     
     def _populate_table(self):
         # get blackist of user from server

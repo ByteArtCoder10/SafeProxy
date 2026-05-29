@@ -1,7 +1,7 @@
 import flet as ft
 import threading
 
-from ...controls.custom_controls import CustomTextField, CustomBtn, CustomCard, CardTitle, CustomPageHeader, CustomAlertDialog
+from ...controls.custom_controls import CustomCard, CardTitle, CustomAlertDialog
 from ....core.authentication.auth_handler import RspStatus, FailReason
 from ....core.ca_check.CA_handler import CAHandler
 from ....core.inject_server.inject_server import InjectServer
@@ -57,7 +57,7 @@ class ClientHomeView:
         self.content.controls = [resp_row]
         self.page.update()
 
-    def build_home_cards(self):
+    def build_home_cards(self) -> list[CustomCard]:
         """Builds and returns the list of dashboard cards."""
         
         # Connection Card

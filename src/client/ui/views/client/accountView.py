@@ -1,5 +1,5 @@
 import flet as ft
-from ...controls.custom_controls import CustomTextField, CustomBtn, CustomCard, CardTitle, CustomPageHeader, CustomAlertDialog
+from ...controls.custom_controls import CustomBtn, CustomPageHeader, CustomAlertDialog
 from ....core.authentication.auth_handler import RspStatus, FailReason
 from ....logs.logger import client_logger
 class AccountView:

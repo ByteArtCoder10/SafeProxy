@@ -5,9 +5,7 @@ import logging
 from .parser import Parser
 from .router import Router
 from ...server_constants import MAX_CLIENTS, SOCKET_BUFFER_SIZE as BUFFER_SIZE
-from ...logs.logging_manager import LoggingManager
 from ...logs.loggers import core_logger
-from ..structures.response import Response
 from ...logs.proxy_context import ProxyContext
 from ..certificate.certificate_authority import CertificateAuthority
 from ..security.auth_validator import AuthValidator

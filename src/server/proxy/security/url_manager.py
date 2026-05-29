@@ -37,7 +37,7 @@ class UrlManager:
         - Explicit: host and path included. In this case, the proxy will only
         block the explicit url, but allow other paths for the same host.
         Example: If example.com/index.html is blocked, the Function returns False for
-        example.com and example.con/robots.txt.
+        example.com and example.com/robots.txt.
 
         :param url: The raw URL or hostname string to check.
         :param username: The username's blacklist to check against.
@@ -85,7 +85,7 @@ class UrlManager:
         :param url: The URL to be analyzed for malicious intent.
 
         :rtype: bool
-        :returns: True if the URL is deemed dangerous, False otherwise.
+        :returns: True if the URL is classifed dangerous, False otherwise.
         """
         return False
     

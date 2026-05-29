@@ -69,16 +69,15 @@ def main(page: ft.Page):
 
 def set_backend(page : ft.Page):
     # create essentail folders if not already created
-
+    EnsureDirsExistsUtil.handle_dirs_exist()
     if not hasattr(page, "auth_handler"):
     # connect to auth-server
         page.auth_handler =  AuthHandler(PROXY_SERVER_IP)
         page.auth_handler.connect()
 
-    # if rsp status is SUCCESS and jwt provided, Start inject server
-    # if response.status == RspStatus.SUCCESS and response.jwt_token:
-    #     self._start_inject_server(response.jwt_token)
+
 
 if __name__ == "__main__":
+
     logging.basicConfig(level=logging.INFO) # flet logging system
     ft.app(target=main)

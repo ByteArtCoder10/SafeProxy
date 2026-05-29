@@ -2,7 +2,6 @@ import logging
 import os 
 import datetime
 import shutil
-import threading
 import sys
 from ..server_constants import LOG_FORMAT,CORE_MAIN_LOG_FILE_PATH, \
 DB_MAIN_LOG_FILE_PATH, CORE_CLIENTS_LOG_DIR_PATH
@@ -189,7 +188,7 @@ class DynamicPerClientFileHandler(logging.Handler):
                 f_dst.write(content)
             os.remove(src)
         except (OSError, IOError, FileExistsError) as e:
-            self._handle_internal_error(f"Merge failed from {src} to {dst}", e)
+            print(f"Merge failed from {src} to {dst}", e)
 
     def _write_to_file(self, msg: str, path: str):
         """Writes a single log line to a log file."""

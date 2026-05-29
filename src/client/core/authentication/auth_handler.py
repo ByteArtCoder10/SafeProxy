@@ -352,28 +352,7 @@ class AuthHandler:
             client_logger.warning(f"[Auth] Sending request/recieving response failed: {e}", exc_info=True)
             return FormattedRsp(status=RspStatus.FAIL, fail_reason=FailReason.NETWORK_ERROR)
 
-    def _start_inject_server(self, token: str):
-        """
-        Starts the local Inject Server in a background thread 
-        using the given JWT.
-
-        :param token: the JWT token to start inject server with
-
-        :return bool: True if setting up injectServer and connecting to
-        proxy server successful, otherwise False.
-        """
-        client_logger.warning("[Auth] Starting Inject Server...")
-        
-        # Asuming proxy and auth_server sit on same IP, we can use auth_Server ip
-        # to connect the inject server to the proxy.
-        inject_server = InjectServer() 
-        
-        self.inject_server_thread = threading.Thread(
-            target=inject_server.start, 
-            args=(token,), 
-            daemon=True
-        )
-        self.inject_server_thread.start()
+    
 
 if __name__ == "__main__":
     ah = AuthHandler("127.0.0.1", AUTH_SERVER_PORT)

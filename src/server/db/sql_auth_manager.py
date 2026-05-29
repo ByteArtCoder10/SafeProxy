@@ -106,6 +106,7 @@ class SQLAuthManager:
         Checks if the password is correct.
         """
         try:
+            self.print_table()
             # fetch password
             self.c.execute("SELECT password,salt FROM users WHERE username = ? LIMIT 1", (username,))
             resp = self.c.fetchone()
@@ -133,15 +134,17 @@ class SQLAuthManager:
 
     def print_table(self):
         '''Prints the table'''
+        table_str = ''
         try:
             self.c.execute("SELECT * FROM users")
             res = self.c.fetchall()
-            print("----------USERS TABLE------------")
+            table_str += "----------USERS TABLE------------\n"
             for user in res:
-                print(user)
-                print()
-            print("----------END TABLE------------")
+                row_str = ' | '.join(str(col) for col in user)
+                table_str += row_str + '\n'
+            table_str += "----------END TABLE------------"
         
+            db_logger.debug(table_str)
         except Exception as e:
             db_logger.error(f"Falied printing user's table: {e}", exc_info=True)
 

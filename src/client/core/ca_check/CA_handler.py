@@ -5,7 +5,7 @@ from cryptography.hazmat.primitives import hashes
 import base64
 
 from ...logs.logger import client_logger
-from ...client_constants import ROOT_CA_CERT_PATH, CERT_STORE_PATH, UPDATED_ROOT_CA_CERT_PATH
+from ...client_constants import ROOT_CA_CERT_PATH, CERT_STORE_PATH
 class CAHandler():
 
     @staticmethod

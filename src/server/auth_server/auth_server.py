@@ -10,8 +10,6 @@ from ..logs.loggers import db_logger
 from ..auth_server.encryption_manager import EncryptionManager
 from ..db.sql_auth_manager import SQLAuthManager
 from ..auth_server.jwt_manager import JWTManager
-from ..proxy.certificate.certificate_authority import CertificateAuthority
-
 class BaseFormattedObj:
     def to_json(self) -> str:
         return json.dumps(self.__dict__, default=lambda x: x.value if isinstance(x, Enum) else x)
@@ -196,12 +194,14 @@ class AuthServer:
                 
                 # decrypt + format request
                 json_req = em.aes_decrypt(encrypted_data)
+                db_logger.debug(f"Client json: {json_req}") # REMOVE EVENTUALLY
                 request = FormattedReq.from_json(json_req)
                 db_logger.debug(f"Client ({addr[0]}, {addr[1]}): {request.__repr__()}") # REMOVE EVENTUALLY
                 
                 # Process request
                 response = self._process_request(request)
                 db_logger.debug(f"Auth server response: {response.__repr__()}") # REMOVE EVENTUALLY
+                db_logger.debug(f"Auth server response JSON: {response.to_json()}") # REMOVE EVENTUALLY
 
                 # encrypt + send
                 encrypted_rsp = em.aes_encrypt(response.to_json())
