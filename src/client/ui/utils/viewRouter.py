@@ -23,7 +23,7 @@ class ViewRouter:
         self.routes = {
             "/": LoginView,  # default screen view is a login when opening the application
             "/login": LoginView,
-            "/s ignup": SignUpView,
+            "/signup": SignUpView,
             "/client_home": ClientHomeView,
             "/blacklist": BlackListView,
             "/ca": CAView,
